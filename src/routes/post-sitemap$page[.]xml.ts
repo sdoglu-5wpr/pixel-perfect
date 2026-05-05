@@ -9,7 +9,7 @@ export const Route = createFileRoute("/post-sitemap$page.xml")({
       GET: async ({ params }) => {
         const state = await resolveIndexingState();
         if (!state.enabled) return new Response("Not Found", { status: 404 });
-        const raw = (params as { page: string }).page;
+        const raw = ((params as unknown) as Record<string, string>).page ?? "";
         const page = raw === "" ? 1 : Number(raw);
         if (!Number.isFinite(page) || page < 1) return new Response("Not Found", { status: 404 });
         const xml = await buildPostSitemap(page);
