@@ -45,6 +45,25 @@ const should = (name: string) => ONLY.length === 0 || ONLY.includes(name);
 const log = (msg: string) => console.log(`  ${msg}`);
 const head = (msg: string) => console.log(`\n▶ ${msg}`);
 
+// ---------- referential-integrity tracking ----------
+// The migration source is a months-old WordPress snapshot, so dangling FK refs
+// (featured images, authors, parents) are expected. Rather than fail the import
+// we collect the set of valid ids per-table during the media/authors/posts
+// passes and null out any post FK that points at a missing target, logging
+// the orphans for the record.
+//
+// Note on transactions: PostgREST (the layer Supabase JS talks to) executes
+// each .upsert() as its own transaction — there is no way to wrap the whole
+// import in a single BEGIN; SET CONSTRAINTS ALL DEFERRED; COMMIT;. Truncate
+// is a separate phase from upserts already, so re-running with --truncate
+// after a partial failure cleans up correctly.
+const validMediaIds = new Set<number>();
+const validAuthorIds = new Set<number>();
+const validPostIds = new Set<number>();
+const orphanFeaturedMedia = new Set<number>();
+const orphanAuthors = new Set<number>();
+const orphanParents = new Set<number>();
+
 async function upsert<T extends Record<string, unknown>>(
   table: string,
   rows: T[],
