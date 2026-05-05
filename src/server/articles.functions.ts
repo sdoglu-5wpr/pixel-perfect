@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
+import { rewriteLegacyHtml, rewriteLegacyUrl } from "@/lib/legacy-urls";
 
 export type ArticleAuthor = {
   id: number;
@@ -97,10 +98,11 @@ async function buildRelated(rows: any[]): Promise<RelatedPost[]> {
     title: r.title,
     excerpt: r.excerpt,
     published_at: r.published_at,
-    featured_image_url:
+    featured_image_url: rewriteLegacyUrl(
       (r.featured_media_id && mediaMap.get(r.featured_media_id)) ||
-      pickFirstImage(r.content_html) ||
-      null,
+        pickFirstImage(r.content_html) ||
+        ""
+    ) || null,
     author_name: r.author_id ? authorMap.get(r.author_id) ?? null : null,
     category_name: postCat.get(r.id) ?? null,
   }));
@@ -182,24 +184,27 @@ export const getArticleBySlug = createServerFn({ method: "GET" })
     ]);
 
     const fallbackImage = pickFirstImage(post.content_html);
+    const featuredUrl = rewriteLegacyUrl(media?.url || fallbackImage || "");
+
+    const rewrittenSeo = seo
+      ? { ...seo, og_image: rewriteLegacyUrl(seo.og_image) || null, canonical_url: seo.canonical_url }
+      : null;
 
     const article: ArticleRecord = {
       id: post.id,
       slug: post.slug,
       title: post.title,
       excerpt: post.excerpt,
-      content_html: post.content_html ?? "",
+      content_html: rewriteLegacyHtml(post.content_html),
       published_at: post.published_at,
       modified_at: post.modified_at,
       type: post.type,
-      featured_image: media?.url
-        ? { url: media.url, alt: media.alt_text }
-        : fallbackImage
-          ? { url: fallbackImage, alt: post.title }
-          : null,
+      featured_image: featuredUrl
+        ? { url: featuredUrl, alt: media?.alt_text ?? post.title }
+        : null,
       author: author ?? null,
       categories: (categories ?? []) as ArticleCategory[],
-      seo: seo ?? null,
+      seo: rewrittenSeo,
     };
 
     return { article, topStories, otherNews };
