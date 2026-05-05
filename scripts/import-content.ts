@@ -395,11 +395,19 @@ async function importPostsFile(file: string, defaultType: "post" | "page" = "pos
       parent_id = null;
     }
 
+    // WordPress drafts often have empty post_name. Synthesize a stable
+    // slug from the id so the (type, slug) unique constraint holds.
+    let slug = (typeof p.slug === "string" ? p.slug.trim() : "");
+    if (!slug) {
+      slug = `draft-${p.id}`;
+      emptySlugCount++;
+    }
+
     postsBuf.push({
       id: p.id,
       type: p.type === "page" ? "page" : defaultType,
       status,
-      slug: p.slug,
+      slug,
       title: p.title,
       excerpt: p.excerpt || null,
       content_html: p.content || "",
@@ -413,7 +421,7 @@ async function importPostsFile(file: string, defaultType: "post" | "page" = "pos
     });
 
     // SEO row keyed by url path "/<slug>/"
-    const urlPath = `/${p.slug}/`;
+    const urlPath = `/${slug}/`;
     const seo = p.seo ?? {};
     seoBuf.push({
       object_type: p.type,
