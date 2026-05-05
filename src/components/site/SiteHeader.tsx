@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Search, Clock } from "lucide-react";
 import logoUrl from "@/assets/everything-pr-logo.png";
 
 type LeafLink =
