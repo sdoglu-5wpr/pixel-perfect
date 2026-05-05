@@ -1,13 +1,16 @@
 import { createFileRoute, Link, notFound, redirect, useRouter } from "@tanstack/react-router";
 import { ChevronRight, ArrowRight, Clock, Share2, Twitter, Linkedin, Facebook, Link as LinkIcon } from "lucide-react";
 import { getArticleBySlug, type RelatedPost, type ArticlePayload, type ArticleAuthor } from "@/serverFns/articles.functions";
+import { getArchive, type ArchivePayload } from "@/serverFns/archives.functions";
 import { lookupRedirect } from "@/serverFns/redirects.functions";
 import { fetchArticleViaRpc } from "@/lib/articles.shared";
+import { fetchArchiveViaRpc } from "@/lib/archives.shared";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { NewsletterBanner } from "@/components/site/NewsletterBanner";
 import { PostImage } from "@/components/site/PostImage";
 import { ContactPage } from "@/components/site/ContactPage";
+import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
 
 async function loadArticle(slug: string): Promise<ArticlePayload | null> {
   // In the browser (e.g. Netlify static hosting where TanStack server functions
