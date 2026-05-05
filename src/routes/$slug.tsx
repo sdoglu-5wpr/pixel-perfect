@@ -1,14 +1,22 @@
-import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect, useRouter } from "@tanstack/react-router";
 import { ChevronRight, ArrowRight } from "lucide-react";
 import { getArticleBySlug, type RelatedPost, type ArticlePayload } from "@/server/articles.functions";
+import { lookupRedirect } from "@/server/redirects.functions";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { NewsletterBanner } from "@/components/site/NewsletterBanner";
 
 export const Route = createFileRoute("/$slug")({
   loader: async ({ params }) => {
+    // RLS on `posts` already filters status='publish' for anon, so a missing
+    // row means either unpublished or genuinely absent.
     const data = await getArticleBySlug({ data: { slug: params.slug } });
-    if (!data) throw notFound();
-    return data;
+    if (data) return data;
+
+    const r = await lookupRedirect({ data: { path: `/${params.slug}` } });
+    if (r?.target_path) {
+      throw redirect({ href: r.target_path, statusCode: (r.status_code ?? 301) as 301 | 302 });
+    }
+    throw notFound();
   },
   head: ({ loaderData }) => {
     if (!loaderData) return { meta: [{ title: "Not found · Everything-PR" }] };
