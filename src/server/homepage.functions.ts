@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { setResponseHeader } from "@tanstack/react-start/server";
 import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
 import { pickFirstImageSrc, resolvePostImageUrl, rewriteLegacyUrl } from "@/lib/legacy-urls";
 
@@ -46,164 +47,87 @@ const SECTION_DEFS: { key: string; title: string; slug: string }[] = [
 function normalizeFooterUrl(url: string): string {
   if (!url) return "/";
   if (url === "#") return "/";
-  // Strip absolute legacy host
-  const match = url.match(/^https?:\/\/(?:www\.)?everything-pr\.com(\/.*)?$/i);
-  if (match) return match[1] || "/";
+  const m = url.match(/^https?:\/\/(?:www\.)?everything-pr\.com(\/.*)?$/i);
+  if (m) return m[1] || "/";
   return url;
 }
 
-async function fetchPostsByCategorySlug(
-  catSlug: string,
-  limit: number,
-  excludeIds: Set<number>
-): Promise<HomePost[]> {
-  const { data: cat } = await supabaseAnon
-    .from("categories")
-    .select("id, name, slug")
-    .eq("slug", catSlug)
-    .maybeSingle();
-  if (!cat) return [];
-
-  const { data: pcRows } = await supabaseAnon
-    .from("post_categories")
-    .select("post_id")
-    .eq("category_id", cat.id)
-    .limit(limit + excludeIds.size + 30);
-
-  const candidateIds = (pcRows ?? [])
-    .map((r) => r.post_id as number)
-    .filter((id) => !excludeIds.has(id));
-  if (!candidateIds.length) return [];
-
-  const { data: rows } = await supabaseAnon
-    .from("posts")
-    .select(
-      "id, slug, title, excerpt, content_html, published_at, featured_media_id, author_id"
-    )
-    .eq("status", "publish")
-    .eq("type", "post")
-    .in("id", candidateIds)
-    .order("published_at", { ascending: false, nullsFirst: false })
-    .limit(limit);
-
-  return enrichPosts((rows ?? []) as any[], { name: cat.name, slug: cat.slug });
-}
-
-async function enrichPosts(
-  rows: any[],
-  overrideCategory?: { name: string; slug: string }
-): Promise<HomePost[]> {
-  if (!rows.length) return [];
-  const mediaIds = rows.map((r) => r.featured_media_id).filter(Boolean);
-  const authorIds = rows.map((r) => r.author_id).filter(Boolean);
-
-  const [mediaRes, authorRes, pcRes] = await Promise.all([
-    mediaIds.length
-      ? supabaseAnon.from("media").select("id, url").in("id", mediaIds)
-      : Promise.resolve({ data: [] as any[] }),
-    authorIds.length
-      ? supabaseAnon
-          .from("authors")
-          .select("id, display_name, slug, avatar_url")
-          .in("id", authorIds)
-      : Promise.resolve({ data: [] as any[] }),
-    overrideCategory
-      ? Promise.resolve({ data: [] as any[] })
-      : supabaseAnon
-          .from("post_categories")
-          .select("post_id, category_id")
-          .in(
-            "post_id",
-            rows.map((r) => r.id)
-          ),
-  ]);
-
-  const mediaMap = new Map((mediaRes.data ?? []).map((m: any) => [m.id, m.url as string]));
-  const authorMap = new Map(
-    (authorRes.data ?? []).map((a: any) => [a.id, a])
-  );
-
-  let postCat = new Map<number, { name: string; slug: string }>();
-  if (!overrideCategory) {
-    const catIds = (pcRes.data ?? []).map((r: any) => r.category_id);
-    const { data: cats } = catIds.length
-      ? await supabaseAnon.from("categories").select("id, name, slug").in("id", catIds)
-      : { data: [] as any[] };
-    const catMap = new Map(
-      (cats ?? []).map((c: any) => [c.id, { name: c.name as string, slug: c.slug as string }])
-    );
-    for (const pc of pcRes.data ?? []) {
-      if (!postCat.has(pc.post_id)) {
-        const c = catMap.get(pc.category_id);
-        if (c) postCat.set(pc.post_id, c);
-      }
-    }
-  }
-
-  return rows.map((r) => {
-    const a = r.author_id ? authorMap.get(r.author_id) : null;
-    return {
-      id: r.id,
-      slug: r.slug,
-      title: r.title,
-      excerpt: r.excerpt,
-      published_at: r.published_at,
-      featured_image_url: resolvePostImageUrl(
-        r.featured_media_id && mediaMap.get(r.featured_media_id),
-        pickFirstImageSrc(r.content_html),
-      ),
-      author: a
-        ? {
-            id: a.id,
-            display_name: a.display_name,
-            slug: a.slug,
-            avatar_url: rewriteLegacyUrl(a.avatar_url ?? "") || null,
-          }
-        : null,
-      category: overrideCategory ?? postCat.get(r.id) ?? null,
-    } as HomePost;
-  });
+function toPost(r: any, fallbackCategory?: { name: string; slug: string }): HomePost {
+  const a = r.author ?? null;
+  return {
+    id: r.id,
+    slug: r.slug,
+    title: r.title,
+    excerpt: r.excerpt,
+    published_at: r.published_at,
+    featured_image_url: resolvePostImageUrl(r.media_url, pickFirstImageSrc(r.content_html)),
+    author: a
+      ? {
+          id: a.id,
+          display_name: a.display_name,
+          slug: a.slug,
+          avatar_url: rewriteLegacyUrl(a.avatar_url ?? "") || null,
+        }
+      : null,
+    category: r.category ?? fallbackCategory ?? null,
+  };
 }
 
 export const getHomepage = createServerFn({ method: "GET" }).handler(async (): Promise<HomePayload> => {
-  // 1. Most-recent 20 posts → ticker(15), hero(1), topStories(4)
-  const { data: latest } = await supabaseAnon
-    .from("posts")
-    .select(
-      "id, slug, title, excerpt, content_html, published_at, featured_media_id, author_id"
-    )
-    .eq("status", "publish")
-    .eq("type", "post")
-    .order("published_at", { ascending: false, nullsFirst: false })
-    .limit(20);
+  const sectionSlugs = SECTION_DEFS.map((s) => s.slug);
+  const { data: rpc, error } = await (supabaseAnon as any).rpc("get_homepage_data", {
+    p_section_slugs: sectionSlugs,
+    p_crisis_slug: "crisis-pr",
+    p_economy_slug: "corporate-pr",
+  });
 
-  const latestRows = (latest ?? []) as any[];
-  const ticker = latestRows.slice(0, 15).map((r) => ({ slug: r.slug, title: r.title }));
-  const heroEnriched = await enrichPosts(latestRows.slice(0, 5));
-  const hero = heroEnriched[0] ?? null;
-  const topStories = heroEnriched.slice(1, 5);
+  if (error) {
+    console.error("get_homepage_data failed:", error);
+    return {
+      ticker: [],
+      hero: null,
+      topStories: [],
+      sections: SECTION_DEFS.map((s) => ({ ...s, posts: [] })),
+      crisis: { title: "Crisis", slug: "crisis-pr", posts: [] },
+      topAuthors: [],
+      economy: null,
+      otherNews: [],
+      footerMenu: [],
+    };
+  }
 
-  const usedIds = new Set<number>(heroEnriched.map((p) => p.id));
+  const latest = ((rpc?.latest ?? []) as any[]).map((r) => toPost(r));
+  const ticker = latest.slice(0, 15).map((p) => ({ slug: p.slug, title: p.title }));
+  const hero = latest[0] ?? null;
+  const topStories = latest.slice(1, 5);
+  const usedIds = new Set<number>(latest.slice(0, 5).map((p) => p.id));
 
-  // 2. Section rows
-  const sectionResults = await Promise.all(
-    SECTION_DEFS.map((s) =>
-      fetchPostsByCategorySlug(s.slug, 3, usedIds).then((posts) => ({ ...s, posts }))
-    )
-  );
-  for (const s of sectionResults) for (const p of s.posts) usedIds.add(p.id);
+  const sectionsObj = (rpc?.sections ?? {}) as Record<string, any[]>;
+  const sections = SECTION_DEFS.map((s) => {
+    const posts = (sectionsObj[s.slug] ?? [])
+      .map((r) => toPost(r, { name: s.title, slug: s.slug }))
+      .filter((p) => !usedIds.has(p.id))
+      .slice(0, 3);
+    for (const p of posts) usedIds.add(p.id);
+    return { ...s, posts };
+  });
 
-  // 3. Crisis (dark feature)
-  const crisisPosts = await fetchPostsByCategorySlug("crisis-pr", 3, usedIds);
+  const crisisPosts = ((rpc?.crisis ?? []) as any[])
+    .map((r) => toPost(r, { name: "Crisis", slug: "crisis-pr" }))
+    .filter((p) => !usedIds.has(p.id))
+    .slice(0, 3);
   for (const p of crisisPosts) usedIds.add(p.id);
 
-  // 4. Top authors
-  const { data: authors } = await supabaseAnon
-    .from("authors")
-    .select("id, display_name, slug, avatar_url, bio, post_count")
-    .order("post_count", { ascending: false, nullsFirst: false })
-    .limit(4);
-  const topAuthors: HomeAuthor[] = (authors ?? []).map((a: any) => ({
+  const economyRow = rpc?.economy ?? null;
+  let economy: HomePost | null = economyRow
+    ? toPost(economyRow, { name: "Economy", slug: "corporate-pr" })
+    : null;
+  if (economy && usedIds.has(economy.id)) economy = null;
+  if (economy) usedIds.add(economy.id);
+
+  const otherNews = latest.filter((p) => !usedIds.has(p.id)).slice(0, 3);
+
+  const topAuthors: HomeAuthor[] = ((rpc?.top_authors ?? []) as any[]).map((a) => ({
     id: a.id,
     display_name: a.display_name,
     slug: a.slug,
@@ -212,48 +136,25 @@ export const getHomepage = createServerFn({ method: "GET" }).handler(async (): P
     post_count: a.post_count ?? 0,
   }));
 
-  // 5. Economy / corporate-pr feature (1 post)
-  const economyArr = await fetchPostsByCategorySlug("corporate-pr", 1, usedIds);
-  const economy = economyArr[0] ?? null;
-  if (economy) usedIds.add(economy.id);
+  const footerMenu: HomeMenuItem[] = ((rpc?.footer_menu ?? []) as any[]).map((i) => ({
+    label: String(i.label).replace(/&amp;/g, "&").replace(/&#0?38;/g, "&"),
+    href: normalizeFooterUrl(i.url ?? "/"),
+  }));
 
-  // 6. Other news — 3 recent not yet shown
-  const { data: extra } = await supabaseAnon
-    .from("posts")
-    .select(
-      "id, slug, title, excerpt, content_html, published_at, featured_media_id, author_id"
-    )
-    .eq("status", "publish")
-    .eq("type", "post")
-    .order("published_at", { ascending: false, nullsFirst: false })
-    .limit(20);
-  const otherCandidates = ((extra ?? []) as any[]).filter((r) => !usedIds.has(r.id)).slice(0, 3);
-  const otherNews = await enrichPosts(otherCandidates);
-
-  // 7. Footer menu (menu-2)
-  const { data: menuRow } = await supabaseAnon
-    .from("menus")
-    .select("id")
-    .eq("slug", "menu-2")
-    .maybeSingle();
-  let footerMenu: HomeMenuItem[] = [];
-  if (menuRow?.id) {
-    const { data: items } = await supabaseAnon
-      .from("menu_items")
-      .select("label, url, position, parent_id")
-      .eq("menu_id", menuRow.id)
-      .order("position", { ascending: true });
-    footerMenu = (items ?? []).map((i: any) => ({
-      label: String(i.label).replace(/&amp;/g, "&").replace(/&#0?38;/g, "&"),
-      href: normalizeFooterUrl(i.url ?? "/"),
-    }));
+  if (process.env.INDEXING_ENABLED === "true") {
+    try {
+      setResponseHeader(
+        "Cache-Control",
+        "public, max-age=30, s-maxage=60, stale-while-revalidate=300",
+      );
+    } catch {}
   }
 
   return {
     ticker,
     hero,
     topStories,
-    sections: sectionResults,
+    sections,
     crisis: { title: "Crisis", slug: "crisis-pr", posts: crisisPosts },
     topAuthors,
     economy,

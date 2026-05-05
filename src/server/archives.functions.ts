@@ -1,6 +1,18 @@
 import { createServerFn } from "@tanstack/react-start";
+import { setResponseHeader } from "@tanstack/react-start/server";
 import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
 import { pickFirstImageSrc, resolvePostImageUrl, rewriteLegacyUrl } from "@/lib/legacy-urls";
+
+function setArchiveCache() {
+  if (process.env.INDEXING_ENABLED === "true") {
+    try {
+      setResponseHeader(
+        "Cache-Control",
+        "public, max-age=60, s-maxage=120, stale-while-revalidate=300",
+      );
+    } catch {}
+  }
+}
 
 export const PAGE_SIZE = 10;
 
@@ -134,6 +146,7 @@ async function fetchByPostIds(
 export const getArchive = createServerFn({ method: "GET" })
   .inputValidator((input: ArchiveInput) => input)
   .handler(async ({ data }): Promise<ArchivePayload | null> => {
+    setArchiveCache();
     const page = clampPage((data as any).page);
 
     if (data.kind === "category" || data.kind === "tag") {
