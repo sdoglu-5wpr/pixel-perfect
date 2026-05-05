@@ -1,5 +1,5 @@
 import { createStartHandler, defaultStreamHandler } from "@tanstack/react-start/server";
-import redirectsData from "./generated/redirects.json" with { type: "json" };
+import redirectsData from "./generated/redirects.json";
 
 const tanstackFetch = createStartHandler(defaultStreamHandler);
 
