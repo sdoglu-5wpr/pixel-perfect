@@ -212,6 +212,67 @@ function ImportPage() {
           )}
         </div>
       )}
+
+      <BackfillImagesCard />
+    </div>
+  );
+}
+
+function BackfillImagesCard() {
+  const [busy, setBusy] = useState(false);
+  const [limit, setLimit] = useState(50);
+  const [result, setResult] = useState<null | {
+    scanned: number; updated: number; skipped: number;
+    examples: Array<{ id: number; slug: string; og_image: string | null }>;
+  }>(null);
+
+  const run = async () => {
+    setBusy(true);
+    try {
+      const r = await backfillMissingImages({ data: { limit } });
+      setResult(r);
+      toast.success(`Backfilled ${r.updated} of ${r.scanned} posts`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Backfill failed");
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <div className="rounded-lg border bg-card p-4 space-y-3">
+      <div>
+        <h2 className="font-semibold">Backfill missing featured images</h2>
+        <p className="text-sm text-muted-foreground">
+          For posts with no image, fetches the og:image from the legacy WordPress site
+          and stores it in seo_meta.og_image. Run repeatedly until 0 updated.
+        </p>
+      </div>
+      <label className="flex items-center gap-2 text-sm">
+        Batch size:
+        <input
+          type="number" min={1} max={200} value={limit}
+          onChange={(e) => setLimit(Number(e.target.value) || 50)}
+          className="w-20 rounded border px-2 py-1"
+        />
+      </label>
+      <button
+        onClick={run}
+        disabled={busy}
+        className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
+      >
+        {busy ? "Running…" : "Run backfill"}
+      </button>
+      {result && (
+        <div className="text-sm space-y-1">
+          <div>Scanned: {result.scanned} · Updated: <span className="text-emerald-600">{result.updated}</span> · Skipped: {result.skipped}</div>
+          {result.examples.length > 0 && (
+            <ul className="text-xs text-muted-foreground space-y-0.5">
+              {result.examples.map((e) => (
+                <li key={e.id}>#{e.id} <span className="font-mono">{e.slug}</span> → {e.og_image}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 }
