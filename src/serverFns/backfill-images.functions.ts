@@ -13,20 +13,20 @@ async function ensureStaff(supabase: any, userId: string) {
 
 const WP_BASE = "https://everything-pr.com/wp-json/wp/v2";
 
-async function fetchYoastOg(postId: number): Promise<string | null> {
+async function fetchYoastOg(postId: number): Promise<{ url: string | null; reason: string }> {
   try {
     const r = await fetch(`${WP_BASE}/posts/${postId}?_fields=yoast_head_json,jetpack_featured_media_url`, {
-      headers: { accept: "application/json" },
+      headers: { accept: "application/json", "user-agent": "everything-pr-backfill/1.0" },
     });
-    if (!r.ok) return null;
+    if (!r.ok) return { url: null, reason: `wp_http_${r.status}` };
     const j: any = await r.json();
     const og = j?.yoast_head_json?.og_image?.[0]?.url;
-    if (typeof og === "string" && og.startsWith("http")) return og;
+    if (typeof og === "string" && og.startsWith("http")) return { url: og, reason: "ok_yoast" };
     const jp = j?.jetpack_featured_media_url;
-    if (typeof jp === "string" && jp.startsWith("http")) return jp;
-    return null;
-  } catch {
-    return null;
+    if (typeof jp === "string" && jp.startsWith("http")) return { url: jp, reason: "ok_jetpack" };
+    return { url: null, reason: "wp_no_image_field" };
+  } catch (e: any) {
+    return { url: null, reason: `wp_fetch_threw:${e?.message ?? "unknown"}` };
   }
 }
 
