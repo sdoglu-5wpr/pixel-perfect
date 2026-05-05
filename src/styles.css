@@ -19,6 +19,18 @@
  */
 
 @theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", "Georgia", ui-serif, serif;
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-ticker: var(--ticker);
+  --color-ticker-foreground: var(--ticker-foreground);
+  --color-brand-red: var(--brand-red);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-blue-glow: var(--brand-blue-glow);
+  --color-surface-soft: var(--surface-soft);
+  --gradient-newsletter: var(--gradient-newsletter);
+  --shadow-card: var(--shadow-card);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
