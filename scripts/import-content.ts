@@ -171,6 +171,30 @@ function coerceDate(v: unknown): string | null {
 // Back-compat alias — every existing call site funnels through coerceDate now.
 const toIso = coerceDate;
 
+/** Dedupe an array of rows by a derived key. `pick(prev, next)` decides which
+ *  row wins on collision; defaults to keeping the later row. Logs the number
+ *  of dropped duplicates under `label` (always logs, even when zero, so each
+ *  phase has an audit trail). */
+function dedupeBy<T>(
+  label: string,
+  rows: T[],
+  keyOf: (r: T) => string | number | null | undefined,
+  pick: (prev: T, next: T) => T = (_p, n) => n,
+): T[] {
+  const seen = new Map<string | number, T>();
+  let dropped = 0;
+  for (const r of rows) {
+    const k = keyOf(r);
+    if (k == null) continue;
+    const prev = seen.get(k);
+    if (prev === undefined) { seen.set(k, r); continue; }
+    seen.set(k, pick(prev, r));
+    dropped++;
+  }
+  console.log(`  [${label}] ${dropped} duplicate ${dropped === 1 ? "row" : "rows"} dropped (kept best variant)`);
+  return [...seen.values()];
+}
+
 // ---------- importers ----------
 type AuthorJson = {
   id: number; username: string; slug: string; display_name: string;
