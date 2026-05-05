@@ -146,6 +146,7 @@ async function fetchByPostIds(
 export const getArchive = createServerFn({ method: "GET" })
   .inputValidator((input: ArchiveInput) => input)
   .handler(async ({ data }): Promise<ArchivePayload | null> => {
+    setArchiveCache();
     const page = clampPage((data as any).page);
 
     if (data.kind === "category" || data.kind === "tag") {
