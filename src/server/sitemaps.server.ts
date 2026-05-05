@@ -74,7 +74,7 @@ export async function buildPostSitemap(page: number): Promise<string | null> {
     urlEntry(
       `${SITE_URL}/${p.slug}/`,
       p.modified_at ?? p.published_at,
-      p.featured_media_id ? (mediaMap.get(p.featured_media_id) ?? null) : null,
+      p.featured_media_id ? (rewriteLegacyUrl(mediaMap.get(p.featured_media_id) ?? "") || null) : null,
     ),
   );
   return `${XML_HEADER}\n${URLSET_OPEN}\n${urls.join("\n")}\n${URLSET_CLOSE}\n`;
