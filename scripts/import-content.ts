@@ -119,12 +119,34 @@ const stripHtml = (html: string) =>
 const toBool = (v: unknown): boolean | null =>
   v === null || v === undefined ? null : v === 1 || v === "1" || v === true;
 
-const toIso = (v: unknown): string | null => {
-  if (!v || typeof v !== "string") return null;
-  // "2009-01-07 13:41:24" → ISO UTC
-  const m = v.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
-  return m ? `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z` : v;
-};
+// Per-phase counter of bad date values coerced to NULL. Set the phase label
+// at the top of each importer; coerceDate() / toIso() bumps it on bad input.
+let badDatePhase = "global";
+const badDateCounts = new Map<string, number>();
+function bumpBadDate() {
+  badDateCounts.set(badDatePhase, (badDateCounts.get(badDatePhase) ?? 0) + 1);
+}
+
+/** Coerce any incoming date value to an ISO string, or NULL.
+ *  Handles WP placeholders like "0000-00-00 00:00:00", empty strings,
+ *  the literal "null", non-strings, and unparseable values. */
+function coerceDate(v: unknown): string | null {
+  if (v == null) return null;
+  if (typeof v !== "string") return null;
+  const trimmed = v.trim();
+  if (trimmed === "" || trimmed.toLowerCase() === "null" || trimmed.startsWith("0000")) {
+    bumpBadDate();
+    return null;
+  }
+  // Normalize "2009-01-07 13:41:24" → "2009-01-07T13:41:24Z" before parsing
+  const m = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
+  const candidate = m ? `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z` : trimmed;
+  const d = new Date(candidate);
+  if (isNaN(d.getTime())) { bumpBadDate(); return null; }
+  return d.toISOString();
+}
+// Back-compat alias — every existing call site funnels through coerceDate now.
+const toIso = coerceDate;
 
 // ---------- importers ----------
 type AuthorJson = {
