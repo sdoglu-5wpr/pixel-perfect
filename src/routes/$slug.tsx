@@ -232,7 +232,7 @@ function ArticlePage() {
         </h1>
         {article.excerpt ? (
           <p className="mt-5 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl">
-            {article.excerpt}
+            {htmlToPlainText(article.excerpt)}
           </p>
         ) : null}
         <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
