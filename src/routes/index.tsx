@@ -128,7 +128,7 @@ function Hero({ hero, topStories }: { hero: HomePost | null; topStories: HomePos
             {hero.title}
           </h1>
           {hero.excerpt ? (
-            <p className="mt-3 text-base text-muted-foreground line-clamp-3">{hero.excerpt}</p>
+            <p className="mt-3 text-base text-muted-foreground line-clamp-3">{htmlToPlainText(hero.excerpt)}</p>
           ) : null}
           <ByLine post={hero} className="mt-4" />
         </Link>
