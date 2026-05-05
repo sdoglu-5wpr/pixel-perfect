@@ -273,6 +273,22 @@ type PostJson = {
 
 const VALID_STATUS = new Set(["publish", "draft", "pending", "private", "future", "trash"]);
 
+/** Pre-scan all post-like jsonl files to collect ids — needed so parent_id
+ *  references resolve across files (a post in posts.jsonl can have a parent
+ *  defined in pages.jsonl, etc.). */
+async function prescanPostIds(files: string[]) {
+  head("pre-scan post ids");
+  for (const file of files) {
+    if (!existsSync(`${DATA_DIR}/${file}`)) continue;
+    for await (const r of streamJsonl(`${DATA_DIR}/${file}`)) {
+      const p = r as PostJson;
+      if (p.type === "attachment") continue;
+      if (typeof p.id === "number") validPostIds.add(p.id);
+    }
+  }
+  log(`collected ${validPostIds.size} post ids`);
+}
+
 async function importPostsFile(file: string, defaultType: "post" | "page" = "post") {
   head(`posts (${file})`);
   const postsBuf: Record<string, unknown>[] = [];
@@ -299,6 +315,26 @@ async function importPostsFile(file: string, defaultType: "post" | "page" = "pos
     const p = r as PostJson;
     if (p.type === "attachment") continue;
     const status = VALID_STATUS.has(p.status) ? p.status : "publish";
+
+    // Null-out-and-log every FK against a missing target. The source is a
+    // months-old WP snapshot, so dangling refs (deleted media/authors/parents)
+    // are expected.
+    let featured_media_id: number | null = p.featured_image?.id ?? null;
+    if (featured_media_id != null && !validMediaIds.has(featured_media_id)) {
+      orphanFeaturedMedia.add(featured_media_id);
+      featured_media_id = null;
+    }
+    let author_id: number | null = p.author?.id ?? null;
+    if (author_id != null && !validAuthorIds.has(author_id)) {
+      orphanAuthors.add(author_id);
+      author_id = null;
+    }
+    let parent_id: number | null = p.parent && p.parent !== 0 ? p.parent : null;
+    if (parent_id != null && !validPostIds.has(parent_id)) {
+      orphanParents.add(parent_id);
+      parent_id = null;
+    }
+
     postsBuf.push({
       id: p.id,
       type: p.type === "page" ? "page" : defaultType,
@@ -308,9 +344,9 @@ async function importPostsFile(file: string, defaultType: "post" | "page" = "pos
       excerpt: p.excerpt || null,
       content_html: p.content || "",
       content_text: stripHtml(p.content || ""),
-      author_id: p.author?.id ?? null,
-      featured_media_id: p.featured_image?.id ?? null,
-      parent_id: p.parent && p.parent !== 0 ? p.parent : null,
+      author_id,
+      featured_media_id,
+      parent_id,
       menu_order: p.menu_order ?? 0,
       published_at: toIso(p.date_published),
       modified_at: toIso(p.date_modified),
