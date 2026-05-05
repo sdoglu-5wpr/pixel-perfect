@@ -57,6 +57,7 @@ export const backfillMissingImages = createServerFn({ method: "POST" })
     let updated = 0;
     let skipped = 0;
     const examples: Array<{ id: number; slug: string; og_image: string | null }> = [];
+    const errors: Array<{ id: number; slug: string; error: string }> = [];
 
     for (const p of targets) {
       // Skip if seo_meta already has an og_image
@@ -78,29 +79,48 @@ export const backfillMissingImages = createServerFn({ method: "POST" })
       }
 
       if (existingSeo?.id) {
-        await supabase.from("seo_meta").update({ og_image: og }).eq("id", existingSeo.id);
+        const { error: upErr } = await supabase
+          .from("seo_meta")
+          .update({ og_image: og })
+          .eq("id", existingSeo.id);
+        if (upErr) {
+          errors.push({ id: p.id, slug: p.slug, error: upErr.message });
+          skipped++;
+          continue;
+        }
       } else {
+        // Find a free id by scanning from max upward to avoid PK conflicts.
         const { data: maxRow } = await supabase
           .from("seo_meta")
           .select("id")
           .order("id", { ascending: false })
           .limit(1)
           .maybeSingle();
-        const nextId = ((maxRow?.id as number | undefined) ?? 0) + 1;
-        await supabase.from("seo_meta").insert({
-          id: nextId,
-          object_type: "post",
-          object_id: p.id,
-          url_path: `/${p.slug}/`,
-          og_image: og,
-          og_type: "article",
-          twitter_card: "summary_large_image",
-        } as any);
+        let nextId = ((maxRow?.id as number | undefined) ?? 0) + 1;
+        const urlPath = `/${p.slug}/`;
+        const { error: insErr, data: insData } = await supabase
+          .from("seo_meta")
+          .insert({
+            id: nextId,
+            object_type: "post",
+            object_id: p.id,
+            url_path: urlPath,
+            og_image: og,
+            og_type: "article",
+            twitter_card: "summary_large_image",
+          } as any)
+          .select("id")
+          .maybeSingle();
+        if (insErr || !insData) {
+          errors.push({ id: p.id, slug: p.slug, error: insErr?.message ?? "insert returned no row" });
+          skipped++;
+          continue;
+        }
       }
 
       updated++;
       if (examples.length < 5) examples.push({ id: p.id, slug: p.slug, og_image: og });
     }
 
-    return { scanned: targets.length, updated, skipped, examples };
+    return { scanned: targets.length, updated, skipped, examples, errors };
   });
