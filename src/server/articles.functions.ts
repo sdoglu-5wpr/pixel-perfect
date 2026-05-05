@@ -67,7 +67,11 @@ function relatedFromRow(r: any): RelatedPost {
     title: r.title,
     excerpt: r.excerpt,
     published_at: r.published_at,
-    featured_image_url: resolvePostImageUrl(r.media_url, pickFirstImageSrc(r.content_html), r.og_image),
+    featured_image_url: resolvePostImageUrl(
+      r.media_url,
+      r.content_html ? rewriteLegacyUrl(r.content_html) : null,
+      r.og_image,
+    ),
     author_name: r.author?.display_name ?? null,
     category_name: r.category?.name ?? null,
   };
