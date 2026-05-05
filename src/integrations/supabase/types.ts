@@ -800,6 +800,15 @@ export type Database = {
     }
     Functions: {
       claim_first_admin: { Args: never; Returns: Json }
+      get_article_full: { Args: { slug_param: string }; Returns: Json }
+      get_homepage_data: {
+        Args: {
+          p_crisis_slug?: string
+          p_economy_slug?: string
+          p_section_slugs?: string[]
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
