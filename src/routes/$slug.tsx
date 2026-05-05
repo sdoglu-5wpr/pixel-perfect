@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
 import { ChevronRight, ArrowRight } from "lucide-react";
-import { getArticleBySlug, type RelatedPost } from "@/server/articles.functions";
+import { getArticleBySlug, type RelatedPost, type ArticlePayload } from "@/server/articles.functions";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { NewsletterBanner } from "@/components/site/NewsletterBanner";
 
