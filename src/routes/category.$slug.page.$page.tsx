@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { getArchive } from "@/server/archives.functions";
 import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
+import { buildArchiveHead } from "@/server/seo.head";
 
 export const Route = createFileRoute("/category/$slug/page/$page")({
   loader: async ({ params }) => {
@@ -10,9 +11,19 @@ export const Route = createFileRoute("/category/$slug/page/$page")({
     if (!data) throw notFound();
     return data;
   },
-  head: ({ loaderData }) => ({
-    meta: [{ title: loaderData ? `${loaderData.header.title} — Page ${loaderData.page} · Everything-PR` : "Category" }],
-  }),
+  head: ({ loaderData, params }) => {
+    if (!loaderData) return { meta: [{ title: "Category · Everything-PR" }] };
+    const p = params as { slug: string; page: string };
+    return buildArchiveHead({
+      kind: "category",
+      termTitle: loaderData.header.title,
+      termDescription: loaderData.header.subtitle,
+      page: loaderData.page,
+      totalItems: loaderData.totalItems,
+      items: loaderData.items.map((i) => ({ title: i.title, slug: i.slug })),
+      pathPrefix: `/category/${p.slug}`,
+    });
+  },
   component: Page,
 });
 

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { getArchive } from "@/server/archives.functions";
 import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
+import { buildArchiveHead } from "@/server/seo.head";
 
 const searchSchema = z.object({
   s: z.string().optional().default(""),
@@ -14,9 +15,19 @@ export const Route = createFileRoute("/search")({
   loader: async ({ deps }) => {
     return await getArchive({ data: { kind: "search", q: deps.s, page: deps.page } });
   },
-  head: ({ loaderData }) => ({
-    meta: [{ title: loaderData ? `${loaderData.header.title} · Everything-PR` : "Search" }],
-  }),
+  head: ({ loaderData }) => {
+    if (!loaderData) return { meta: [{ title: "Search · Everything-PR" }] };
+    return buildArchiveHead({
+      kind: "search",
+      termTitle: loaderData.header.title,
+      termDescription: loaderData.header.subtitle,
+      page: loaderData.page,
+      totalItems: loaderData.totalItems,
+      items: loaderData.items.map((i) => ({ title: i.title, slug: i.slug })),
+      pathPrefix: "/search",
+      searchPhrase: loaderData.header.title,
+    });
+  },
   component: Page,
 });
 
