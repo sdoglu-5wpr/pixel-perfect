@@ -40,7 +40,7 @@ function AdminDashboard() {
         <h2 className="font-serif text-lg font-bold mb-2">Recently edited</h2>
         <ul className="divide-y rounded border bg-card text-sm">
           {recent.length === 0 && <li className="p-3 text-muted-foreground">No posts yet.</li>}
-          {recent.map(p => (
+          {recent.map((p: any) => (
             <li key={p.id} className="flex items-center justify-between p-3">
               <Link to="/$slug" params={{ slug: p.slug }} className="hover:underline truncate">
                 {p.title}
@@ -57,7 +57,7 @@ function AdminDashboard() {
         <h2 className="font-serif text-lg font-bold mb-2">Scheduled</h2>
         <ul className="divide-y rounded border bg-card text-sm">
           {scheduled.length === 0 && <li className="p-3 text-muted-foreground">No scheduled posts.</li>}
-          {scheduled.map(p => (
+          {scheduled.map((p: any) => (
             <li key={p.id} className="flex items-center justify-between p-3">
               <span className="truncate">{p.title}</span>
               <span className="text-xs text-muted-foreground ml-3 shrink-0">
