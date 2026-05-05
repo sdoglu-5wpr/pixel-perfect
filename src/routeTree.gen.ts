@@ -13,6 +13,12 @@ import { Route as Sitemap_indexDotxmlRouteImport } from './routes/sitemap_index[
 import { Route as SetupCoworkRouteImport } from './routes/setup-cowork'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.txt]'
+import { Route as Post_tagSitemapDotxmlRouteImport } from './routes/post_tag-sitemap[.]xml'
+import { Route as PostSitemappageDotxmlRouteImport } from './routes/post-sitemap$page[.]xml'
+import { Route as PageSitemapDotxmlRouteImport } from './routes/page-sitemap[.]xml'
+import { Route as FeedRouteImport } from './routes/feed'
+import { Route as CategorySitemapDotxmlRouteImport } from './routes/category-sitemap[.]xml'
+import { Route as AuthorSitemapDotxmlRouteImport } from './routes/author-sitemap[.]xml'
 import { Route as SlugRouteImport } from './routes/$slug'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TagSlugRouteImport } from './routes/tag.$slug'
@@ -44,6 +50,36 @@ const SearchRoute = SearchRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Post_tagSitemapDotxmlRoute = Post_tagSitemapDotxmlRouteImport.update({
+  id: '/post_tag-sitemap.xml',
+  path: '/post_tag-sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostSitemappageDotxmlRoute = PostSitemappageDotxmlRouteImport.update({
+  id: '/post-sitemap$page.xml',
+  path: '/post-sitemap$page.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PageSitemapDotxmlRoute = PageSitemapDotxmlRouteImport.update({
+  id: '/page-sitemap.xml',
+  path: '/page-sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeedRoute = FeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategorySitemapDotxmlRoute = CategorySitemapDotxmlRouteImport.update({
+  id: '/category-sitemap.xml',
+  path: '/category-sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthorSitemapDotxmlRoute = AuthorSitemapDotxmlRouteImport.update({
+  id: '/author-sitemap.xml',
+  path: '/author-sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SlugRoute = SlugRouteImport.update({
@@ -110,6 +146,12 @@ const AuthorSlugPagePageRoute = AuthorSlugPagePageRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
+  '/author-sitemap.xml': typeof AuthorSitemapDotxmlRoute
+  '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
+  '/feed': typeof FeedRoute
+  '/page-sitemap.xml': typeof PageSitemapDotxmlRoute
+  '/post-sitemap$page.xml': typeof PostSitemappageDotxmlRoute
+  '/post_tag-sitemap.xml': typeof Post_tagSitemapDotxmlRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
@@ -128,6 +170,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
+  '/author-sitemap.xml': typeof AuthorSitemapDotxmlRoute
+  '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
+  '/feed': typeof FeedRoute
+  '/page-sitemap.xml': typeof PageSitemapDotxmlRoute
+  '/post-sitemap$page.xml': typeof PostSitemappageDotxmlRoute
+  '/post_tag-sitemap.xml': typeof Post_tagSitemapDotxmlRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
@@ -146,6 +194,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
+  '/author-sitemap.xml': typeof AuthorSitemapDotxmlRoute
+  '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
+  '/feed': typeof FeedRoute
+  '/page-sitemap.xml': typeof PageSitemapDotxmlRoute
+  '/post-sitemap$page.xml': typeof PostSitemappageDotxmlRoute
+  '/post_tag-sitemap.xml': typeof Post_tagSitemapDotxmlRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
@@ -166,6 +220,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$slug'
+    | '/author-sitemap.xml'
+    | '/category-sitemap.xml'
+    | '/feed'
+    | '/page-sitemap.xml'
+    | '/post-sitemap$page.xml'
+    | '/post_tag-sitemap.xml'
     | '/robots.txt'
     | '/search'
     | '/setup-cowork'
@@ -184,6 +244,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$slug'
+    | '/author-sitemap.xml'
+    | '/category-sitemap.xml'
+    | '/feed'
+    | '/page-sitemap.xml'
+    | '/post-sitemap$page.xml'
+    | '/post_tag-sitemap.xml'
     | '/robots.txt'
     | '/search'
     | '/setup-cowork'
@@ -201,6 +267,12 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$slug'
+    | '/author-sitemap.xml'
+    | '/category-sitemap.xml'
+    | '/feed'
+    | '/page-sitemap.xml'
+    | '/post-sitemap$page.xml'
+    | '/post_tag-sitemap.xml'
     | '/robots.txt'
     | '/search'
     | '/setup-cowork'
@@ -220,6 +292,12 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SlugRoute: typeof SlugRoute
+  AuthorSitemapDotxmlRoute: typeof AuthorSitemapDotxmlRoute
+  CategorySitemapDotxmlRoute: typeof CategorySitemapDotxmlRoute
+  FeedRoute: typeof FeedRoute
+  PageSitemapDotxmlRoute: typeof PageSitemapDotxmlRoute
+  PostSitemappageDotxmlRoute: typeof PostSitemappageDotxmlRoute
+  Post_tagSitemapDotxmlRoute: typeof Post_tagSitemapDotxmlRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
   SetupCoworkRoute: typeof SetupCoworkRoute
@@ -260,6 +338,48 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post_tag-sitemap.xml': {
+      id: '/post_tag-sitemap.xml'
+      path: '/post_tag-sitemap.xml'
+      fullPath: '/post_tag-sitemap.xml'
+      preLoaderRoute: typeof Post_tagSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post-sitemap$page.xml': {
+      id: '/post-sitemap$page.xml'
+      path: '/post-sitemap$page.xml'
+      fullPath: '/post-sitemap$page.xml'
+      preLoaderRoute: typeof PostSitemappageDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/page-sitemap.xml': {
+      id: '/page-sitemap.xml'
+      path: '/page-sitemap.xml'
+      fullPath: '/page-sitemap.xml'
+      preLoaderRoute: typeof PageSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feed': {
+      id: '/feed'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof FeedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/category-sitemap.xml': {
+      id: '/category-sitemap.xml'
+      path: '/category-sitemap.xml'
+      fullPath: '/category-sitemap.xml'
+      preLoaderRoute: typeof CategorySitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/author-sitemap.xml': {
+      id: '/author-sitemap.xml'
+      path: '/author-sitemap.xml'
+      fullPath: '/author-sitemap.xml'
+      preLoaderRoute: typeof AuthorSitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$slug': {
@@ -399,6 +519,12 @@ const TagSlugRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SlugRoute: SlugRoute,
+  AuthorSitemapDotxmlRoute: AuthorSitemapDotxmlRoute,
+  CategorySitemapDotxmlRoute: CategorySitemapDotxmlRoute,
+  FeedRoute: FeedRoute,
+  PageSitemapDotxmlRoute: PageSitemapDotxmlRoute,
+  PostSitemappageDotxmlRoute: PostSitemappageDotxmlRoute,
+  Post_tagSitemapDotxmlRoute: Post_tagSitemapDotxmlRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
   SetupCoworkRoute: SetupCoworkRoute,
@@ -413,3 +539,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
