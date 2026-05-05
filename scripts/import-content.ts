@@ -502,7 +502,7 @@ async function importRedirects() {
   head("redirects");
   const j = readJson<{ data?: RedirectJson[] } | RedirectJson[]>(`${DATA_DIR}/redirects.json`);
   const list = (Array.isArray(j) ? j : j?.data) ?? [];
-  const rows = list.map(r => ({
+  const rowsRaw = list.map(r => ({
     source_path: r.source,
     target_path: r.target,
     status_code: r.code ?? 301,
@@ -511,6 +511,14 @@ async function importRedirects() {
     hits: r.hits ?? 0,
     notes: r.title || null,
   }));
+  // Prefer enabled=true on collision; else the row that came later (often
+  // the higher Redirection-plugin id).
+  const rows = dedupeBy(
+    "redirects:source_path",
+    rowsRaw,
+    r => r.source_path,
+    (prev, next) => (prev.enabled && !next.enabled ? prev : next),
+  );
   await upsert("redirects", rows, "source_path");
   log(`upserted ${rows.length}`);
 }
