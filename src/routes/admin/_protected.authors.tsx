@@ -158,6 +158,7 @@ function AuthorsPage() {
                     </div>
                   ))}
                 </div>
+              </div>
               <div>
                 <label className="block text-xs font-medium mb-1">Bio</label>
                 <textarea value={editing.bio ?? ""} onChange={(e) => setEditing({ ...editing, bio: e.target.value })}
