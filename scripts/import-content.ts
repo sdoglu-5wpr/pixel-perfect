@@ -237,21 +237,26 @@ async function importTaxonomies() {
   const cats = data?.category ?? [];
   const tags = data?.post_tag ?? [];
   // Insert categories twice: first pass (no parents), second pass (with parents) so FK resolves
-  const catRows = cats.map(c => ({
+  const catRowsRaw = cats.map(c => ({
     id: c.term_id, slug: c.slug, name: c.name,
     description: c.description || null, post_count: c.count ?? 0, parent_id: null as number | null,
   }));
+  const catById = dedupeBy("categories:id", catRowsRaw, r => r.id);
+  const catRows = dedupeBy("categories:slug", catById, r => r.slug);
   await upsert("categories", catRows, "id");
   const withParents = cats
     .filter(c => c.parent && c.parent !== 0)
     .map(c => ({ id: c.term_id, slug: c.slug, name: c.name, parent_id: c.parent }));
-  if (withParents.length) await upsert("categories", withParents, "id");
+  const withParentsDeduped = dedupeBy("categories(parents):id", withParents, r => r.id);
+  if (withParentsDeduped.length) await upsert("categories", withParentsDeduped, "id");
   log(`upserted ${catRows.length} categories`);
 
-  const tagRows = tags.map(t => ({
+  const tagRowsRaw = tags.map(t => ({
     id: t.term_id, slug: t.slug, name: t.name,
     description: t.description || null, post_count: t.count ?? 0,
   }));
+  const tagById = dedupeBy("tags:id", tagRowsRaw, r => r.id);
+  const tagRows = dedupeBy("tags:slug", tagById, r => r.slug);
   await upsert("tags", tagRows, "id");
   log(`upserted ${tagRows.length} tags`);
 }
