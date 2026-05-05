@@ -1,4 +1,5 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { getIndexingState } from "@/server/indexing.functions";
 
 import appCss from "../styles.css?url";
 
@@ -25,36 +26,34 @@ function NotFoundComponent() {
 }
 
 export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "everything-pr.com" },
-      { name: "description", content: "Pixel Perfect is a web application that replicates a given screenshot precisely." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "everything-pr.com" },
-      { property: "og:description", content: "Pixel Perfect is a web application that replicates a given screenshot precisely." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "everything-pr.com" },
-      { name: "twitter:description", content: "Pixel Perfect is a web application that replicates a given screenshot precisely." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/249cd3ba-4538-4139-b52a-ff443537d627/id-preview-0ec24879--26a01a69-d9fa-41da-8ffc-c4df18505710.lovable.app-1777958303586.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/249cd3ba-4538-4139-b52a-ff443537d627/id-preview-0ec24879--26a01a69-d9fa-41da-8ffc-c4df18505710.lovable.app-1777958303586.png" },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap",
-      },
-    ],
-  }),
+  // Run on every route so X-Robots-Tag is set globally and indexing flag
+  // is available to head().
+  loader: () => getIndexingState(),
+  head: ({ loaderData }) => {
+    const indexing = loaderData as { enabled: boolean } | undefined;
+    const robotsContent = indexing?.enabled === false ? "noindex, nofollow" : "index, follow";
+    return {
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { name: "robots", content: robotsContent },
+        { title: "everything-pr.com" },
+        { name: "description", content: "Everything-PR — news and analysis." },
+        { property: "og:title", content: "everything-pr.com" },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary" },
+      ],
+      links: [
+        { rel: "stylesheet", href: appCss },
+        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap",
+        },
+      ],
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
