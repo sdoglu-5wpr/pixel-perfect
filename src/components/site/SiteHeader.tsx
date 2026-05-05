@@ -88,9 +88,34 @@ function LeafLinkEl({ leaf, className }: { leaf: LeafLink; className?: string })
 
 export function SiteHeader() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
   return (
     <header className="bg-white text-foreground border-b border-black/10">
+      {/* Top blue utility bar */}
+      <div className="bg-[color:var(--ink)] text-white text-xs">
+        <div className="mx-auto max-w-7xl px-6 h-9 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-white/80">
+            <Clock className="h-3.5 w-3.5" />
+            <span>{today}</span>
+          </div>
+          <nav className="flex items-center gap-5 text-white/90 font-medium">
+            <Link to="/$slug" params={{ slug: "about" }} className="hover:text-white">
+              About Us
+            </Link>
+            <span aria-hidden className="text-white/30">/</span>
+            <Link to="/$slug" params={{ slug: "contact" }} className="hover:text-white">
+              Contact
+            </Link>
+          </nav>
+        </div>
+      </div>
+
       <div className="mx-auto max-w-7xl px-6 py-4 flex items-center gap-6">
         <Link to="/" aria-label="Everything PR News — Home" className="flex items-center shrink-0">
           <img
