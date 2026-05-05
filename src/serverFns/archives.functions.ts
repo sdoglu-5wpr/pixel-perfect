@@ -38,6 +38,7 @@ export type ArchiveHeader = {
     avatar_url: string | null;
     bio: string | null;
     website: string | null;
+    email: string | null;
     social: { twitter?: string | null; linkedin?: string | null; facebook?: string | null; instagram?: string | null } | null;
   };
 };
@@ -99,6 +100,7 @@ function buildHeader(input: ArchiveInput, term: any, total: number): ArchiveHead
         avatar_url: rewriteLegacyUrl(term?.avatar_url ?? "") || null,
         bio: term?.bio ?? null,
         website: term?.website ?? null,
+        email: term?.email ?? null,
         social: term?.social ?? null,
       },
     };
