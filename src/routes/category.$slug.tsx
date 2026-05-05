@@ -33,7 +33,7 @@ function CategoryArchive() {
     <ArchiveView
       data={data}
       eyebrow="Category"
-      buildHref={(p) => {
+      buildHref={(p): PageHref => {
         if (p === 1) return { to: "/category/$slug", params: { slug } };
         return { to: "/category/$slug/page/$page", params: { slug, page: String(p) } };
       }}
