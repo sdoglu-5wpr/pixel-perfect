@@ -293,7 +293,8 @@ function ArticlePage() {
               {categories.map(c => (
                 <Link
                   key={c.id}
-                  to="/"
+                  to="/$slug"
+                  params={{ slug: c.slug }}
                   className="text-xs font-medium px-2.5 py-1 rounded-full bg-surface-soft border hover:border-brand-blue hover:text-brand-blue transition-colors"
                 >
                   {c.name}
