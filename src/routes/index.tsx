@@ -8,7 +8,7 @@ import { getHomepage, type HomePost, type HomeAuthor, type HomePayload } from "@
 import { fetchHomepageViaRpc } from "@/lib/homepage.shared";
 import { supabase } from "@/integrations/supabase/client";
 import { buildHomepageHead } from "@/serverFns/seo.head";
-import { htmlToPlainText } from "@/lib/text";
+import { htmlToPlainText, decodeHtmlEntities } from "@/lib/text";
 
 const EMPTY_PAYLOAD: HomePayload = {
   ticker: [],
