@@ -506,6 +506,7 @@ async function importPostsFile(file: string, defaultType: "post" | "page" = "pos
   if (emptySlugCount > 0) {
     log(`[${file}] ${emptySlugCount} rows had empty slugs, replaced with draft-{id}`);
   }
+  log(`[${file}] ${dupesDropped} (type,slug) duplicates dropped within batches`);
   log(`upserted ${total} ${defaultType}s`);
 }
 
