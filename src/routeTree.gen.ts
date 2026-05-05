@@ -30,6 +30,8 @@ import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminProtectedRouteImport } from './routes/admin/_protected'
 import { Route as AdminProtectedIndexRouteImport } from './routes/admin/_protected.index'
 import { Route as AdminProtectedTagsRouteImport } from './routes/admin/_protected.tags'
+import { Route as AdminProtectedSettingsRouteImport } from './routes/admin/_protected.settings'
+import { Route as AdminProtectedSeoRouteImport } from './routes/admin/_protected.seo'
 import { Route as AdminProtectedRedirectsRouteImport } from './routes/admin/_protected.redirects'
 import { Route as AdminProtectedMenusRouteImport } from './routes/admin/_protected.menus'
 import { Route as AdminProtectedMediaRouteImport } from './routes/admin/_protected.media'
@@ -147,6 +149,16 @@ const AdminProtectedTagsRoute = AdminProtectedTagsRouteImport.update({
   path: '/tags',
   getParentRoute: () => AdminProtectedRoute,
 } as any)
+const AdminProtectedSettingsRoute = AdminProtectedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminProtectedRoute,
+} as any)
+const AdminProtectedSeoRoute = AdminProtectedSeoRouteImport.update({
+  id: '/seo',
+  path: '/seo',
+  getParentRoute: () => AdminProtectedRoute,
+} as any)
 const AdminProtectedRedirectsRoute = AdminProtectedRedirectsRouteImport.update({
   id: '/redirects',
   path: '/redirects',
@@ -231,6 +243,8 @@ export interface FileRoutesByFullPath {
   '/admin/media': typeof AdminProtectedMediaRoute
   '/admin/menus': typeof AdminProtectedMenusRoute
   '/admin/redirects': typeof AdminProtectedRedirectsRoute
+  '/admin/seo': typeof AdminProtectedSeoRoute
+  '/admin/settings': typeof AdminProtectedSettingsRoute
   '/admin/tags': typeof AdminProtectedTagsRoute
   '/admin/': typeof AdminProtectedIndexRoute
   '/admin/posts/$id': typeof AdminProtectedPostsIdRoute
@@ -264,6 +278,8 @@ export interface FileRoutesByTo {
   '/admin/media': typeof AdminProtectedMediaRoute
   '/admin/menus': typeof AdminProtectedMenusRoute
   '/admin/redirects': typeof AdminProtectedRedirectsRoute
+  '/admin/seo': typeof AdminProtectedSeoRoute
+  '/admin/settings': typeof AdminProtectedSettingsRoute
   '/admin/tags': typeof AdminProtectedTagsRoute
   '/admin': typeof AdminProtectedIndexRoute
   '/admin/posts/$id': typeof AdminProtectedPostsIdRoute
@@ -299,6 +315,8 @@ export interface FileRoutesById {
   '/admin/_protected/media': typeof AdminProtectedMediaRoute
   '/admin/_protected/menus': typeof AdminProtectedMenusRoute
   '/admin/_protected/redirects': typeof AdminProtectedRedirectsRoute
+  '/admin/_protected/seo': typeof AdminProtectedSeoRoute
+  '/admin/_protected/settings': typeof AdminProtectedSettingsRoute
   '/admin/_protected/tags': typeof AdminProtectedTagsRoute
   '/admin/_protected/': typeof AdminProtectedIndexRoute
   '/admin/_protected/posts/$id': typeof AdminProtectedPostsIdRoute
@@ -335,6 +353,8 @@ export interface FileRouteTypes {
     | '/admin/media'
     | '/admin/menus'
     | '/admin/redirects'
+    | '/admin/seo'
+    | '/admin/settings'
     | '/admin/tags'
     | '/admin/'
     | '/admin/posts/$id'
@@ -368,6 +388,8 @@ export interface FileRouteTypes {
     | '/admin/media'
     | '/admin/menus'
     | '/admin/redirects'
+    | '/admin/seo'
+    | '/admin/settings'
     | '/admin/tags'
     | '/admin'
     | '/admin/posts/$id'
@@ -402,6 +424,8 @@ export interface FileRouteTypes {
     | '/admin/_protected/media'
     | '/admin/_protected/menus'
     | '/admin/_protected/redirects'
+    | '/admin/_protected/seo'
+    | '/admin/_protected/settings'
     | '/admin/_protected/tags'
     | '/admin/_protected/'
     | '/admin/_protected/posts/$id'
@@ -582,6 +606,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProtectedTagsRouteImport
       parentRoute: typeof AdminProtectedRoute
     }
+    '/admin/_protected/settings': {
+      id: '/admin/_protected/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminProtectedSettingsRouteImport
+      parentRoute: typeof AdminProtectedRoute
+    }
+    '/admin/_protected/seo': {
+      id: '/admin/_protected/seo'
+      path: '/seo'
+      fullPath: '/admin/seo'
+      preLoaderRoute: typeof AdminProtectedSeoRouteImport
+      parentRoute: typeof AdminProtectedRoute
+    }
     '/admin/_protected/redirects': {
       id: '/admin/_protected/redirects'
       path: '/redirects'
@@ -669,6 +707,8 @@ interface AdminProtectedRouteChildren {
   AdminProtectedMediaRoute: typeof AdminProtectedMediaRoute
   AdminProtectedMenusRoute: typeof AdminProtectedMenusRoute
   AdminProtectedRedirectsRoute: typeof AdminProtectedRedirectsRoute
+  AdminProtectedSeoRoute: typeof AdminProtectedSeoRoute
+  AdminProtectedSettingsRoute: typeof AdminProtectedSettingsRoute
   AdminProtectedTagsRoute: typeof AdminProtectedTagsRoute
   AdminProtectedIndexRoute: typeof AdminProtectedIndexRoute
   AdminProtectedPostsIdRoute: typeof AdminProtectedPostsIdRoute
@@ -682,6 +722,8 @@ const AdminProtectedRouteChildren: AdminProtectedRouteChildren = {
   AdminProtectedMediaRoute: AdminProtectedMediaRoute,
   AdminProtectedMenusRoute: AdminProtectedMenusRoute,
   AdminProtectedRedirectsRoute: AdminProtectedRedirectsRoute,
+  AdminProtectedSeoRoute: AdminProtectedSeoRoute,
+  AdminProtectedSettingsRoute: AdminProtectedSettingsRoute,
   AdminProtectedTagsRoute: AdminProtectedTagsRoute,
   AdminProtectedIndexRoute: AdminProtectedIndexRoute,
   AdminProtectedPostsIdRoute: AdminProtectedPostsIdRoute,
@@ -751,3 +793,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
