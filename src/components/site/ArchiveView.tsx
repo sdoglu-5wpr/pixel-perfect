@@ -30,7 +30,7 @@ export function ArticleListItem({ post }: { post: ArchiveItem }) {
       <div className="col-span-12 sm:col-span-8 md:col-span-9 min-w-0">
         {post.category ? (
           <Link
-            to="/category/$slug"
+            to="/$slug"
             params={{ slug: post.category.slug }}
             className="text-[11px] font-bold uppercase tracking-[0.18em] text-ticker hover:text-brand-blue inline-flex items-center gap-1.5"
           >
