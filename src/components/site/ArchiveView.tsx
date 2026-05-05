@@ -75,7 +75,7 @@ export function ArticleListItem({ post }: { post: ArchiveItem }) {
   );
 }
 
-type PageHref = { to: string; params?: Record<string, string>; search?: Record<string, unknown> };
+export type PageHref = { to: string; params?: Record<string, string>; search?: Record<string, unknown> };
 
 type PaginationProps = {
   page: number;
