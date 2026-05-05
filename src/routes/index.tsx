@@ -56,7 +56,15 @@ function formatDate(iso: string | null | undefined) {
 }
 
 function HomePage() {
-  const data = Route.useLoaderData() as HomePayload;
+  const initial = Route.useLoaderData() as HomePayload;
+  const [data, setData] = useState<HomePayload>(initial);
+
+  useEffect(() => {
+    if (!initial.hero && initial.topStories.length === 0) {
+      fetchHomepageViaRpc(supabase).then(setData).catch(() => {});
+    }
+  }, [initial]);
+
   return (
     <SiteLayout tickerItems={data.ticker} footerMenu={data.footerMenu}>
       <div className="mx-auto max-w-7xl px-6 pt-10">
