@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, ShieldCheck, Linkedin, Twitter, Globe, Mail } from "lucide-react";
+import { ArrowRight, ShieldCheck, Linkedin, Twitter, Globe, Mail, Facebook, Instagram, BadgeCheck, Clock } from "lucide-react";
 import type { ArchivePayload, ArchiveItem } from "@/serverFns/archives.functions";
 import { SiteLayout } from "./SiteLayout";
 import { PostImage } from "./PostImage";
@@ -30,15 +30,34 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+function hostname(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    return new URL(url.startsWith("http") ? url : `https://${url}`).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
+function handleFromUrl(url: string, base: string): string {
+  try {
+    const u = new URL(url.startsWith("http") ? url : `https://${url}`);
+    const path = u.pathname.replace(/\/$/, "").split("/").filter(Boolean);
+    return path.length ? `${base}${path[path.length - 1]}` : hostname(url) || url;
+  } catch {
+    return url;
+  }
+}
+
 function ArticleCard({ post }: { post: ArchiveItem }) {
   return (
-    <article className="bg-white border border-black/5 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+    <article className="bg-white border border-black/5 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow flex flex-col group">
       <Link to="/$slug" params={{ slug: post.slug }} className="block">
         <PostImage
           src={post.featured_image_url}
           alt={post.title}
           className="aspect-[16/9] overflow-hidden bg-muted"
-          imgClassName="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+          imgClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
       </Link>
       <div className="p-5 flex flex-col flex-1">
@@ -51,8 +70,8 @@ function ArticleCard({ post }: { post: ArchiveItem }) {
             {post.category.name}
           </Link>
         ) : null}
-        <div className="text-xs text-muted-foreground mb-2">
-          {formatDate(post.published_at)}
+        <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
+          <Clock className="h-3 w-3" /> {formatDate(post.published_at)}
         </div>
         <h3 className="font-serif text-lg font-bold leading-snug">
           <Link
@@ -81,17 +100,56 @@ function ArticleCard({ post }: { post: ArchiveItem }) {
   );
 }
 
+function ProfileLink({
+  icon: Icon,
+  label,
+  sub,
+  href,
+}: {
+  icon: typeof Linkedin;
+  label: string;
+  sub: string;
+  href: string;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-3 p-3 rounded-lg border border-black/5 hover:border-[color:var(--brand-blue)]/40 hover:bg-[color:var(--brand-blue)]/5 transition-colors group"
+    >
+      <span className="bg-[color:var(--brand-blue)] text-white p-2 rounded-md flex-shrink-0">
+        <Icon className="h-4 w-4" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-semibold text-foreground">{label}</span>
+        <span className="block text-xs text-muted-foreground truncate">{sub}</span>
+      </span>
+      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-[color:var(--brand-blue)] flex-shrink-0" />
+    </a>
+  );
+}
+
 export function AuthorPage({ data }: { data: ArchivePayload }) {
   const { header, items, totalItems } = data;
   const author = header.author!;
   const display = header.title;
-  const bio = header.subtitle;
+  const bio = author.bio;
+  const social = author.social || {};
+  const website = author.website;
+
+  const profiles: { icon: typeof Linkedin; label: string; sub: string; href: string }[] = [];
+  if (social.linkedin) profiles.push({ icon: Linkedin, label: "LinkedIn", sub: handleFromUrl(social.linkedin, "/in/"), href: social.linkedin });
+  if (social.twitter) profiles.push({ icon: Twitter, label: "X (Twitter)", sub: handleFromUrl(social.twitter, "@"), href: social.twitter });
+  if (social.facebook) profiles.push({ icon: Facebook, label: "Facebook", sub: handleFromUrl(social.facebook, "/"), href: social.facebook });
+  if (social.instagram) profiles.push({ icon: Instagram, label: "Instagram", sub: handleFromUrl(social.instagram, "@"), href: social.instagram });
+  if (website) profiles.push({ icon: Globe, label: "Website", sub: hostname(website) || website, href: website });
 
   return (
     <SiteLayout>
       {/* Hero */}
       <section className="relative bg-gradient-to-br from-[color:var(--ink)] via-[color:var(--ink)] to-[oklch(0.32_0.18_270)] text-white">
-        <div className="mx-auto max-w-7xl px-6 pt-12 pb-10">
+        <div className="mx-auto max-w-7xl px-6 pt-12 pb-16">
           <nav className="text-xs text-white/60 mb-6 flex items-center gap-2">
             <Link to="/" className="hover:text-white">HOME</Link>
             <span>/</span>
@@ -99,12 +157,12 @@ export function AuthorPage({ data }: { data: ArchivePayload }) {
             <span>/</span>
             <span className="text-white uppercase tracking-wider">{display}</span>
           </nav>
-          <h1 className="font-serif text-4xl md:text-5xl font-bold tracking-tight mb-3">
+          <h1 className="font-serif text-5xl md:text-6xl font-bold tracking-tight mb-4">
             {display}
           </h1>
           {bio ? (
-            <p className="text-white/80 max-w-2xl text-base md:text-lg leading-relaxed line-clamp-3">
-              {bio}
+            <p className="text-white/80 max-w-3xl text-base md:text-lg leading-relaxed line-clamp-3">
+              {htmlToPlainText(bio)}
             </p>
           ) : null}
         </div>
@@ -113,43 +171,48 @@ export function AuthorPage({ data }: { data: ArchivePayload }) {
 
       {/* Profile card overlapping hero */}
       <section className="bg-surface-soft">
-        <div className="mx-auto max-w-7xl px-6 -mt-6 pb-10">
-          <div className="bg-white rounded-xl shadow-card border border-black/5 p-6 md:p-8 grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-6 md:gap-10 items-center">
+        <div className="mx-auto max-w-7xl px-6 -mt-10 pb-10">
+          <div className="bg-white rounded-2xl shadow-card border border-black/5 p-6 md:p-8 grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-6 md:gap-10 items-center">
             <div className="relative">
               {author.avatar_url ? (
                 <img
                   src={author.avatar_url}
                   alt={display}
-                  className="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover ring-4 ring-[color:var(--brand-blue)]/15"
+                  className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover ring-4 ring-[color:var(--brand-blue)]/15"
                 />
               ) : (
-                <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-[color:var(--brand-blue)] to-[color:var(--ink)] text-white flex items-center justify-center text-3xl font-bold ring-4 ring-[color:var(--brand-blue)]/15">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-[color:var(--brand-blue)] to-[color:var(--ink)] text-white flex items-center justify-center text-4xl font-bold ring-4 ring-[color:var(--brand-blue)]/15">
                   {initials(display)}
                 </div>
               )}
-              <div className="absolute -bottom-1 -right-1 bg-[color:var(--brand-blue)] text-white rounded-full p-1.5">
-                <ShieldCheck className="h-4 w-4" />
+              <div className="absolute -bottom-1 -right-1 bg-[color:var(--brand-blue)] text-white rounded-full p-1.5 ring-4 ring-white">
+                <BadgeCheck className="h-5 w-5" />
               </div>
             </div>
 
             <div className="min-w-0">
-              <h2 className="font-serif text-2xl md:text-3xl font-bold">{display}</h2>
-              <p className="text-sm text-muted-foreground mt-1">Contributor · Everything-PR</p>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold">{display}</h2>
+              <p className="text-sm text-muted-foreground mt-2">
+                Contributor · <span className="text-[color:var(--brand-blue)] font-semibold">Everything-PR</span>
+              </p>
               <div className="flex flex-wrap gap-2 mt-4">
-                <span className="text-[11px] font-semibold uppercase tracking-wider bg-[color:var(--brand-blue)] text-white px-2.5 py-1 rounded">
+                <span className="text-[11px] font-semibold uppercase tracking-wider bg-[color:var(--brand-blue)] text-white px-3 py-1.5 rounded">
                   Contributor
                 </span>
-                <span className="text-[11px] font-semibold uppercase tracking-wider bg-black/5 text-foreground px-2.5 py-1 rounded">
+                <span className="text-[11px] font-semibold uppercase tracking-wider bg-black/5 text-foreground px-3 py-1.5 rounded">
                   PR
                 </span>
-                <span className="text-[11px] font-semibold uppercase tracking-wider bg-black/5 text-foreground px-2.5 py-1 rounded">
+                <span className="text-[11px] font-semibold uppercase tracking-wider bg-black/5 text-foreground px-3 py-1.5 rounded">
                   Editorial
+                </span>
+                <span className="text-[11px] font-semibold uppercase tracking-wider bg-black/5 text-foreground px-3 py-1.5 rounded">
+                  Communications
                 </span>
               </div>
             </div>
 
             <div className="border-l border-black/10 pl-6 hidden md:block">
-              <div className="text-3xl font-bold text-[color:var(--brand-blue)]">{totalItems}+</div>
+              <div className="text-4xl font-bold text-[color:var(--brand-blue)]">{totalItems}+</div>
               <div className="text-xs uppercase tracking-wider text-muted-foreground mt-1">
                 Articles Published
               </div>
@@ -159,45 +222,56 @@ export function AuthorPage({ data }: { data: ArchivePayload }) {
       </section>
 
       {/* Bio + sidebar */}
-      {bio ? (
-        <section className="mx-auto max-w-7xl px-6 grid grid-cols-1 lg:grid-cols-3 gap-8 pb-12">
-          <div className="lg:col-span-2">
+      <section className="mx-auto max-w-7xl px-6 grid grid-cols-1 lg:grid-cols-3 gap-8 pb-12">
+        <div className="lg:col-span-2">
+          {bio ? (
+            <div className="border-l-4 border-[color:var(--brand-blue)] pl-5">
+              <h3 className="font-serif text-2xl font-bold mb-4">About {display.split(" ")[0]}</h3>
+              <div
+                className="prose-article text-foreground"
+                dangerouslySetInnerHTML={{ __html: bio }}
+              />
+            </div>
+          ) : (
             <div className="border-l-4 border-[color:var(--brand-blue)] pl-5">
               <h3 className="font-serif text-2xl font-bold mb-3">About {display.split(" ")[0]}</h3>
-              <div className="prose-article text-foreground">
-                <p>{bio}</p>
-              </div>
+              <p className="text-muted-foreground">
+                {display} is a contributing writer at Everything-PR, covering the latest in
+                public relations, marketing, and communications across industries.
+              </p>
             </div>
+          )}
+        </div>
+        <aside className="lg:col-span-1">
+          <div className="bg-white rounded-xl border border-black/5 shadow-card p-6">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] border-b border-black/10 pb-3 mb-4">
+              <BadgeCheck className="h-4 w-4 text-[color:var(--brand-blue)]" />
+              <span>Verified Profiles</span>
+            </div>
+            {profiles.length > 0 ? (
+              <div className="space-y-2">
+                {profiles.map((p) => (
+                  <ProfileLink key={p.label} {...p} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground py-2">No public profiles linked.</p>
+            )}
+            <a
+              href="mailto:info@everything-pr.com"
+              className="flex items-center gap-3 p-3 mt-2 rounded-lg border border-black/5 hover:border-[color:var(--brand-blue)]/40 hover:bg-[color:var(--brand-blue)]/5 transition-colors"
+            >
+              <span className="bg-[color:var(--ink)] text-white p-2 rounded-md flex-shrink-0">
+                <Mail className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-foreground">Email</span>
+                <span className="block text-xs text-muted-foreground truncate">info@everything-pr.com</span>
+              </span>
+            </a>
           </div>
-          <aside className="lg:col-span-1">
-            <div className="bg-[color:var(--ink)] text-white rounded-lg p-6">
-              <div className="text-xs font-bold uppercase tracking-[0.18em] border-b border-white/15 pb-3 mb-4">
-                Connect
-              </div>
-              <ul className="space-y-3 text-sm">
-                <li className="flex items-center gap-3">
-                  <span className="bg-white/10 p-2 rounded"><Linkedin className="h-4 w-4" /></span>
-                  <span className="text-white/80">LinkedIn profile</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <span className="bg-white/10 p-2 rounded"><Twitter className="h-4 w-4" /></span>
-                  <span className="text-white/80">X / Twitter</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <span className="bg-white/10 p-2 rounded"><Globe className="h-4 w-4" /></span>
-                  <span className="text-white/80">Website</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <span className="bg-white/10 p-2 rounded"><Mail className="h-4 w-4" /></span>
-                  <a href="mailto:info@everything-pr.com" className="text-white/80 hover:text-white">
-                    info@everything-pr.com
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </aside>
-        </section>
-      ) : null}
+        </aside>
+      </section>
 
       {/* Latest articles */}
       <section className="bg-surface-soft py-12">
