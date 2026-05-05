@@ -40,10 +40,17 @@ export const Route = createFileRoute("/$slug")({
   loader: async ({ params }) => {
     if (!params.slug || params.slug.includes(".")) throw notFound();
 
-    // RLS on `posts` already filters status='publish' for anon, so a missing
-    // row means either unpublished or genuinely absent.
+    // Try article first
     const data = await loadArticle(params.slug);
-    if (data) return data;
+    if (data) return { kind: "article" as const, data };
+
+    // Fall back to category archive (legacy permalinks like /social-media)
+    const archive = typeof window !== "undefined"
+      ? await fetchArchiveViaRpc(supabase, { kind: "category", slug: params.slug, page: 1 })
+      : await getArchive({ data: { kind: "category", slug: params.slug, page: 1 } });
+    if (archive && archive.items.length > 0) {
+      return { kind: "archive" as const, data: archive, slug: params.slug };
+    }
 
     const r = typeof window !== "undefined"
       ? await lookupRedirectInBrowser(`/${params.slug}`)
@@ -54,8 +61,8 @@ export const Route = createFileRoute("/$slug")({
     throw notFound();
   },
   head: ({ loaderData }) => {
-    if (!loaderData) return { meta: [{ title: "Not found · Everything-PR" }] };
-    const { article } = loaderData;
+    if (!loaderData || loaderData.kind !== "article") return { meta: [{ title: "Everything-PR" }] };
+    const { article } = loaderData.data;
     const title = article.seo?.title || `${article.title} · Everything-PR`;
     const description =
       article.seo?.description ||
