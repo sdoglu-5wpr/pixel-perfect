@@ -32,7 +32,10 @@ async function fetchYoastOg(postId: number): Promise<{ url: string | null; reaso
 
 export const backfillMissingImages = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
-    z.object({ limit: z.number().int().min(1).max(200).default(50) }).parse(input),
+    z.object({
+      limit: z.number().int().min(1).max(500).default(100),
+      offset: z.number().int().min(0).default(0),
+    }).parse(input),
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
@@ -47,7 +50,7 @@ export const backfillMissingImages = createServerFn({ method: "POST" })
       .eq("type", "post")
       .is("featured_media_id", null)
       .order("published_at", { ascending: false, nullsFirst: false })
-      .limit(data.limit);
+      .range(data.offset, data.offset + data.limit - 1);
     if (error) throw new Error(error.message);
 
     const targets = (candidates ?? []).filter(
