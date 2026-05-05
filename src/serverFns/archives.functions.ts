@@ -37,6 +37,8 @@ export type ArchiveHeader = {
     slug: string;
     avatar_url: string | null;
     bio: string | null;
+    website: string | null;
+    social: { twitter?: string | null; linkedin?: string | null; facebook?: string | null; instagram?: string | null } | null;
   };
 };
 
