@@ -224,6 +224,8 @@ function BackfillImagesCard() {
   const [result, setResult] = useState<null | {
     scanned: number; updated: number; skipped: number;
     examples: Array<{ id: number; slug: string; og_image: string | null }>;
+    errors?: Array<{ id: number; slug: string; error: string }>;
+    skipReasons?: Record<string, number>;
   }>(null);
 
   const run = async () => {
