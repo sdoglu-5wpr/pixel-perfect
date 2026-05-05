@@ -117,9 +117,17 @@ function formatDate(iso: string | null | undefined, opts: Intl.DateTimeFormatOpt
   return new Date(iso).toLocaleDateString("en-US", opts);
 }
 
+function readingTime(html: string | null | undefined): number {
+  if (!html) return 1;
+  const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const words = text ? text.split(" ").length : 0;
+  return Math.max(1, Math.round(words / 220));
+}
+
 function ArticlePage() {
   const { article, topStories, otherNews } = Route.useLoaderData() as ArticlePayload;
   const primaryCategory = article.categories[0];
+  const minutes = readingTime(article.content_html);
 
   return (
     <SiteLayout>
@@ -139,39 +147,51 @@ function ArticlePage() {
       </nav>
 
       <div className="mx-auto max-w-7xl px-6 pt-10 pb-4">
-        <h1 className="font-serif text-4xl md:text-5xl font-bold leading-[1.1] max-w-4xl">
+        {primaryCategory ? (
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-ticker hover:text-brand-blue mb-4"
+          >
+            <span className="inline-block w-2 h-2 bg-ticker" aria-hidden />
+            {primaryCategory.name}
+          </Link>
+        ) : null}
+        <h1 className="font-serif text-4xl md:text-5xl font-bold leading-[1.05] tracking-tight max-w-4xl">
           {article.title}
         </h1>
-        <div className="mt-5 flex items-center gap-3 text-sm text-muted-foreground">
+        {article.excerpt ? (
+          <p className="mt-5 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl">
+            {article.excerpt}
+          </p>
+        ) : null}
+        <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
           {article.author?.avatar_url ? (
             <img
               src={article.author.avatar_url}
               alt={article.author.display_name}
-              className="w-8 h-8 rounded-full object-cover"
+              className="w-9 h-9 rounded-full object-cover"
             />
           ) : (
-            <span className="w-8 h-8 rounded-full bg-muted inline-flex items-center justify-center text-xs font-semibold text-foreground">
+            <span className="w-9 h-9 rounded-full bg-muted inline-flex items-center justify-center text-xs font-semibold text-foreground">
               {(article.author?.display_name ?? "EP").slice(0, 2).toUpperCase()}
             </span>
           )}
-          <span className="font-medium text-foreground">
-            {article.author?.display_name ?? "Editorial Team"}
+          <span className="font-semibold text-foreground">
+            By {article.author?.display_name ?? "Editorial Team"}
           </span>
-          {primaryCategory ? (
-            <>
-              <span aria-hidden>•</span>
-              <span>{primaryCategory.name}</span>
-            </>
-          ) : null}
-          <span aria-hidden>•</span>
+          <span aria-hidden>·</span>
           <time dateTime={article.published_at ?? undefined}>
             {formatDate(article.published_at)}
           </time>
+          <span aria-hidden>·</span>
+          <span className="inline-flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5" />
+            {minutes} min read
+          </span>
         </div>
       </div>
 
-      {/* Hero + sidebar */}
-      <div className="mx-auto max-w-7xl px-6 grid grid-cols-1 lg:grid-cols-3 gap-10">
+      <div className="mx-auto max-w-7xl px-6 grid grid-cols-1 lg:grid-cols-3 gap-10 mt-2">
         <div className="lg:col-span-2">
           {article.featured_image?.url ? (
             <figure className="mt-2">
@@ -181,37 +201,67 @@ function ArticlePage() {
                 className="w-full h-auto rounded-lg object-cover"
                 loading="eager"
               />
+              {article.featured_image.alt ? (
+                <figcaption className="mt-2 text-sm text-muted-foreground">
+                  {article.featured_image.alt}
+                </figcaption>
+              ) : null}
             </figure>
           ) : null}
 
-          {article.excerpt ? (
-            <p className="mt-6 text-lg text-foreground/90 leading-relaxed">
-              {article.excerpt}
-            </p>
-          ) : null}
+          <ShareBar title={article.title} slug={article.slug} />
 
           <article
             className="prose-article mt-6"
-            // content comes from trusted import pipeline; rendered as-is to preserve WP markup
             dangerouslySetInnerHTML={{ __html: article.content_html }}
           />
+
+          {article.categories.length > 1 ? (
+            <div className="mt-8 flex flex-wrap items-center gap-2">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground mr-2">Tags</span>
+              {article.categories.map(c => (
+                <Link
+                  key={c.id}
+                  to="/"
+                  className="text-xs font-medium px-2.5 py-1 rounded-full bg-surface-soft border hover:border-brand-blue hover:text-brand-blue transition-colors"
+                >
+                  {c.name}
+                </Link>
+              ))}
+            </div>
+          ) : null}
+
+          {article.author ? <AuthorCard author={article.author} /> : null}
         </div>
 
         <aside className="lg:col-span-1">
-          <div className="sticky top-6">
-            <SidebarHeader title="Top Stories" />
-            <ul className="mt-4 space-y-4">
-              {topStories.map(s => (
-                <li key={s.id}>
-                  <SidebarItem post={s} />
-                </li>
-              ))}
-            </ul>
+          <div className="sticky top-6 space-y-8">
+            <div>
+              <SidebarHeader title="Top Stories" />
+              <ul className="mt-4 space-y-4">
+                {topStories.map(s => (
+                  <li key={s.id}>
+                    <SidebarItem post={s} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-lg border bg-surface-soft p-5">
+              <h3 className="font-serif text-lg font-bold mb-2">Get the PR Brief</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                The week's biggest stories in PR, comms and media — straight to your inbox.
+              </p>
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-brand-blue hover:underline"
+              >
+                Subscribe <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </aside>
       </div>
 
-      {/* Other news */}
       {otherNews.length ? (
         <section className="mx-auto max-w-7xl px-6 mt-16">
           <div className="flex items-center justify-between mb-6">
@@ -235,6 +285,45 @@ function ArticlePage() {
         <NewsletterBanner />
       </div>
     </SiteLayout>
+  );
+}
+
+function ShareBar({ title, slug }: { title: string; slug: string }) {
+  const url = `https://everything-pr.com/${slug}`;
+  const enc = encodeURIComponent;
+  return (
+    <div className="mt-6 flex items-center gap-3 border-y py-3 text-sm">
+      <span className="inline-flex items-center gap-1.5 text-muted-foreground font-medium">
+        <Share2 className="w-4 h-4" /> Share
+      </span>
+      <div className="flex items-center gap-1">
+        <a aria-label="Share on X" href={`https://twitter.com/intent/tweet?text=${enc(title)}&url=${enc(url)}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 inline-flex items-center justify-center rounded-full hover:bg-surface-soft text-muted-foreground hover:text-foreground"><Twitter className="w-4 h-4" /></a>
+        <a aria-label="Share on LinkedIn" href={`https://www.linkedin.com/sharing/share-offsite/?url=${enc(url)}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 inline-flex items-center justify-center rounded-full hover:bg-surface-soft text-muted-foreground hover:text-foreground"><Linkedin className="w-4 h-4" /></a>
+        <a aria-label="Share on Facebook" href={`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 inline-flex items-center justify-center rounded-full hover:bg-surface-soft text-muted-foreground hover:text-foreground"><Facebook className="w-4 h-4" /></a>
+        <a aria-label="Copy link" href={url} className="w-8 h-8 inline-flex items-center justify-center rounded-full hover:bg-surface-soft text-muted-foreground hover:text-foreground"><LinkIcon className="w-4 h-4" /></a>
+      </div>
+    </div>
+  );
+}
+
+function AuthorCard({ author }: { author: ArticleAuthor }) {
+  return (
+    <div className="mt-12 rounded-xl border bg-surface-soft p-6 flex gap-5">
+      {author.avatar_url ? (
+        <img src={author.avatar_url} alt={author.display_name} className="w-16 h-16 rounded-full object-cover shrink-0" />
+      ) : (
+        <span className="w-16 h-16 rounded-full bg-muted inline-flex items-center justify-center font-semibold text-foreground shrink-0">
+          {author.display_name.slice(0, 2).toUpperCase()}
+        </span>
+      )}
+      <div className="min-w-0">
+        <div className="text-xs uppercase tracking-wider text-muted-foreground">Written by</div>
+        <div className="font-serif text-xl font-bold mt-0.5">{author.display_name}</div>
+        {author.bio ? (
+          <p className="mt-2 text-sm text-muted-foreground leading-relaxed line-clamp-4">{author.bio}</p>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
