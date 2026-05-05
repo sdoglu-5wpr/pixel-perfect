@@ -37,6 +37,16 @@ function ImportPage() {
   const [busy, setBusy] = useState(false);
   const tickingRef = useRef(false);
 
+  // Load latest job on mount so we can resume after a page reload
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await getLatestImportJob();
+        if (r.ok && r.job) setJob(r.job as unknown as Job);
+      } catch (e) { console.error("load latest job failed", e); }
+    })();
+  }, []);
+
   // Auto-tick loop when running
   useEffect(() => {
     if (!job || tickingRef.current) return;
