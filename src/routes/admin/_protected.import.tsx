@@ -50,7 +50,7 @@ function ImportPage() {
             break;
           }
           if (res.job) {
-            setJob(res.job as Job);
+            setJob(res.job as unknown as Job);
             if (res.job.status === "completed") { toast.success("Import complete"); break; }
             if (res.job.status === "failed" || res.job.status === "cancelled") break;
           }
@@ -72,7 +72,7 @@ function ImportPage() {
       const res = await startImportJob({ data: { downloadMedia, perPage } });
       if (!res.ok) { toast.error(res.error); return; }
       const j = await getImportJob({ data: { jobId: res.jobId } });
-      if (j.ok) setJob(j.job as Job);
+      if (j.ok) setJob(j.job as unknown as Job);
     } finally { setBusy(false); }
   };
 
@@ -80,7 +80,7 @@ function ImportPage() {
     if (!job) return;
     await cancelImportJob({ data: { jobId: job.id } });
     const j = await getImportJob({ data: { jobId: job.id } });
-    if (j.ok) setJob(j.job as Job);
+    if (j.ok) setJob(j.job as unknown as Job);
   };
 
   return (

@@ -54,7 +54,7 @@ const decodeEntities = (s: string) =>
 async function requireStaff(supabase: any, userId: string) {
   const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
   const roles = (data ?? []).map((r: any) => r.role as string);
-  if (!roles.some((r) => ["admin", "editor"].includes(r))) {
+  if (!roles.some((r: string) => ["admin", "editor"].includes(r))) {
     throw new Error("forbidden: requires admin/editor");
   }
 }
