@@ -8,6 +8,7 @@ import { getHomepage, type HomePost, type HomeAuthor, type HomePayload } from "@
 import { fetchHomepageViaRpc } from "@/lib/homepage.shared";
 import { supabase } from "@/integrations/supabase/client";
 import { buildHomepageHead } from "@/serverFns/seo.head";
+import { htmlToPlainText, decodeHtmlEntities } from "@/lib/text";
 
 const EMPTY_PAYLOAD: HomePayload = {
   ticker: [],
@@ -114,7 +115,7 @@ function Hero({ hero, topStories }: { hero: HomePost | null; topStories: HomePos
         <Link to="/$slug" params={{ slug: hero.slug }} className="block group">
           <PostImage
             src={hero.featured_image_url}
-            alt={hero.title}
+            alt={decodeHtmlEntities(hero.title)}
             className="aspect-[16/9] w-full overflow-hidden rounded-lg bg-muted"
             imgClassName="h-full w-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
             loading="eager"
@@ -125,10 +126,10 @@ function Hero({ hero, topStories }: { hero: HomePost | null; topStories: HomePos
             </span>
           ) : null}
           <h1 className="mt-3 font-serif font-extrabold text-3xl md:text-4xl leading-[1.1] group-hover:text-brand-red transition-colors">
-            {hero.title}
+            {decodeHtmlEntities(hero.title)}
           </h1>
           {hero.excerpt ? (
-            <p className="mt-3 text-base text-muted-foreground line-clamp-3">{hero.excerpt}</p>
+            <p className="mt-3 text-base text-muted-foreground line-clamp-3">{htmlToPlainText(hero.excerpt)}</p>
           ) : null}
           <ByLine post={hero} className="mt-4" />
         </Link>
@@ -162,7 +163,7 @@ function TopStoryItem({ post }: { post: HomePost }) {
           </p>
         ) : null}
         <h3 className="mt-1 font-serif font-bold text-sm leading-snug group-hover:text-brand-red transition-colors line-clamp-3">
-          {post.title}
+          {decodeHtmlEntities(post.title)}
         </h3>
         <p className="mt-1 text-[11px] text-muted-foreground">
           {formatDate(post.published_at)}
@@ -170,7 +171,7 @@ function TopStoryItem({ post }: { post: HomePost }) {
       </div>
       <PostImage
         src={post.featured_image_url}
-        alt={post.title}
+        alt={decodeHtmlEntities(post.title)}
         className="w-24 h-24 shrink-0 overflow-hidden rounded bg-muted"
       />
     </Link>
@@ -286,7 +287,7 @@ function ArticleCard({ post, invert = false }: { post: HomePost; invert?: boolea
       <Link to="/$slug" params={{ slug: post.slug }} className="block">
         <PostImage
           src={post.featured_image_url}
-          alt={post.title}
+          alt={decodeHtmlEntities(post.title)}
           className="aspect-[16/10] w-full overflow-hidden rounded-md bg-muted"
           imgClassName="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
         />
@@ -310,7 +311,7 @@ function ArticleCard({ post, invert = false }: { post: HomePost; invert?: boolea
           params={{ slug: post.slug }}
           className="hover:text-brand-red"
         >
-          {post.title}
+          {decodeHtmlEntities(post.title)}
         </Link>
       </h3>
       <p
@@ -380,7 +381,7 @@ function DarkFeatureSection({
               >
                 <PostImage
                   src={p.featured_image_url}
-                  alt={p.title}
+                  alt={decodeHtmlEntities(p.title)}
                   className="w-32 h-24 shrink-0 overflow-hidden rounded bg-muted"
                 />
                 <div className="flex-1 min-w-0">
@@ -390,7 +391,7 @@ function DarkFeatureSection({
                     </p>
                   ) : null}
                   <h3 className="mt-1 font-serif font-bold text-base text-white leading-snug line-clamp-3 group-hover:text-brand-red transition-colors">
-                    {p.title}
+                    {decodeHtmlEntities(p.title)}
                   </h3>
                   <p className="mt-1 text-[11px] text-white/60">
                     {formatDate(p.published_at)}
@@ -461,7 +462,7 @@ function EconomyFeature({ post }: { post: HomePost }) {
       <article className="rounded-2xl bg-surface-soft border overflow-hidden grid grid-cols-1 md:grid-cols-2">
         <PostImage
           src={post.featured_image_url}
-          alt={post.title}
+          alt={decodeHtmlEntities(post.title)}
           className="aspect-[4/3] md:aspect-auto bg-muted"
         />
         <div className="p-8 md:p-12 flex flex-col justify-center">
@@ -471,11 +472,11 @@ function EconomyFeature({ post }: { post: HomePost }) {
             </p>
           ) : null}
           <h3 className="mt-2 font-serif font-extrabold text-2xl md:text-3xl leading-[1.15]">
-            {post.title}
+            {decodeHtmlEntities(post.title)}
           </h3>
           {post.excerpt ? (
             <p className="mt-3 text-sm text-muted-foreground line-clamp-4">
-              {post.excerpt}
+              {htmlToPlainText(post.excerpt)}
             </p>
           ) : null}
           <Link
