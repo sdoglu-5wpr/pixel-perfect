@@ -532,6 +532,7 @@ export type Database = {
           created_at: string
           excerpt: string | null
           featured_media_id: number | null
+          first_inline_image: string | null
           id: number
           menu_order: number
           modified_at: string | null
@@ -553,6 +554,7 @@ export type Database = {
           created_at?: string
           excerpt?: string | null
           featured_media_id?: number | null
+          first_inline_image?: string | null
           id: number
           menu_order?: number
           modified_at?: string | null
@@ -574,6 +576,7 @@ export type Database = {
           created_at?: string
           excerpt?: string | null
           featured_media_id?: number | null
+          first_inline_image?: string | null
           id?: number
           menu_order?: number
           modified_at?: string | null
