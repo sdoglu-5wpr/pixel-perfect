@@ -476,7 +476,7 @@ function EconomyFeature({ post }: { post: HomePost }) {
           </h3>
           {post.excerpt ? (
             <p className="mt-3 text-sm text-muted-foreground line-clamp-4">
-              {post.excerpt}
+              {htmlToPlainText(post.excerpt)}
             </p>
           ) : null}
           <Link
