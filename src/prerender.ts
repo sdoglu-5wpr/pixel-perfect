@@ -276,16 +276,24 @@ export async function collectUrls(): Promise<CollectResult> {
     },
   };
 
-  // write debug manifest + redirect map next to client output
+  // write debug manifest + redirect map
+  // - dist/* for build inspection
+  // - src/generated/redirects.json so the Worker can import it (bundled)
   try {
-    const outDir = path.resolve(process.cwd(), "dist");
-    mkdirSync(outDir, { recursive: true });
+    const distDir = path.resolve(process.cwd(), "dist");
+    mkdirSync(distDir, { recursive: true });
     writeFileSync(
-      path.join(outDir, "prerender-manifest.json"),
+      path.join(distDir, "prerender-manifest.json"),
       JSON.stringify(result.manifest, null, 2),
     );
     writeFileSync(
-      path.join(outDir, "_redirects.json"),
+      path.join(distDir, "_redirects.json"),
+      JSON.stringify(result.redirects),
+    );
+    const genDir = path.resolve(process.cwd(), "src/generated");
+    mkdirSync(genDir, { recursive: true });
+    writeFileSync(
+      path.join(genDir, "redirects.json"),
       JSON.stringify(result.redirects),
     );
   } catch (e) {
