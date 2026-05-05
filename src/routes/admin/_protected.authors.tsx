@@ -143,6 +143,21 @@ function AuthorsPage() {
                   placeholder="https://…" className="w-full rounded border px-3 py-1.5 text-sm" />
                 {editing.avatar_url && <img src={editing.avatar_url} alt="" className="mt-2 h-16 w-16 rounded-full object-cover border" />}
               </div>
+              <div className="border-t pt-3">
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Social profiles (optional — only shown on the author page when filled in)</div>
+                <div className="grid grid-cols-2 gap-3">
+                  {(["linkedin", "twitter", "facebook", "instagram"] as const).map((k) => (
+                    <div key={k}>
+                      <label className="block text-xs font-medium mb-1 capitalize">{k}</label>
+                      <input
+                        value={(editing.social as Social | undefined)?.[k] ?? ""}
+                        onChange={(e) => setEditing({ ...editing, social: { ...(editing.social ?? {}), [k]: e.target.value } })}
+                        placeholder="https://"
+                        className="w-full rounded border px-3 py-1.5 text-sm"
+                      />
+                    </div>
+                  ))}
+                </div>
               <div>
                 <label className="block text-xs font-medium mb-1">Bio</label>
                 <textarea value={editing.bio ?? ""} onChange={(e) => setEditing({ ...editing, bio: e.target.value })}
