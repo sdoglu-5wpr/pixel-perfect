@@ -11,12 +11,19 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as Sitemap_indexDotxmlRouteImport } from './routes/sitemap_index[.xml]'
 import { Route as SetupCoworkRouteImport } from './routes/setup-cowork'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.txt]'
 import { Route as SlugRouteImport } from './routes/$slug'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TagSlugRouteImport } from './routes/tag.$slug'
+import { Route as CategorySlugRouteImport } from './routes/category.$slug'
+import { Route as AuthorSlugRouteImport } from './routes/author.$slug'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminProtectedRouteImport } from './routes/admin/_protected'
 import { Route as AdminProtectedIndexRouteImport } from './routes/admin/_protected.index'
+import { Route as TagSlugPagePageRouteImport } from './routes/tag.$slug.page.$page'
+import { Route as CategorySlugPagePageRouteImport } from './routes/category.$slug.page.$page'
+import { Route as AuthorSlugPagePageRouteImport } from './routes/author.$slug.page.$page'
 
 const Sitemap_indexDotxmlRoute = Sitemap_indexDotxmlRouteImport.update({
   id: '/sitemap_index.xml',
@@ -26,6 +33,11 @@ const Sitemap_indexDotxmlRoute = Sitemap_indexDotxmlRouteImport.update({
 const SetupCoworkRoute = SetupCoworkRouteImport.update({
   id: '/setup-cowork',
   path: '/setup-cowork',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
@@ -43,6 +55,21 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TagSlugRoute = TagSlugRouteImport.update({
+  id: '/tag/$slug',
+  path: '/tag/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategorySlugRoute = CategorySlugRouteImport.update({
+  id: '/category/$slug',
+  path: '/category/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthorSlugRoute = AuthorSlugRouteImport.update({
+  id: '/author/$slug',
+  path: '/author/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
@@ -58,36 +85,72 @@ const AdminProtectedIndexRoute = AdminProtectedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminProtectedRoute,
 } as any)
+const TagSlugPagePageRoute = TagSlugPagePageRouteImport.update({
+  id: '/page/$page',
+  path: '/page/$page',
+  getParentRoute: () => TagSlugRoute,
+} as any)
+const CategorySlugPagePageRoute = CategorySlugPagePageRouteImport.update({
+  id: '/page/$page',
+  path: '/page/$page',
+  getParentRoute: () => CategorySlugRoute,
+} as any)
+const AuthorSlugPagePageRoute = AuthorSlugPagePageRouteImport.update({
+  id: '/page/$page',
+  path: '/page/$page',
+  getParentRoute: () => AuthorSlugRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/admin': typeof AdminProtectedRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/author/$slug': typeof AuthorSlugRouteWithChildren
+  '/category/$slug': typeof CategorySlugRouteWithChildren
+  '/tag/$slug': typeof TagSlugRouteWithChildren
   '/admin/': typeof AdminProtectedIndexRoute
+  '/author/$slug/page/$page': typeof AuthorSlugPagePageRoute
+  '/category/$slug/page/$page': typeof CategorySlugPagePageRoute
+  '/tag/$slug/page/$page': typeof TagSlugPagePageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/admin/login': typeof AdminLoginRoute
+  '/author/$slug': typeof AuthorSlugRouteWithChildren
+  '/category/$slug': typeof CategorySlugRouteWithChildren
+  '/tag/$slug': typeof TagSlugRouteWithChildren
   '/admin': typeof AdminProtectedIndexRoute
+  '/author/$slug/page/$page': typeof AuthorSlugPagePageRoute
+  '/category/$slug/page/$page': typeof CategorySlugPagePageRoute
+  '/tag/$slug/page/$page': typeof TagSlugPagePageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/admin/_protected': typeof AdminProtectedRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/author/$slug': typeof AuthorSlugRouteWithChildren
+  '/category/$slug': typeof CategorySlugRouteWithChildren
+  '/tag/$slug': typeof TagSlugRouteWithChildren
   '/admin/_protected/': typeof AdminProtectedIndexRoute
+  '/author/$slug/page/$page': typeof AuthorSlugPagePageRoute
+  '/category/$slug/page/$page': typeof CategorySlugPagePageRoute
+  '/tag/$slug/page/$page': typeof TagSlugPagePageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -95,40 +158,65 @@ export interface FileRouteTypes {
     | '/'
     | '/$slug'
     | '/robots.txt'
+    | '/search'
     | '/setup-cowork'
     | '/sitemap_index.xml'
     | '/admin'
     | '/admin/login'
+    | '/author/$slug'
+    | '/category/$slug'
+    | '/tag/$slug'
     | '/admin/'
+    | '/author/$slug/page/$page'
+    | '/category/$slug/page/$page'
+    | '/tag/$slug/page/$page'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/$slug'
     | '/robots.txt'
+    | '/search'
     | '/setup-cowork'
     | '/sitemap_index.xml'
     | '/admin/login'
+    | '/author/$slug'
+    | '/category/$slug'
+    | '/tag/$slug'
     | '/admin'
+    | '/author/$slug/page/$page'
+    | '/category/$slug/page/$page'
+    | '/tag/$slug/page/$page'
   id:
     | '__root__'
     | '/'
     | '/$slug'
     | '/robots.txt'
+    | '/search'
     | '/setup-cowork'
     | '/sitemap_index.xml'
     | '/admin/_protected'
     | '/admin/login'
+    | '/author/$slug'
+    | '/category/$slug'
+    | '/tag/$slug'
     | '/admin/_protected/'
+    | '/author/$slug/page/$page'
+    | '/category/$slug/page/$page'
+    | '/tag/$slug/page/$page'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SlugRoute: typeof SlugRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SearchRoute: typeof SearchRoute
   SetupCoworkRoute: typeof SetupCoworkRoute
   Sitemap_indexDotxmlRoute: typeof Sitemap_indexDotxmlRoute
   AdminProtectedRoute: typeof AdminProtectedRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
+  AuthorSlugRoute: typeof AuthorSlugRouteWithChildren
+  CategorySlugRoute: typeof CategorySlugRouteWithChildren
+  TagSlugRoute: typeof TagSlugRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -145,6 +233,13 @@ declare module '@tanstack/react-router' {
       path: '/setup-cowork'
       fullPath: '/setup-cowork'
       preLoaderRoute: typeof SetupCoworkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/robots.txt': {
@@ -168,6 +263,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tag/$slug': {
+      id: '/tag/$slug'
+      path: '/tag/$slug'
+      fullPath: '/tag/$slug'
+      preLoaderRoute: typeof TagSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/category/$slug': {
+      id: '/category/$slug'
+      path: '/category/$slug'
+      fullPath: '/category/$slug'
+      preLoaderRoute: typeof CategorySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/author/$slug': {
+      id: '/author/$slug'
+      path: '/author/$slug'
+      fullPath: '/author/$slug'
+      preLoaderRoute: typeof AuthorSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/login': {
       id: '/admin/login'
       path: '/admin/login'
@@ -189,6 +305,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProtectedIndexRouteImport
       parentRoute: typeof AdminProtectedRoute
     }
+    '/tag/$slug/page/$page': {
+      id: '/tag/$slug/page/$page'
+      path: '/page/$page'
+      fullPath: '/tag/$slug/page/$page'
+      preLoaderRoute: typeof TagSlugPagePageRouteImport
+      parentRoute: typeof TagSlugRoute
+    }
+    '/category/$slug/page/$page': {
+      id: '/category/$slug/page/$page'
+      path: '/page/$page'
+      fullPath: '/category/$slug/page/$page'
+      preLoaderRoute: typeof CategorySlugPagePageRouteImport
+      parentRoute: typeof CategorySlugRoute
+    }
+    '/author/$slug/page/$page': {
+      id: '/author/$slug/page/$page'
+      path: '/page/$page'
+      fullPath: '/author/$slug/page/$page'
+      preLoaderRoute: typeof AuthorSlugPagePageRouteImport
+      parentRoute: typeof AuthorSlugRoute
+    }
   }
 }
 
@@ -204,15 +341,64 @@ const AdminProtectedRouteWithChildren = AdminProtectedRoute._addFileChildren(
   AdminProtectedRouteChildren,
 )
 
+interface AuthorSlugRouteChildren {
+  AuthorSlugPagePageRoute: typeof AuthorSlugPagePageRoute
+}
+
+const AuthorSlugRouteChildren: AuthorSlugRouteChildren = {
+  AuthorSlugPagePageRoute: AuthorSlugPagePageRoute,
+}
+
+const AuthorSlugRouteWithChildren = AuthorSlugRoute._addFileChildren(
+  AuthorSlugRouteChildren,
+)
+
+interface CategorySlugRouteChildren {
+  CategorySlugPagePageRoute: typeof CategorySlugPagePageRoute
+}
+
+const CategorySlugRouteChildren: CategorySlugRouteChildren = {
+  CategorySlugPagePageRoute: CategorySlugPagePageRoute,
+}
+
+const CategorySlugRouteWithChildren = CategorySlugRoute._addFileChildren(
+  CategorySlugRouteChildren,
+)
+
+interface TagSlugRouteChildren {
+  TagSlugPagePageRoute: typeof TagSlugPagePageRoute
+}
+
+const TagSlugRouteChildren: TagSlugRouteChildren = {
+  TagSlugPagePageRoute: TagSlugPagePageRoute,
+}
+
+const TagSlugRouteWithChildren =
+  TagSlugRoute._addFileChildren(TagSlugRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SlugRoute: SlugRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
+  SearchRoute: SearchRoute,
   SetupCoworkRoute: SetupCoworkRoute,
   Sitemap_indexDotxmlRoute: Sitemap_indexDotxmlRoute,
   AdminProtectedRoute: AdminProtectedRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
+  AuthorSlugRoute: AuthorSlugRouteWithChildren,
+  CategorySlugRoute: CategorySlugRouteWithChildren,
+  TagSlugRoute: TagSlugRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
