@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/wp-content/uploads/:path*",
+      "destination": "https://sareld.wpengine.com/wp-content/uploads/:path*"
+    }
+  ]
+}
