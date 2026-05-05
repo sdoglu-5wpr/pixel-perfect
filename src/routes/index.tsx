@@ -3,25 +3,11 @@ import { ArrowRight, ChevronRight } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { NewsletterBanner } from "@/components/site/NewsletterBanner";
 import { getHomepage, type HomePost, type HomeAuthor, type HomePayload } from "@/server/homepage.functions";
+import { buildHomepageHead } from "@/server/seo.head";
 
 export const Route = createFileRoute("/")({
   loader: () => getHomepage(),
-  head: () => ({
-    meta: [
-      { title: "Everything-PR — Public Relations News & Analysis" },
-      {
-        name: "description",
-        content:
-          "Daily reporting on the public relations industry — agencies, campaigns, crisis, brands, and the people behind the work.",
-      },
-      { property: "og:title", content: "Everything-PR" },
-      {
-        property: "og:description",
-        content: "PR news, insights, crisis communications and more.",
-      },
-      { property: "og:type", content: "website" },
-    ],
-  }),
+  head: () => buildHomepageHead({}),
   component: HomePage,
 });
 
