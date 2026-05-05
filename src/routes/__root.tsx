@@ -78,6 +78,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  useEffect(() => {
+    installServerFnAuth();
+  }, []);
   return (
     <>
       <Outlet />
