@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { NewsletterBanner } from "@/components/site/NewsletterBanner";
-import { getHomepage, type HomePost, type HomeAuthor } from "@/server/homepage.functions";
+import { getHomepage, type HomePost, type HomeAuthor, type HomePayload } from "@/server/homepage.functions";
 
 export const Route = createFileRoute("/")({
   loader: () => getHomepage(),
@@ -35,7 +35,7 @@ function formatDate(iso: string | null | undefined) {
 }
 
 function HomePage() {
-  const data = Route.useLoaderData();
+  const data = Route.useLoaderData() as HomePayload;
   return (
     <SiteLayout tickerItems={data.ticker} footerMenu={data.footerMenu}>
       <div className="mx-auto max-w-7xl px-6 pt-10">
