@@ -7,15 +7,17 @@ type Props = {
   children: React.ReactNode;
   tickerItems?: { slug: string; title: string }[];
   footerMenu?: FooterMenuItem[];
+  afterNewsletter?: React.ReactNode;
 };
 
-export function SiteLayout({ children, tickerItems, footerMenu }: Props) {
+export function SiteLayout({ children, tickerItems, footerMenu, afterNewsletter }: Props) {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SiteHeader />
       <TopTicker items={tickerItems} />
       <main className="flex-1">{children}</main>
       <InlineNewsletter />
+      {afterNewsletter}
       <SiteFooter menu={footerMenu} />
     </div>
   );
