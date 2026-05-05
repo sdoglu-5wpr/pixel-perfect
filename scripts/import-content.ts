@@ -574,6 +574,13 @@ async function count(table: string, modify?: (q: ReturnType<typeof sb.from> exte
   log(`author_id nulled         (${orphanAuthors.size} distinct): ${fmt(orphanAuthors)}`);
   log(`parent_id nulled         (${orphanParents.size} distinct): ${fmt(orphanParents)}`);
 
+  head("bad-date summary");
+  if (badDateCounts.size === 0) {
+    log("(no bad dates coerced)");
+  } else {
+    for (const [phase, n] of badDateCounts) log(`[${phase}] ${n} rows had bad dates coerced to NULL`);
+  }
+
   await verifyCounts();
   console.log("\n✓ Import complete.");
   process.exit(0);
