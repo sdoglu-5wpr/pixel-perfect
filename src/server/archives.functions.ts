@@ -70,7 +70,7 @@ function rowToItem(r: any): ArchiveItem {
     published_at: r.published_at,
     featured_image_url: resolvePostImageUrl(
       r.media_url,
-      pickFirstImageSrc(r.content_html),
+      r.content_html ? rewriteLegacyUrl(r.content_html) : null,
       r.og_image,
     ),
     author: a ? { id: a.id, display_name: a.display_name, slug: a.slug } : null,
