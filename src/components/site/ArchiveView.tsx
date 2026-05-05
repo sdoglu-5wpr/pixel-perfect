@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import type { ArchiveItem, ArchivePayload } from "@/serverFns/archives.functions";
 import { SiteLayout } from "./SiteLayout";
 import { PostImage } from "./PostImage";
+import { htmlToPlainText, decodeHtmlEntities } from "@/lib/text";
 
 function formatDate(iso: string | null | undefined) {
   if (!iso) return "";
