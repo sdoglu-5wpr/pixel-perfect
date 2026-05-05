@@ -12,11 +12,12 @@ export type IndexingState = {
 export async function resolveIndexingState(): Promise<IndexingState> {
   let state: IndexingState = { enabled: true, reason: null, source: "default" };
 
-  const env = process.env.EPR_INDEXING_ENABLED?.trim().toLowerCase();
+  const rawEnv = process.env.INDEXING_ENABLED ?? process.env.EPR_INDEXING_ENABLED;
+  const env = rawEnv?.trim().toLowerCase();
   if (env !== undefined && env !== "") {
     state = {
       enabled: env === "true" || env === "1",
-      reason: "EPR_INDEXING_ENABLED env var",
+      reason: "INDEXING_ENABLED env var",
       source: "env",
     };
   } else {
