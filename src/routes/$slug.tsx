@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound, redirect, useRouter } from "@tanstack/react-router";
-import { ChevronRight, ArrowRight } from "lucide-react";
-import { getArticleBySlug, type RelatedPost, type ArticlePayload } from "@/server/articles.functions";
+import { ChevronRight, ArrowRight, Clock, Share2, Twitter, Linkedin, Facebook, Link as LinkIcon } from "lucide-react";
+import { getArticleBySlug, type RelatedPost, type ArticlePayload, type ArticleAuthor } from "@/server/articles.functions";
 import { lookupRedirect } from "@/server/redirects.functions";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { NewsletterBanner } from "@/components/site/NewsletterBanner";
