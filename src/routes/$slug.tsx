@@ -11,6 +11,7 @@ import { NewsletterBanner } from "@/components/site/NewsletterBanner";
 import { PostImage } from "@/components/site/PostImage";
 import { ContactPage } from "@/components/site/ContactPage";
 import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
+import { htmlToPlainText } from "@/lib/text";
 
 async function loadArticle(slug: string): Promise<ArticlePayload | null> {
   // In the browser (e.g. Netlify static hosting where TanStack server functions
@@ -66,7 +67,7 @@ export const Route = createFileRoute("/$slug")({
     const title = article.seo?.title || `${article.title} · Everything-PR`;
     const description =
       article.seo?.description ||
-      article.excerpt ||
+      htmlToPlainText(article.excerpt) ||
       `${article.title} — read the full story on Everything-PR.`;
     const ogImage = article.seo?.og_image || article.featured_image?.url || undefined;
     const canonical = article.seo?.canonical_url || undefined;
@@ -232,7 +233,7 @@ function ArticlePage() {
         </h1>
         {article.excerpt ? (
           <p className="mt-5 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl">
-            {article.excerpt}
+            {htmlToPlainText(article.excerpt)}
           </p>
         ) : null}
         <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
@@ -462,7 +463,7 @@ function OtherCard({ post }: { post: RelatedPost }) {
         {post.title}
       </h3>
       {post.excerpt ? (
-        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
+        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{htmlToPlainText(post.excerpt)}</p>
       ) : null}
     </Link>
   );
