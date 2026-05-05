@@ -19,6 +19,18 @@
  */
 
 @theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", "Georgia", ui-serif, serif;
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-ticker: var(--ticker);
+  --color-ticker-foreground: var(--ticker-foreground);
+  --color-brand-red: var(--brand-red);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-blue-glow: var(--brand-blue-glow);
+  --color-surface-soft: var(--surface-soft);
+  --gradient-newsletter: var(--gradient-newsletter);
+  --shadow-card: var(--shadow-card);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -64,7 +76,17 @@
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.145 0.02 264);
+  --ink: oklch(0.18 0.07 268);          /* deep navy used in header/footer */
+  --ink-foreground: oklch(0.99 0 0);
+  --ticker: oklch(0.62 0.21 27);        /* red ticker bar */
+  --ticker-foreground: oklch(0.99 0 0);
+  --brand-red: oklch(0.6 0.22 28);
+  --brand-blue: oklch(0.55 0.18 255);
+  --brand-blue-glow: oklch(0.7 0.15 250);
+  --surface-soft: oklch(0.985 0.005 250);
+  --gradient-newsletter: linear-gradient(135deg, oklch(0.55 0.2 255) 0%, oklch(0.42 0.22 265) 60%, oklch(0.32 0.18 270) 100%);
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 4%), 0 8px 24px -12px oklch(0.18 0.07 268 / 12%);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
@@ -140,5 +162,49 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
   }
 }
+
+/* Ticker marquee */
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-track {
+  animation: ticker-scroll 60s linear infinite;
+}
+
+/* Article prose */
+.prose-article {
+  color: var(--color-foreground);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+.prose-article h1 { font-size: 2.25rem; font-weight: 700; margin: 1.75rem 0 1rem; }
+.prose-article h2 { font-size: 1.5rem;  font-weight: 700; margin: 1.75rem 0 .75rem; }
+.prose-article h3 { font-size: 1.25rem; font-weight: 700; margin: 1.5rem 0 .5rem; }
+.prose-article p  { margin: 0 0 1rem; }
+.prose-article a  { color: var(--color-brand-blue); text-decoration: underline; text-underline-offset: 2px; }
+.prose-article a:hover { color: var(--color-brand-red); }
+.prose-article ul, .prose-article ol { margin: 0 0 1rem 1.25rem; }
+.prose-article li { margin-bottom: .25rem; }
+.prose-article ul { list-style: disc; }
+.prose-article ol { list-style: decimal; }
+.prose-article blockquote {
+  border-left: 4px solid var(--color-brand-red);
+  padding: .25rem 0 .25rem 1rem;
+  margin: 1.25rem 0;
+  font-style: italic;
+  color: var(--color-muted-foreground);
+}
+.prose-article img { max-width: 100%; height: auto; border-radius: .5rem; margin: 1.25rem 0; }
+.prose-article figure { margin: 1.25rem 0; }
+.prose-article figcaption { font-size: .875rem; color: var(--color-muted-foreground); margin-top: .5rem; }
+

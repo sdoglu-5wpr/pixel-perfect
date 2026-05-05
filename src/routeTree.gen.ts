@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SetupCoworkRouteImport } from './routes/setup-cowork'
+import { Route as SlugRouteImport } from './routes/$slug'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SetupCoworkRoute = SetupCoworkRouteImport.update({
   id: '/setup-cowork',
   path: '/setup-cowork',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SlugRoute = SlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,27 +31,31 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$slug': typeof SlugRoute
   '/setup-cowork': typeof SetupCoworkRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$slug': typeof SlugRoute
   '/setup-cowork': typeof SetupCoworkRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$slug': typeof SlugRoute
   '/setup-cowork': typeof SetupCoworkRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/setup-cowork'
+  fullPaths: '/' | '/$slug' | '/setup-cowork'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/setup-cowork'
-  id: '__root__' | '/' | '/setup-cowork'
+  to: '/' | '/$slug' | '/setup-cowork'
+  id: '__root__' | '/' | '/$slug' | '/setup-cowork'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SlugRoute: typeof SlugRoute
   SetupCoworkRoute: typeof SetupCoworkRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/setup-cowork'
       fullPath: '/setup-cowork'
       preLoaderRoute: typeof SetupCoworkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$slug': {
+      id: '/$slug'
+      path: '/$slug'
+      fullPath: '/$slug'
+      preLoaderRoute: typeof SlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SlugRoute: SlugRoute,
   SetupCoworkRoute: SetupCoworkRoute,
 }
 export const routeTree = rootRouteImport
