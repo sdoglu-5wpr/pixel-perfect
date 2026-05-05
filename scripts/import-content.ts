@@ -206,6 +206,7 @@ async function importAttachments() {
       alt_text: null,
       uploaded_at: toIso(a.date_published),
     });
+    validMediaIds.add(a.id);
     if (buf.length >= BATCH) { await upsert("media", buf, "id"); total += buf.length; buf = []; }
   }
   if (buf.length) { await upsert("media", buf, "id"); total += buf.length; }
