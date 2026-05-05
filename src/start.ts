@@ -1,5 +1,5 @@
 import { createMiddleware, createStart } from "@tanstack/react-start";
-import redirectsData from "./generated/redirects.json" with { type: "json" };
+import redirectsData from "./generated/redirects.json";
 
 const NOINDEX_HEADER = "noindex, nofollow, noarchive, nosnippet, noimageindex";
 const UPLOADS_PREFIX = "/wp-content/uploads/";
