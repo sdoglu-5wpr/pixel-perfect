@@ -1,7 +1,6 @@
 import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
 
-export export { NOINDEX_HEADER } from "./indexing.constants";
-import { NOINDEX_HEADER } from "./indexing.constants";
+export { NOINDEX_HEADER } from "./indexing.constants";
 
 export type IndexingState = {
   enabled: boolean;
