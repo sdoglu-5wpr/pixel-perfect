@@ -9,6 +9,13 @@ let installed = false;
 export function installServerFnAuth() {
   if (installed || typeof window === "undefined") return;
   installed = true;
+}
+
+// Install immediately on module load in the browser, so the fetch
+// interceptor is in place before any component effect can fire a
+// /_serverFn/ request.
+if (typeof window !== "undefined" && !installed) {
+  installed = true;
 
   const originalFetch = window.fetch.bind(window);
 
