@@ -9,6 +9,7 @@ import {
   getLatestImportJob,
   resumeImportJob,
 } from "@/serverFns/wp-import.functions";
+import { backfillMissingImages } from "@/serverFns/backfill-images.functions";
 
 export const Route = createFileRoute("/admin/_protected/import")({
   component: ImportPage,
