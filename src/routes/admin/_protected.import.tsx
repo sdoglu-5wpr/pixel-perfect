@@ -220,7 +220,8 @@ function ImportPage() {
 
 function BackfillImagesCard() {
   const [busy, setBusy] = useState(false);
-  const [limit, setLimit] = useState(50);
+  const [limit, setLimit] = useState(100);
+  const [progress, setProgress] = useState<{ batches: number; scanned: number; updated: number; skipped: number } | null>(null);
   const [result, setResult] = useState<null | {
     scanned: number; updated: number; skipped: number;
     examples: Array<{ id: number; slug: string; og_image: string | null }>;
@@ -228,15 +229,62 @@ function BackfillImagesCard() {
     skipReasons?: Record<string, number>;
   }>(null);
 
-  const run = async () => {
+  const runOnce = async () => {
     setBusy(true);
     try {
-      const r = await backfillMissingImages({ data: { limit } });
+      const r = await backfillMissingImages({ data: { limit, offset: 0 } });
       setResult(r);
       toast.success(`Backfilled ${r.updated} of ${r.scanned} posts`);
     } catch (e: any) {
       toast.error(e?.message ?? "Backfill failed");
     } finally { setBusy(false); }
+  };
+
+  const runAll = async () => {
+    setBusy(true);
+    setResult(null);
+    let offset = 0;
+    let batches = 0;
+    let totalScanned = 0;
+    let totalUpdated = 0;
+    let totalSkipped = 0;
+    const examples: Array<{ id: number; slug: string; og_image: string | null }> = [];
+    const errors: Array<{ id: number; slug: string; error: string }> = [];
+    const skipReasons: Record<string, number> = {};
+    try {
+      // Loop pages until we get a fully empty page (no scanned candidates).
+      // We advance offset by `limit` each iteration regardless of updates,
+      // since updated rows now have og_image and would fall out of "no image" pool.
+      while (true) {
+        const r = await backfillMissingImages({ data: { limit, offset } });
+        batches++;
+        totalScanned += r.scanned;
+        totalUpdated += r.updated;
+        totalSkipped += r.skipped;
+        for (const ex of r.examples) if (examples.length < 10) examples.push(ex);
+        for (const er of r.errors ?? []) if (errors.length < 10) errors.push(er);
+        for (const [k, v] of Object.entries(r.skipReasons ?? {})) skipReasons[k] = (skipReasons[k] ?? 0) + (v as number);
+        setProgress({ batches, scanned: totalScanned, updated: totalUpdated, skipped: totalSkipped });
+
+        // If nothing was updated this batch, advance offset (these rows will stay in the pool).
+        // If updates happened, keep offset at 0 so the next page picks up new "no image" rows.
+        if (r.updated > 0) {
+          offset = 0;
+        } else {
+          offset += limit;
+        }
+        // Termination: page returned no candidates at all.
+        if (r.scanned === 0) break;
+        // Safety cap to avoid runaway loops.
+        if (batches >= 200) break;
+      }
+      setResult({ scanned: totalScanned, updated: totalUpdated, skipped: totalSkipped, examples, errors, skipReasons });
+      toast.success(`Done: ${totalUpdated} updated across ${batches} batches`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Backfill failed");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -245,27 +293,41 @@ function BackfillImagesCard() {
         <h2 className="font-semibold">Backfill missing featured images</h2>
         <p className="text-sm text-muted-foreground">
           For posts with no image, fetches the og:image from the legacy WordPress site
-          and stores it in seo_meta.og_image. Run repeatedly until 0 updated.
+          and stores it in seo_meta.og_image. "Run all" loops batches until done.
         </p>
       </div>
       <label className="flex items-center gap-2 text-sm">
         Batch size:
         <input
-          type="number" min={1} max={200} value={limit}
-          onChange={(e) => setLimit(Number(e.target.value) || 50)}
-          className="w-20 rounded border px-2 py-1"
+          type="number" min={1} max={500} value={limit}
+          onChange={(e) => setLimit(Number(e.target.value) || 100)}
+          className="w-24 rounded border px-2 py-1"
         />
       </label>
-      <button
-        onClick={run}
-        disabled={busy}
-        className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
-      >
-        {busy ? "Running…" : "Run backfill"}
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={runOnce}
+          disabled={busy}
+          className="rounded border px-4 py-2 text-sm disabled:opacity-50"
+        >
+          {busy ? "Running…" : "Run one batch"}
+        </button>
+        <button
+          onClick={runAll}
+          disabled={busy}
+          className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
+        >
+          {busy ? "Running…" : "Run all (loop until done)"}
+        </button>
+      </div>
+      {busy && progress && (
+        <div className="text-xs text-muted-foreground">
+          Batch {progress.batches} · Scanned: {progress.scanned} · Updated: {progress.updated} · Skipped: {progress.skipped}
+        </div>
+      )}
       {result && (
         <div className="text-sm space-y-1">
-          <div>Scanned: {result.scanned} · Updated: <span className="text-emerald-600">{result.updated}</span> · Skipped: {result.skipped}</div>
+          <div>Total scanned: {result.scanned} · Updated: <span className="text-emerald-600">{result.updated}</span> · Skipped: {result.skipped}</div>
           {result.skipReasons && Object.keys(result.skipReasons).length > 0 && (
             <div className="text-xs text-muted-foreground">
               Skip reasons: {Object.entries(result.skipReasons).map(([k, v]) => `${k}=${v}`).join(", ")}
