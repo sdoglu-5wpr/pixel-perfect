@@ -42,8 +42,9 @@ export type AdminPost = {
   type: string;
   published_at: string | null;
   modified_at: string | null;
-  author: { id: number; display_name: string } | null;
+  author: { id: number; display_name: string; slug?: string } | null;
   category: { id: number; name: string; slug: string } | null;
+  thumbnail_url: string | null;
   comment_count: number;
 };
 
