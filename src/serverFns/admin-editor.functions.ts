@@ -34,7 +34,7 @@ function htmlToText(html: string): string {
 export const getAdminPost = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ id: z.number().int().nullable() }).parse(input))
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<any> => {
     const { supabase, userId } = context;
     await ensureStaff(supabase, userId);
 
@@ -244,7 +244,7 @@ export const saveAdminPost = createServerFn({ method: "POST" })
         .limit(1)
         .maybeSingle();
       const nextSeoId = ((maxSeo?.id as number | undefined) ?? 0) + 1;
-      await supabase.from("seo_meta").insert({ id: nextSeoId, ...seoRow });
+      await supabase.from("seo_meta").insert({ id: nextSeoId, ...seoRow } as any);
     }
 
     return { ok: true, id: postId, slug };
