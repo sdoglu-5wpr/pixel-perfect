@@ -20,7 +20,7 @@
 
 @theme inline {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Playfair Display", "Georgia", ui-serif, serif;
+  --font-serif: "Bricolage Grotesque", "Inter", ui-sans-serif, system-ui, sans-serif;
   --color-ink: var(--ink);
   --color-ink-foreground: var(--ink-foreground);
   --color-ticker: var(--ticker);
