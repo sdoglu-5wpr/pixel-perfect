@@ -20,7 +20,7 @@ const search = z.object({
   dir: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
-export const Route = createFileRoute("/admin/_protected/posts")({
+export const Route = createFileRoute("/admin/_protected/posts/")({
   validateSearch: (s) => search.parse(s),
   component: PostsListPage,
 });

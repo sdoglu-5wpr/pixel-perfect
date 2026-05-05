@@ -1,0 +1,2 @@
+CREATE INDEX IF NOT EXISTS idx_posts_modified_at ON public.posts USING btree (modified_at DESC NULLS LAST);
+CREATE INDEX IF NOT EXISTS idx_posts_type_status_modified ON public.posts USING btree (type, status, modified_at DESC NULLS LAST);
