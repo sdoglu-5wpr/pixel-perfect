@@ -218,8 +218,8 @@ export function AuthorPage({ data }: { data: ArchivePayload }) {
       </section>
 
       {/* Bio + sidebar */}
-      <section className="mx-auto max-w-7xl px-6 grid grid-cols-1 lg:grid-cols-3 gap-8 pb-12">
-        <div className="lg:col-span-2">
+      <section className={`mx-auto max-w-7xl px-6 grid grid-cols-1 ${hasSidebar ? "lg:grid-cols-3" : ""} gap-8 pb-12`}>
+        <div className={hasSidebar ? "lg:col-span-2" : ""}>
           {bio ? (
             <div className="border-l-4 border-[color:var(--brand-blue)] pl-5">
               <h3 className="font-serif text-2xl font-bold mb-4">About {display.split(" ")[0]}</h3>
@@ -238,35 +238,37 @@ export function AuthorPage({ data }: { data: ArchivePayload }) {
             </div>
           )}
         </div>
-        <aside className="lg:col-span-1">
-          <div className="bg-white rounded-xl border border-black/5 shadow-card p-6">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] border-b border-black/10 pb-3 mb-4">
-              <BadgeCheck className="h-4 w-4 text-[color:var(--brand-blue)]" />
-              <span>Verified Profiles</span>
-            </div>
-            {profiles.length > 0 ? (
-              <div className="space-y-2">
-                {profiles.map((p) => (
-                  <ProfileLink key={p.label} {...p} />
-                ))}
+        {hasSidebar ? (
+          <aside className="lg:col-span-1">
+            <div className="bg-white rounded-xl border border-black/5 shadow-card p-6">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] border-b border-black/10 pb-3 mb-4">
+                <BadgeCheck className="h-4 w-4 text-[color:var(--brand-blue)]" />
+                <span>Verified Profiles</span>
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground py-2">No public profiles linked.</p>
-            )}
-            <a
-              href="mailto:info@everything-pr.com"
-              className="flex items-center gap-3 p-3 mt-2 rounded-lg border border-black/5 hover:border-[color:var(--brand-blue)]/40 hover:bg-[color:var(--brand-blue)]/5 transition-colors"
-            >
-              <span className="bg-[color:var(--ink)] text-white p-2 rounded-md flex-shrink-0">
-                <Mail className="h-4 w-4" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-foreground">Email</span>
-                <span className="block text-xs text-muted-foreground truncate">info@everything-pr.com</span>
-              </span>
-            </a>
-          </div>
-        </aside>
+              {profiles.length > 0 ? (
+                <div className="space-y-2">
+                  {profiles.map((p) => (
+                    <ProfileLink key={p.label} {...p} />
+                  ))}
+                </div>
+              ) : null}
+              {email ? (
+                <a
+                  href={`mailto:${email}`}
+                  className="flex items-center gap-3 p-3 mt-2 rounded-lg border border-black/5 hover:border-[color:var(--brand-blue)]/40 hover:bg-[color:var(--brand-blue)]/5 transition-colors"
+                >
+                  <span className="bg-[color:var(--ink)] text-white p-2 rounded-md flex-shrink-0">
+                    <Mail className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold text-foreground">Email</span>
+                    <span className="block text-xs text-muted-foreground truncate">{email}</span>
+                  </span>
+                </a>
+              ) : null}
+            </div>
+          </aside>
+        ) : null}
       </section>
 
       {/* Latest articles */}
