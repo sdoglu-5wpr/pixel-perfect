@@ -459,6 +459,9 @@ async function importPostsFile(file: string, defaultType: "post" | "page" = "pos
     if (postsBuf.length >= BATCH) await flush();
   }
   await flush();
+  if (emptySlugCount > 0) {
+    log(`[${file}] ${emptySlugCount} rows had empty slugs, replaced with draft-{id}`);
+  }
   log(`upserted ${total} ${defaultType}s`);
 }
 
