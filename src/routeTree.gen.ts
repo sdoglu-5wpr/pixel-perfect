@@ -13,6 +13,7 @@ import { Route as Sitemap_indexDotxmlRouteImport } from './routes/sitemap_index[
 import { Route as SetupCoworkRouteImport } from './routes/setup-cowork'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.txt]'
+import { Route as YearRouteImport } from './routes/$year'
 import { Route as SlugRouteImport } from './routes/$slug'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TagSlugRouteImport } from './routes/tag.$slug'
@@ -43,6 +44,11 @@ const SearchRoute = SearchRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const YearRoute = YearRouteImport.update({
+  id: '/$year',
+  path: '/$year',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SlugRoute = SlugRouteImport.update({
@@ -104,6 +110,7 @@ const AuthorSlugPagePageRoute = AuthorSlugPagePageRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
+  '/$year': typeof YearRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
+  '/$year': typeof YearRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
@@ -138,6 +146,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
+  '/$year': typeof YearRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$slug'
+    | '/$year'
     | '/robots.txt'
     | '/search'
     | '/setup-cowork'
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$slug'
+    | '/$year'
     | '/robots.txt'
     | '/search'
     | '/setup-cowork'
@@ -190,6 +201,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$slug'
+    | '/$year'
     | '/robots.txt'
     | '/search'
     | '/setup-cowork'
@@ -208,6 +220,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SlugRoute: typeof SlugRoute
+  YearRoute: typeof YearRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
   SetupCoworkRoute: typeof SetupCoworkRoute
@@ -247,6 +260,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$year': {
+      id: '/$year'
+      path: '/$year'
+      fullPath: '/$year'
+      preLoaderRoute: typeof YearRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$slug': {
@@ -379,6 +399,7 @@ const TagSlugRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SlugRoute: SlugRoute,
+  YearRoute: YearRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
   SetupCoworkRoute: SetupCoworkRoute,
@@ -392,3 +413,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
