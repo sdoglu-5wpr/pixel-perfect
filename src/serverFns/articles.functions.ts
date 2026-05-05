@@ -2,13 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeader } from "@tanstack/react-start/server";
 import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
 import { cached } from "@/serverFns/loader-cache.server";
-import {
-  pickFirstImageSrc,
-  resolvePostImageUrl,
-  rewriteLegacyHtml,
-  rewriteLegacyUrl,
-  stripFirstImage,
-} from "@/lib/legacy-urls";
+import { fetchArticleViaRpc } from "@/lib/articles.shared";
 
 export type ArticleAuthor = {
   id: number;
@@ -59,23 +53,6 @@ export type ArticlePayload = {
   topStories: RelatedPost[];
   otherNews: RelatedPost[];
 };
-
-function relatedFromRow(r: any): RelatedPost {
-  return {
-    id: r.id,
-    slug: r.slug,
-    title: r.title,
-    excerpt: r.excerpt,
-    published_at: r.published_at,
-    featured_image_url: resolvePostImageUrl(
-      r.media_url,
-      r.content_html ? rewriteLegacyUrl(r.content_html) : null,
-      r.og_image,
-    ),
-    author_name: r.author?.display_name ?? null,
-    category_name: r.category?.name ?? null,
-  };
-}
 
 export const getArticleBySlug = createServerFn({ method: "GET" })
   .inputValidator((input: { slug: string }) => {
