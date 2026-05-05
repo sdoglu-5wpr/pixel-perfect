@@ -33,7 +33,7 @@ function withKillSwitch(res: Response, noindex: boolean): Response {
 }
 
 export default {
-  async fetch(request: Request, env: any, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: any, ctx: any): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
     const noindex = isIndexingDisabled(env ?? {});
@@ -51,7 +51,8 @@ export default {
     }
 
     // 2. Tier-2 fallback: dynamic SSR
-    const ssrRes = await tanstackFetch(request, env, ctx);
+    void env; void ctx;
+    const ssrRes = await tanstackFetch(request);
     return withKillSwitch(ssrRes, noindex);
   },
 };
