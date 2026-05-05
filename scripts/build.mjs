@@ -14,15 +14,15 @@
  * Lovable runs `npm run build`; this script is the build entry.
  */
 import { spawn } from "node:child_process";
-import { cp, rm, mkdir, readdir, readFile, writeFile, stat } from "node:fs/promises";
+import { cp, rm, mkdir, readdir, writeFile, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
 
 const ROOT = resolve(process.cwd());
 const DIST = join(ROOT, "dist");
 const SNAPSHOT = join(ROOT, ".prerender-snapshot");
 const PRERENDER_DATA = join(ROOT, ".prerender-pages.json");
+const TARGET = process.argv.includes("--netlify") ? "netlify" : "worker";
 
 function run(cmd, args, env) {
   return new Promise((resolveP, rejectP) => {
@@ -114,6 +114,12 @@ async function main() {
   ].join("\n");
   await writeFile(join(DIST, "client", "_headers"), headersBody, "utf8");
   console.log("[build] Wrote dist/client/_headers");
+
+  if (TARGET === "netlify") {
+    await rm(PRERENDER_DATA, { force: true });
+    console.log("\n[build] Netlify target complete: keeping static dist/client output.\n");
+    return;
+  }
 
   console.log("\n[build] Snapshotting prerendered output before Cloudflare pass...");
   await mkdir(SNAPSHOT, { recursive: true });
