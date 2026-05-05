@@ -514,12 +514,21 @@ async function count(table: string, modify?: (q: ReturnType<typeof sb.from> exte
   await importTaxonomies();
   await importAttachments();
   await importMediaManifest();
+  await prescanPostIds(["posts.jsonl", "pages.jsonl", "posts-nonpublished.jsonl"]);
   if (should("posts"))           await importPostsFile("posts.jsonl", "post");
   if (should("pages"))           await importPostsFile("pages.jsonl", "page");
   if (should("posts-nonpub"))    await importPostsFile("posts-nonpublished.jsonl", "post");
   await importRedirects();
   await importMenus();
   await importInternalLinks();
+
+  // Orphan-FK summary
+  head("orphan FK summary");
+  const fmt = (s: Set<number>) => [...s].sort((a, b) => a - b).join(", ") || "(none)";
+  log(`featured_media_id nulled (${orphanFeaturedMedia.size} distinct): ${fmt(orphanFeaturedMedia)}`);
+  log(`author_id nulled         (${orphanAuthors.size} distinct): ${fmt(orphanAuthors)}`);
+  log(`parent_id nulled         (${orphanParents.size} distinct): ${fmt(orphanParents)}`);
+
   await verifyCounts();
   console.log("\n✓ Import complete.");
   process.exit(0);
