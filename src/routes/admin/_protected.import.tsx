@@ -224,6 +224,8 @@ function BackfillImagesCard() {
   const [result, setResult] = useState<null | {
     scanned: number; updated: number; skipped: number;
     examples: Array<{ id: number; slug: string; og_image: string | null }>;
+    errors?: Array<{ id: number; slug: string; error: string }>;
+    skipReasons?: Record<string, number>;
   }>(null);
 
   const run = async () => {
@@ -264,6 +266,18 @@ function BackfillImagesCard() {
       {result && (
         <div className="text-sm space-y-1">
           <div>Scanned: {result.scanned} · Updated: <span className="text-emerald-600">{result.updated}</span> · Skipped: {result.skipped}</div>
+          {result.skipReasons && Object.keys(result.skipReasons).length > 0 && (
+            <div className="text-xs text-muted-foreground">
+              Skip reasons: {Object.entries(result.skipReasons).map(([k, v]) => `${k}=${v}`).join(", ")}
+            </div>
+          )}
+          {result.errors && result.errors.length > 0 && (
+            <ul className="text-xs text-destructive space-y-0.5">
+              {result.errors.slice(0, 5).map((e, i) => (
+                <li key={i}>#{e.id} {e.slug}: {e.error}</li>
+              ))}
+            </ul>
+          )}
           {result.examples.length > 0 && (
             <ul className="text-xs text-muted-foreground space-y-0.5">
               {result.examples.map((e) => (
