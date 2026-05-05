@@ -147,6 +147,11 @@ function ImportPage() {
               Cancel
             </button>
           )}
+          {job && (job.status === "failed" || job.status === "cancelled" || (job.status === "running" && !tickingRef.current)) && job.phase !== "done" && (
+            <button onClick={resume} disabled={busy} className="rounded border px-4 py-2 text-sm hover:bg-muted disabled:opacity-50">
+              Resume {job.phase} (page {job.page})
+            </button>
+          )}
         </div>
       </div>
 
