@@ -37,6 +37,7 @@ function AuthorsPage() {
         id: editing.id ?? null, display_name: editing.display_name, slug: editing.slug ?? "",
         email: editing.email ?? null, bio: editing.bio ?? null,
         website: editing.website ?? null, avatar_url: editing.avatar_url ?? null,
+        social: editing.social ?? {},
       } });
       toast.success("Saved"); setEditing(null); refresh();
     } catch (e: any) { toast.error(e?.message ?? "Save failed"); }
