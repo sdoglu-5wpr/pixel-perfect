@@ -150,6 +150,7 @@ async function importAuthors() {
     post_count: a.post_count ?? 0,
   }));
   await upsert("authors", rows, "id");
+  for (const r of rows) validAuthorIds.add(r.id);
   log(`upserted ${rows.length}`);
 }
 
