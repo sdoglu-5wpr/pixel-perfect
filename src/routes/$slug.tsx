@@ -4,6 +4,7 @@ import { getArticleBySlug, type RelatedPost, type ArticlePayload, type ArticleAu
 import { lookupRedirect } from "@/server/redirects.functions";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { NewsletterBanner } from "@/components/site/NewsletterBanner";
+import { ContactPage } from "@/components/site/ContactPage";
 
 export const Route = createFileRoute("/$slug")({
   loader: async ({ params }) => {
