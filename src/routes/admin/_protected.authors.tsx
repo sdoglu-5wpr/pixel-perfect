@@ -8,9 +8,10 @@ export const Route = createFileRoute("/admin/_protected/authors")({
   component: AuthorsPage,
 });
 
+type Social = { linkedin?: string | null; twitter?: string | null; facebook?: string | null; instagram?: string | null };
 type Author = {
   id: number; display_name: string; slug: string; email: string | null; bio: string | null;
-  website: string | null; avatar_url: string | null; post_count: number;
+  website: string | null; avatar_url: string | null; post_count: number; social?: Social | null;
 };
 
 function AuthorsPage() {
