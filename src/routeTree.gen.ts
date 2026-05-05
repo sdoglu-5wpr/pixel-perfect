@@ -14,6 +14,7 @@ import { Route as SetupCoworkRouteImport } from './routes/setup-cowork'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.txt]'
 import { Route as Post_tagSitemapDotxmlRouteImport } from './routes/post_tag-sitemap[.xml]'
+import { Route as PostSitemapDotxmlRouteImport } from './routes/post-sitemap[.xml]'
 import { Route as PostSitemappageDotxmlRouteImport } from './routes/post-sitemap$page[.]xml'
 import { Route as PageSitemapDotxmlRouteImport } from './routes/page-sitemap[.xml]'
 import { Route as FeedRouteImport } from './routes/feed'
@@ -55,6 +56,11 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
 const Post_tagSitemapDotxmlRoute = Post_tagSitemapDotxmlRouteImport.update({
   id: '/post_tag-sitemap.xml',
   path: '/post_tag-sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostSitemapDotxmlRoute = PostSitemapDotxmlRouteImport.update({
+  id: '/post-sitemap.xml',
+  path: '/post-sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PostSitemappageDotxmlRoute = PostSitemappageDotxmlRouteImport.update({
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/feed': typeof FeedRoute
   '/page-sitemap.xml': typeof PageSitemapDotxmlRoute
   '/post-sitemap$page.xml': typeof PostSitemappageDotxmlRoute
+  '/post-sitemap.xml': typeof PostSitemapDotxmlRoute
   '/post_tag-sitemap.xml': typeof Post_tagSitemapDotxmlRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/feed': typeof FeedRoute
   '/page-sitemap.xml': typeof PageSitemapDotxmlRoute
   '/post-sitemap$page.xml': typeof PostSitemappageDotxmlRoute
+  '/post-sitemap.xml': typeof PostSitemapDotxmlRoute
   '/post_tag-sitemap.xml': typeof Post_tagSitemapDotxmlRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/feed': typeof FeedRoute
   '/page-sitemap.xml': typeof PageSitemapDotxmlRoute
   '/post-sitemap$page.xml': typeof PostSitemappageDotxmlRoute
+  '/post-sitemap.xml': typeof PostSitemapDotxmlRoute
   '/post_tag-sitemap.xml': typeof Post_tagSitemapDotxmlRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
@@ -225,6 +234,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/page-sitemap.xml'
     | '/post-sitemap$page.xml'
+    | '/post-sitemap.xml'
     | '/post_tag-sitemap.xml'
     | '/robots.txt'
     | '/search'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/page-sitemap.xml'
     | '/post-sitemap$page.xml'
+    | '/post-sitemap.xml'
     | '/post_tag-sitemap.xml'
     | '/robots.txt'
     | '/search'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/page-sitemap.xml'
     | '/post-sitemap$page.xml'
+    | '/post-sitemap.xml'
     | '/post_tag-sitemap.xml'
     | '/robots.txt'
     | '/search'
@@ -297,6 +309,7 @@ export interface RootRouteChildren {
   FeedRoute: typeof FeedRoute
   PageSitemapDotxmlRoute: typeof PageSitemapDotxmlRoute
   PostSitemappageDotxmlRoute: typeof PostSitemappageDotxmlRoute
+  PostSitemapDotxmlRoute: typeof PostSitemapDotxmlRoute
   Post_tagSitemapDotxmlRoute: typeof Post_tagSitemapDotxmlRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
@@ -345,6 +358,13 @@ declare module '@tanstack/react-router' {
       path: '/post_tag-sitemap.xml'
       fullPath: '/post_tag-sitemap.xml'
       preLoaderRoute: typeof Post_tagSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post-sitemap.xml': {
+      id: '/post-sitemap.xml'
+      path: '/post-sitemap.xml'
+      fullPath: '/post-sitemap.xml'
+      preLoaderRoute: typeof PostSitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/post-sitemap$page.xml': {
@@ -524,6 +544,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeedRoute: FeedRoute,
   PageSitemapDotxmlRoute: PageSitemapDotxmlRoute,
   PostSitemappageDotxmlRoute: PostSitemappageDotxmlRoute,
+  PostSitemapDotxmlRoute: PostSitemapDotxmlRoute,
   Post_tagSitemapDotxmlRoute: Post_tagSitemapDotxmlRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
@@ -539,3 +560,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
