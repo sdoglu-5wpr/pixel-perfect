@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "node scripts/build.mjs",
+    "build:netlify": "node scripts/build.mjs --netlify",
     "build:single": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
