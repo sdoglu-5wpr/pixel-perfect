@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import {
@@ -20,7 +20,7 @@ const search = z.object({
   dir: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
-export const Route = createFileRoute("/admin/_protected/posts")({
+export const Route = createFileRoute("/admin/_protected/posts/")({
   validateSearch: (s) => search.parse(s),
   component: PostsListPage,
 });
@@ -46,9 +46,26 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function fmt(iso: string | null) {
+function TypeChip({ type }: { type: string }) {
+  return (
+    <span className="inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+      {type}
+    </span>
+  );
+}
+
+function relTime(iso: string | null) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  const d = new Date(iso);
+  const diff = Date.now() - d.getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const days = Math.floor(h / 24);
+  if (days < 7) return `${days}d ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: d.getFullYear() === new Date().getFullYear() ? undefined : "numeric" });
 }
 
 function PostsListPage() {
@@ -60,8 +77,14 @@ function PostsListPage() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [meta, setMeta] = useState<{ categories: Array<{ id: number; name: string }>; authors: Array<{ id: number; display_name: string }> } | null>(null);
+  const [searchInput, setSearchInput] = useState(params.q);
+  const [openMenu, setOpenMenu] = useState<number | null>(null);
+  const [pageInput, setPageInput] = useState(String(params.page));
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  useEffect(() => { setSearchInput(params.q); }, [params.q]);
+  useEffect(() => { setPageInput(String(params.page)); }, [params.page]);
 
   const refresh = useMemo(
     () => async () => {
@@ -98,9 +121,19 @@ function PostsListPage() {
   const setSearch = (patch: Partial<typeof params>) =>
     navigate({ search: (prev: any) => ({ ...prev, ...patch, page: patch.page ?? 1 }) });
 
+  // Debounced search
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (searchInput === params.q) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setSearch({ q: searchInput }), 200);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
   const toggle = (id: number) => {
     const next = new Set(selected);
-    next.has(id) ? next.delete(id) : next.add(id);
+    if (next.has(id)) next.delete(id); else next.add(id);
     setSelected(next);
   };
 
@@ -122,6 +155,17 @@ function PostsListPage() {
     }
   };
 
+  const rowAction = async (id: number, action: "duplicate" | "trash") => {
+    try {
+      await bulkAdminPosts({ data: { ids: [id], action } });
+      toast.success(action === "trash" ? "Moved to trash" : "Duplicated");
+      setOpenMenu(null);
+      await refresh();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Action failed");
+    }
+  };
+
   const sortBy = (col: typeof params.sort) => {
     const dir = params.sort === col && params.dir === "desc" ? "asc" : "desc";
     setSearch({ sort: col, dir });
@@ -129,13 +173,19 @@ function PostsListPage() {
 
   const arrow = (col: string) => (params.sort !== col ? "" : params.dir === "desc" ? " ↓" : " ↑");
 
+  const hasFilters =
+    params.status !== "all" || params.type !== "all" || params.categoryId != null ||
+    params.authorId != null || (params.q ?? "").length > 0;
+
+  const clearFilters = () =>
+    navigate({ search: { page: 1, status: "all", type: "all", q: "", sort: "modified_at", dir: "desc" } as any });
+
   return (
     <div className="min-h-full bg-[#F7F8FB] -m-6 p-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Posts</h1>
         <Link
-          to="/admin"
-          search={{} as any}
+          to="/admin/posts/new"
           className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
           + New post
@@ -143,12 +193,12 @@ function PostsListPage() {
       </div>
 
       {/* Filters */}
-      <div className="rounded-lg bg-white border p-3 flex flex-wrap items-center gap-2 mb-3">
+      <div className="sticky top-0 z-10 rounded-lg bg-white border p-3 flex flex-wrap items-center gap-2 mb-3">
         <input
           type="search"
           placeholder="Search posts…"
-          defaultValue={params.q}
-          onKeyDown={(e) => { if (e.key === "Enter") setSearch({ q: (e.target as HTMLInputElement).value }); }}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           className="border rounded px-3 py-1.5 text-sm flex-1 min-w-[200px]"
         />
         <select value={params.status} onChange={(e) => setSearch({ status: e.target.value as any })} className="border rounded px-2 py-1.5 text-sm">
@@ -180,6 +230,11 @@ function PostsListPage() {
           <option value="">All authors</option>
           {(meta?.authors ?? []).map((a) => <option key={a.id} value={a.id}>{a.display_name}</option>)}
         </select>
+        {hasFilters && (
+          <button onClick={clearFilters} className="text-xs text-muted-foreground hover:underline">
+            Clear filters
+          </button>
+        )}
       </div>
 
       {/* Bulk actions */}
@@ -190,47 +245,73 @@ function PostsListPage() {
           <button onClick={() => bulk("unpublish")} className="rounded border px-2 py-1 hover:bg-[#F2F4F9]">Unpublish</button>
           <button onClick={() => bulk("duplicate")} className="rounded border px-2 py-1 hover:bg-[#F2F4F9]">Duplicate</button>
           <button onClick={() => bulk("trash")} className="rounded border px-2 py-1 hover:bg-red-50 text-red-700">Trash</button>
+          <button onClick={() => setSelected(new Set())} className="ml-auto text-muted-foreground hover:underline">Cancel</button>
         </div>
       )}
 
       {/* Table */}
-      <div className="rounded-lg bg-white border overflow-hidden">
+      <div className="rounded-lg bg-white border overflow-visible">
         <table className="w-full text-sm">
-          <thead className="border-b bg-white">
-            <tr className="text-left">
+          <thead className="border-b border-[#E5E7EB] bg-white">
+            <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
               <th className="px-3 py-3 w-8"><input type="checkbox" checked={allChecked} onChange={toggleAll} /></th>
-              <th className="px-3 py-3 cursor-pointer" onClick={() => sortBy("title")}>Title{arrow("title")}</th>
-              <th className="px-3 py-3 cursor-pointer" onClick={() => sortBy("status")}>Status{arrow("status")}</th>
-              <th className="px-3 py-3 cursor-pointer" onClick={() => sortBy("type")}>Type{arrow("type")}</th>
-              <th className="px-3 py-3 cursor-pointer" onClick={() => sortBy("author")}>Author{arrow("author")}</th>
+              <th className="px-3 py-3 w-14"></th>
+              <th className="px-3 py-3 cursor-pointer select-none" onClick={() => sortBy("title")}>Title{arrow("title")}</th>
+              <th className="px-3 py-3 cursor-pointer select-none" onClick={() => sortBy("status")}>Status{arrow("status")}</th>
+              <th className="px-3 py-3 cursor-pointer select-none" onClick={() => sortBy("type")}>Type{arrow("type")}</th>
+              <th className="px-3 py-3 cursor-pointer select-none" onClick={() => sortBy("author")}>Author{arrow("author")}</th>
               <th className="px-3 py-3">Category</th>
-              <th className="px-3 py-3 cursor-pointer" onClick={() => sortBy("modified_at")}>Modified{arrow("modified_at")}</th>
-              <th className="px-3 py-3 w-32">Actions</th>
+              <th className="px-3 py-3 cursor-pointer select-none" onClick={() => sortBy("modified_at")}>Modified{arrow("modified_at")}</th>
+              <th className="px-3 py-3 w-12"></th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={8} className="px-3 py-8 text-center text-muted-foreground">Loading…</td></tr>
+              <tr><td colSpan={9} className="px-3 py-8 text-center text-muted-foreground">Loading…</td></tr>
             ) : items.length === 0 ? (
-              <tr><td colSpan={8} className="px-3 py-8 text-center text-muted-foreground">No posts found.</td></tr>
+              <tr><td colSpan={9} className="px-3 py-8 text-center">
+                <div className="text-muted-foreground mb-2">No posts match your filters.</div>
+                {hasFilters && (
+                  <button onClick={clearFilters} className="text-sm text-primary hover:underline">Clear filters</button>
+                )}
+              </td></tr>
             ) : items.map((p) => (
-              <tr key={p.id} className="border-t hover:bg-[#F2F4F9]">
+              <tr key={p.id} className="border-t border-[#E5E7EB] hover:bg-[#F2F4F9]">
                 <td className="px-3 py-3"><input type="checkbox" checked={selected.has(p.id)} onChange={() => toggle(p.id)} /></td>
                 <td className="px-3 py-3">
-                  <div className="font-medium text-foreground">{p.title}</div>
-                  <div className="text-xs text-muted-foreground">/{p.slug}</div>
+                  {p.thumbnail_url ? (
+                    <img src={p.thumbnail_url} alt="" className="h-12 w-12 rounded-md object-cover" loading="lazy" />
+                  ) : (
+                    <div className="h-12 w-12 rounded-md bg-neutral-100" />
+                  )}
+                </td>
+                <td className="px-3 py-3">
+                  <Link to="/admin/posts/$id" params={{ id: String(p.id) }} className="font-medium text-foreground hover:underline">{p.title}</Link>
+                  <div className="text-xs text-muted-foreground truncate max-w-md">/{p.slug}</div>
                 </td>
                 <td className="px-3 py-3"><StatusBadge status={p.status} /></td>
-                <td className="px-3 py-3 text-muted-foreground">{p.type}</td>
-                <td className="px-3 py-3">{p.author?.display_name ?? "—"}</td>
-                <td className="px-3 py-3">{p.category?.name ?? "—"}</td>
-                <td className="px-3 py-3 text-muted-foreground">{fmt(p.modified_at)}</td>
-                <td className="px-3 py-3">
-                  <div className="flex items-center gap-2 text-xs">
-                    <Link to="/admin" className="hover:underline">Edit</Link>
-                    <button onClick={() => bulkAdminPosts({ data: { ids: [p.id], action: "duplicate" } }).then(refresh)} className="hover:underline">Duplicate</button>
-                    <button onClick={() => bulkAdminPosts({ data: { ids: [p.id], action: "trash" } }).then(refresh)} className="hover:underline text-red-700">Trash</button>
-                  </div>
+                <td className="px-3 py-3"><TypeChip type={p.type} /></td>
+                <td className="px-3 py-3 text-foreground">{p.author?.display_name ?? "—"}</td>
+                <td className="px-3 py-3">{p.category ? (
+                  <span className="inline-flex items-center rounded bg-neutral-100 px-2 py-0.5 text-xs">{p.category.name}</span>
+                ) : "—"}</td>
+                <td className="px-3 py-3 text-muted-foreground whitespace-nowrap">{relTime(p.modified_at)}</td>
+                <td className="px-3 py-3 relative">
+                  <button
+                    onClick={() => setOpenMenu(openMenu === p.id ? null : p.id)}
+                    className="rounded px-1.5 py-1 hover:bg-neutral-100 text-muted-foreground"
+                    aria-label="Actions"
+                  >
+                    ⋯
+                  </button>
+                  {openMenu === p.id && (
+                    <div className="absolute right-3 top-10 z-20 w-40 rounded-md border bg-white shadow-lg text-sm">
+                      <Link to="/admin/posts/$id" params={{ id: String(p.id) }} className="block px-3 py-2 hover:bg-[#F2F4F9]" onClick={() => setOpenMenu(null)}>Edit</Link>
+                      <button onClick={() => rowAction(p.id, "duplicate")} className="block w-full text-left px-3 py-2 hover:bg-[#F2F4F9]">Duplicate</button>
+                      <a href={`/${p.slug}/`} target="_blank" rel="noopener noreferrer" className="block px-3 py-2 hover:bg-[#F2F4F9]" onClick={() => setOpenMenu(null)}>View on site</a>
+                      <button onClick={() => rowAction(p.id, "trash")} className="block w-full text-left px-3 py-2 hover:bg-red-50 text-red-700">Trash</button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
@@ -240,8 +321,8 @@ function PostsListPage() {
 
       {/* Pagination */}
       <div className="flex items-center justify-between mt-3 text-sm text-muted-foreground">
-        <div>{total.toLocaleString()} total · page {params.page} of {totalPages}</div>
-        <div className="flex gap-2">
+        <div>{total.toLocaleString()} total · page {params.page} of {totalPages.toLocaleString()}</div>
+        <div className="flex items-center gap-2">
           <button
             disabled={params.page <= 1}
             onClick={() => setSearch({ page: params.page - 1 })}
@@ -249,6 +330,24 @@ function PostsListPage() {
           >
             Previous
           </button>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const n = Math.max(1, Math.min(totalPages, Number(pageInput) || 1));
+              setSearch({ page: n });
+            }}
+            className="flex items-center gap-1"
+          >
+            <span>Go to</span>
+            <input
+              type="number"
+              min={1}
+              max={totalPages}
+              value={pageInput}
+              onChange={(e) => setPageInput(e.target.value)}
+              className="w-16 rounded border bg-white px-2 py-1.5 text-center"
+            />
+          </form>
           <button
             disabled={params.page >= totalPages}
             onClick={() => setSearch({ page: params.page + 1 })}
