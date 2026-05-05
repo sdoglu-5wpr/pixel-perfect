@@ -44,6 +44,23 @@ export function pickFirstImageSrc(html: string | null | undefined): string | nul
   return match?.[1] ? rewriteLegacyUrl(match[1]) : null;
 }
 
+/**
+ * Strip the first <img> (and a wrapping <figure>/<p> if it contains only that img)
+ * from an HTML blob. Used to avoid duplicating the article's featured image
+ * when it was derived from the first inline image.
+ */
+export function stripFirstImage(html: string | null | undefined): string {
+  if (!html) return "";
+  // Try to strip a <figure>...<img>...</figure> wrapper first
+  const figureRe = /<figure\b[^>]*>\s*(?:<a\b[^>]*>\s*)?<img\b[^>]*>(?:\s*<\/a>)?\s*(?:<figcaption\b[^>]*>[\s\S]*?<\/figcaption>\s*)?<\/figure>/i;
+  if (figureRe.test(html)) return html.replace(figureRe, "");
+  // <p> wrapping just an image
+  const pRe = /<p\b[^>]*>\s*(?:<a\b[^>]*>\s*)?<img\b[^>]*>(?:\s*<\/a>)?\s*<\/p>/i;
+  if (pRe.test(html)) return html.replace(pRe, "");
+  // Bare <img>
+  return html.replace(/<img\b[^>]*\/?>/i, "");
+}
+
 export function resolvePostImageUrl(...candidates: Array<string | null | undefined>): string | null {
   for (const candidate of candidates) {
     const rewritten = rewriteLegacyUrl(candidate ?? "");
