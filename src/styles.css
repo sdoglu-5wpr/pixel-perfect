@@ -29,6 +29,10 @@
   --color-brand-blue: var(--brand-blue);
   --color-brand-blue-glow: var(--brand-blue-glow);
   --color-surface-soft: var(--surface-soft);
+  --color-admin-surface: var(--admin-surface);
+  --color-admin-surface-2: var(--admin-surface-2);
+  --color-admin-hover: var(--admin-hover);
+  --color-admin-active: var(--admin-active);
   --gradient-newsletter: var(--gradient-newsletter);
   --shadow-card: var(--shadow-card);
   --radius-sm: calc(var(--radius) - 4px);
