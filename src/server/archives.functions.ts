@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeader } from "@tanstack/react-start/server";
 import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
+import { cached } from "@/server/loader-cache.server";
 import { pickFirstImageSrc, resolvePostImageUrl, rewriteLegacyUrl } from "@/lib/legacy-urls";
 
 function setArchiveCache() {
@@ -69,7 +70,7 @@ function rowToItem(r: any): ArchiveItem {
     published_at: r.published_at,
     featured_image_url: resolvePostImageUrl(
       r.media_url,
-      pickFirstImageSrc(r.content_html),
+      r.content_html ? rewriteLegacyUrl(r.content_html) : null,
       r.og_image,
     ),
     author: a ? { id: a.id, display_name: a.display_name, slug: a.slug } : null,
@@ -134,40 +135,45 @@ export const getArchive = createServerFn({ method: "GET" })
       };
     }
 
-    const params: Record<string, any> = {
-      p_kind: data.kind,
-      p_page: page,
-      p_page_size: PAGE_SIZE,
-    };
-    if (data.kind === "category" || data.kind === "tag" || data.kind === "author") {
-      params.p_slug = data.slug;
-    }
-    if (data.kind === "date") {
-      params.p_year = data.year;
-      params.p_month = data.month ?? null;
-      params.p_day = data.day ?? null;
-    }
-    if (data.kind === "search") {
-      params.p_q = data.q;
-    }
+    const cacheKey = `archive:${data.kind}:${(data as any).slug ?? ""}:${(data as any).year ?? ""}-${(data as any).month ?? ""}-${(data as any).day ?? ""}:q=${(data as any).q ?? ""}:p=${page}`;
 
-    const t0 = Date.now();
-    const { data: rpc, error } = await (supabaseAnon as any).rpc("get_archive_list", params);
-    console.log(`[archive] kind=${data.kind} page=${page} rpc=${Date.now() - t0}ms`);
-    if (error) {
-      console.error("get_archive_list failed:", error);
-      return null;
-    }
-    if (!rpc) return null;
+    return cached(cacheKey, 60_000, async () => {
+      const params: Record<string, any> = {
+        p_kind: data.kind,
+        p_page: page,
+        p_page_size: PAGE_SIZE,
+      };
+      if (data.kind === "category" || data.kind === "tag" || data.kind === "author") {
+        params.p_slug = data.slug;
+      }
+      if (data.kind === "date") {
+        params.p_year = data.year;
+        params.p_month = data.month ?? null;
+        params.p_day = data.day ?? null;
+      }
+      if (data.kind === "search") {
+        params.p_q = data.q;
+      }
 
-    const items = ((rpc.items ?? []) as any[]).map(rowToItem);
-    const total = Number(rpc.total ?? 0);
+      const t0 = Date.now();
+      const { data: rpc, error } = await (supabaseAnon as any).rpc("get_archive_list", params);
+      console.log(`[archive] kind=${data.kind} page=${page} rpc=${Date.now() - t0}ms`);
+      if (error) {
+        console.error("get_archive_list failed:", error);
+        return null;
+      }
+      if (!rpc) return null;
 
-    return {
-      header: buildHeader(data, rpc.term, total),
-      items,
-      page,
-      totalItems: total,
-      totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
-    };
+      const items = ((rpc.items ?? []) as any[]).map(rowToItem);
+      const total = Number(rpc.total ?? 0);
+
+      return {
+        header: buildHeader(data, rpc.term, total),
+        items,
+        page,
+        totalItems: total,
+        totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+      };
+    });
   });
+

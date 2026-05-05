@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeader } from "@tanstack/react-start/server";
 import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
+import { cached } from "@/server/loader-cache.server";
 import {
   pickFirstImageSrc,
   resolvePostImageUrl,
@@ -66,7 +67,11 @@ function relatedFromRow(r: any): RelatedPost {
     title: r.title,
     excerpt: r.excerpt,
     published_at: r.published_at,
-    featured_image_url: resolvePostImageUrl(r.media_url, pickFirstImageSrc(r.content_html), r.og_image),
+    featured_image_url: resolvePostImageUrl(
+      r.media_url,
+      r.content_html ? rewriteLegacyUrl(r.content_html) : null,
+      r.og_image,
+    ),
     author_name: r.author?.display_name ?? null,
     category_name: r.category?.name ?? null,
   };
@@ -78,56 +83,6 @@ export const getArticleBySlug = createServerFn({ method: "GET" })
     return { slug: input.slug.replace(/^\/|\/$/g, "") };
   })
   .handler(async ({ data }): Promise<ArticlePayload | null> => {
-    const t0 = Date.now();
-    const { data: rpc, error } = await (supabaseAnon as any).rpc("get_article_full", {
-      slug_param: data.slug,
-    });
-    console.log(`[article] ${data.slug} rpc=${Date.now() - t0}ms`);
-    if (error) {
-      console.error("get_article_full failed:", error);
-      return null;
-    }
-    if (!rpc) return null;
-
-    const post = rpc.post;
-    const author = rpc.author ?? null;
-    const media = rpc.featured_media ?? null;
-    const seo = rpc.seo ?? null;
-    const categories = (rpc.categories ?? []) as ArticleCategory[];
-    const topStoriesRaw = (rpc.top_stories ?? []) as any[];
-    const otherNewsRaw = (rpc.other_news ?? []) as any[];
-
-    const inlineFallback = pickFirstImageSrc(post.content_html);
-    const seoOg = rewriteLegacyUrl(seo?.og_image);
-    const featuredUrl = resolvePostImageUrl(media?.url, seoOg, inlineFallback);
-    const featuredFromInline =
-      !media?.url && !seoOg && !!inlineFallback && featuredUrl === inlineFallback;
-
-    const renderedHtml = rewriteLegacyHtml(
-      featuredFromInline ? stripFirstImage(post.content_html) : post.content_html,
-    );
-
-    const rewrittenSeo = seo
-      ? { ...seo, og_image: rewriteLegacyUrl(seo.og_image) || null }
-      : null;
-
-    const article: ArticleRecord = {
-      id: post.id,
-      slug: post.slug,
-      title: post.title,
-      excerpt: post.excerpt,
-      content_html: renderedHtml,
-      published_at: post.published_at,
-      modified_at: post.modified_at,
-      type: post.type,
-      featured_image: featuredUrl
-        ? { url: featuredUrl, alt: media?.alt_text ?? post.title }
-        : null,
-      author,
-      categories,
-      seo: rewrittenSeo,
-    };
-
     try {
       setResponseHeader(
         "Cache-Control",
@@ -137,9 +92,62 @@ export const getArticleBySlug = createServerFn({ method: "GET" })
       );
     } catch {}
 
-    return {
-      article,
-      topStories: topStoriesRaw.map(relatedFromRow),
-      otherNews: otherNewsRaw.map(relatedFromRow),
-    };
+    return cached(`article:${data.slug}`, 60_000, async () => {
+      const t0 = Date.now();
+      const { data: rpc, error } = await (supabaseAnon as any).rpc("get_article_full", {
+        slug_param: data.slug,
+      });
+      console.log(`[article] ${data.slug} rpc=${Date.now() - t0}ms`);
+      if (error) {
+        console.error("get_article_full failed:", error);
+        return null;
+      }
+      if (!rpc) return null;
+
+      const post = rpc.post;
+      const author = rpc.author ?? null;
+      const media = rpc.featured_media ?? null;
+      const seo = rpc.seo ?? null;
+      const categories = (rpc.categories ?? []) as ArticleCategory[];
+      const topStoriesRaw = (rpc.top_stories ?? []) as any[];
+      const otherNewsRaw = (rpc.other_news ?? []) as any[];
+
+      const inlineFallback = pickFirstImageSrc(post.content_html);
+      const seoOg = rewriteLegacyUrl(seo?.og_image);
+      const featuredUrl = resolvePostImageUrl(media?.url, seoOg, inlineFallback);
+      const featuredFromInline =
+        !media?.url && !seoOg && !!inlineFallback && featuredUrl === inlineFallback;
+
+      const renderedHtml = rewriteLegacyHtml(
+        featuredFromInline ? stripFirstImage(post.content_html) : post.content_html,
+      );
+
+      const rewrittenSeo = seo
+        ? { ...seo, og_image: rewriteLegacyUrl(seo.og_image) || null }
+        : null;
+
+      const article: ArticleRecord = {
+        id: post.id,
+        slug: post.slug,
+        title: post.title,
+        excerpt: post.excerpt,
+        content_html: renderedHtml,
+        published_at: post.published_at,
+        modified_at: post.modified_at,
+        type: post.type,
+        featured_image: featuredUrl
+          ? { url: featuredUrl, alt: media?.alt_text ?? post.title }
+          : null,
+        author,
+        categories,
+        seo: rewrittenSeo,
+      };
+
+      return {
+        article,
+        topStories: topStoriesRaw.map(relatedFromRow),
+        otherNews: otherNewsRaw.map(relatedFromRow),
+      };
+    });
   });
+
