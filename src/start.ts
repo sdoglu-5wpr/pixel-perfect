@@ -52,7 +52,7 @@ const redirectMiddleware = createMiddleware({ type: "request" }).server(
 
 const responseHeadersMiddleware = createMiddleware().server(async ({ request, next }) => {
   const result = await next();
-  const { resolveIndexingState } = await import("./server/indexing.server");
+  const { resolveIndexingState } = await import("./serverFns/indexing.server");
   const state = await resolveIndexingState();
 
   const url = new URL(request.url);
