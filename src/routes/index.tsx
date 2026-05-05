@@ -145,22 +145,38 @@ function TopStoryItem({ post }: { post: HomePost }) {
 }
 
 function ByLine({ post, className }: { post: HomePost; className?: string }) {
+  const author = post.author;
+  const name = author?.display_name ?? "Editorial Team";
+  const avatar = author?.avatar_url ? (
+    <img
+      src={author.avatar_url}
+      alt={name}
+      className="w-6 h-6 rounded-full object-cover"
+    />
+  ) : (
+    <span className="w-6 h-6 rounded-full bg-muted inline-flex items-center justify-center text-[10px] font-semibold text-foreground">
+      {name.slice(0, 2).toUpperCase()}
+    </span>
+  );
   return (
     <div className={`flex items-center gap-2 text-xs text-muted-foreground ${className ?? ""}`}>
-      {post.author?.avatar_url ? (
-        <img
-          src={post.author.avatar_url}
-          alt={post.author.display_name}
-          className="w-6 h-6 rounded-full object-cover"
-        />
+      {author?.slug ? (
+        <Link
+          to="/author/$slug"
+          params={{ slug: author.slug }}
+          className="flex items-center gap-2 group"
+        >
+          {avatar}
+          <span className="font-medium text-foreground group-hover:text-brand-blue transition-colors">
+            {name}
+          </span>
+        </Link>
       ) : (
-        <span className="w-6 h-6 rounded-full bg-muted inline-flex items-center justify-center text-[10px] font-semibold text-foreground">
-          {(post.author?.display_name ?? "EP").slice(0, 2).toUpperCase()}
-        </span>
+        <>
+          {avatar}
+          <span className="font-medium text-foreground">{name}</span>
+        </>
       )}
-      <span className="font-medium text-foreground">
-        {post.author?.display_name ?? "Editorial Team"}
-      </span>
       <span aria-hidden>•</span>
       <time dateTime={post.published_at ?? undefined}>{formatDate(post.published_at)}</time>
     </div>
