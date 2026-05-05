@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
 
 export type ArticleAuthor = {
   id: number;
@@ -67,17 +67,17 @@ async function buildRelated(rows: any[]): Promise<RelatedPost[]> {
 
   const [{ data: media }, { data: authors }, { data: pcRows }] = await Promise.all([
     mediaIds.length
-      ? supabaseAdmin.from("media").select("id, url").in("id", mediaIds)
+      ? supabaseAnon.from("media").select("id, url").in("id", mediaIds)
       : Promise.resolve({ data: [] as any[] }),
     authorIds.length
-      ? supabaseAdmin.from("authors").select("id, display_name").in("id", authorIds)
+      ? supabaseAnon.from("authors").select("id, display_name").in("id", authorIds)
       : Promise.resolve({ data: [] as any[] }),
-    supabaseAdmin.from("post_categories").select("post_id, category_id").in("post_id", postIds),
+    supabaseAnon.from("post_categories").select("post_id, category_id").in("post_id", postIds),
   ]);
 
   const catIds = (pcRows ?? []).map(r => r.category_id);
   const { data: cats } = catIds.length
-    ? await supabaseAdmin.from("categories").select("id, name").in("id", catIds)
+    ? await supabaseAnon.from("categories").select("id, name").in("id", catIds)
     : { data: [] as any[] };
 
   const mediaMap = new Map((media ?? []).map(m => [m.id, m.url]));
@@ -115,7 +115,7 @@ export const getArticleBySlug = createServerFn({ method: "GET" })
   })
   .handler(async ({ data }): Promise<ArticlePayload | null> => {
     // 1. Post
-    const { data: post } = await supabaseAdmin
+    const { data: post } = await supabaseAnon
       .from("posts")
       .select(
         "id, slug, title, excerpt, content_html, published_at, modified_at, type, status, author_id, featured_media_id"
@@ -135,17 +135,17 @@ export const getArticleBySlug = createServerFn({ method: "GET" })
       { data: seo },
     ] = await Promise.all([
       post.featured_media_id
-        ? supabaseAdmin.from("media").select("url, alt_text").eq("id", post.featured_media_id).maybeSingle()
+        ? supabaseAnon.from("media").select("url, alt_text").eq("id", post.featured_media_id).maybeSingle()
         : Promise.resolve({ data: null as any }),
       post.author_id
-        ? supabaseAdmin
+        ? supabaseAnon
             .from("authors")
             .select("id, display_name, slug, avatar_url, bio")
             .eq("id", post.author_id)
             .maybeSingle()
         : Promise.resolve({ data: null as any }),
-      supabaseAdmin.from("post_categories").select("category_id").eq("post_id", post.id),
-      supabaseAdmin
+      supabaseAnon.from("post_categories").select("category_id").eq("post_id", post.id),
+      supabaseAnon
         .from("seo_meta")
         .select("title, description, canonical_url, og_title, og_description, og_image, robots")
         .eq("object_type", "post")
@@ -155,7 +155,7 @@ export const getArticleBySlug = createServerFn({ method: "GET" })
 
     const categoryIds = (catLinks ?? []).map(c => c.category_id);
     const { data: categories } = categoryIds.length
-      ? await supabaseAdmin
+      ? await supabaseAnon
           .from("categories")
           .select("id, name, slug")
           .in("id", categoryIds)
@@ -163,7 +163,7 @@ export const getArticleBySlug = createServerFn({ method: "GET" })
 
     // 3. Related — top stories (latest 5 published, excluding current)
     //    and other news (3 newest, excluding current and top stories)
-    const { data: latest } = await supabaseAdmin
+    const { data: latest } = await supabaseAnon
       .from("posts")
       .select("id, slug, title, excerpt, published_at, featured_media_id, author_id, content_html")
       .eq("type", "post")
