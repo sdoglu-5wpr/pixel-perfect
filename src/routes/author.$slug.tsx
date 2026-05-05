@@ -1,11 +1,16 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { getArchive } from "@/serverFns/archives.functions";
-import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
+import { fetchArchiveViaRpc } from "@/lib/archives.shared";
+import { supabase } from "@/integrations/supabase/client";
+import { AuthorPage } from "@/components/site/AuthorPage";
 import { buildArchiveHead } from "@/serverFns/seo.head";
 
 export const Route = createFileRoute("/author/$slug")({
   loader: async ({ params }) => {
-    const data = await getArchive({ data: { kind: "author", slug: params.slug, page: 1 } });
+    const data =
+      typeof window !== "undefined"
+        ? await fetchArchiveViaRpc(supabase, { kind: "author", slug: params.slug, page: 1 })
+        : await getArchive({ data: { kind: "author", slug: params.slug, page: 1 } });
     if (!data) throw notFound();
     return data;
   },
@@ -26,15 +31,5 @@ export const Route = createFileRoute("/author/$slug")({
 
 function Page() {
   const data = Route.useLoaderData();
-  const { slug } = Route.useParams();
-  return (
-    <ArchiveView
-      data={data}
-      eyebrow="Author"
-      buildHref={(p): PageHref => {
-        if (p === 1) return { to: "/author/$slug", params: { slug } };
-        return { to: "/author/$slug/page/$page", params: { slug, page: String(p) } };
-      }}
-    />
-  );
+  return <AuthorPage data={data} />;
 }
