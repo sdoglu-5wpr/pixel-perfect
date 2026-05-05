@@ -111,7 +111,7 @@ export async function buildAuthorSitemap(): Promise<string> {
 export async function buildRssFeed(): Promise<string> {
   const { data: posts } = await supabaseAnon
     .from("posts")
-    .select("slug, title, excerpt, content_html, published_at, modified_at, author_id, featured_media_id")
+    .select("id, slug, title, excerpt, content_html, published_at, modified_at, author_id, featured_media_id")
     .eq("status", "publish")
     .eq("type", "post")
     .order("published_at", { ascending: false, nullsFirst: false })
@@ -141,7 +141,9 @@ export async function buildRssFeed(): Promise<string> {
     arr.push(c);
     postCats.set(pc.post_id, arr);
   }
-  const authorMap = new Map(((authorRes as any).data ?? []).map((a: any) => [a.id, a]));
+  const authorMap = new Map<number, { id: number; display_name: string; email: string | null }>(
+    ((authorRes as any).data ?? []).map((a: any) => [a.id, a]),
+  );
 
   const items = (posts ?? [])
     .map((p: any) => {
