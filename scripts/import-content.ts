@@ -218,9 +218,11 @@ async function importAuthors() {
     },
     post_count: a.post_count ?? 0,
   }));
-  await upsert("authors", rows, "id");
-  for (const r of rows) validAuthorIds.add(r.id);
-  log(`upserted ${rows.length}`);
+  const byId = dedupeBy("authors:id", rows, r => r.id);
+  const bySlug = dedupeBy("authors:slug", byId, r => r.slug);
+  await upsert("authors", bySlug, "id");
+  for (const r of bySlug) validAuthorIds.add(r.id);
+  log(`upserted ${bySlug.length}`);
 }
 
 type TaxJson = {
