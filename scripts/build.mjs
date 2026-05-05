@@ -17,10 +17,12 @@ import { spawn } from "node:child_process";
 import { cp, rm, mkdir, readdir, readFile, writeFile, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const ROOT = resolve(process.cwd());
 const DIST = join(ROOT, "dist");
 const SNAPSHOT = join(ROOT, ".prerender-snapshot");
+const PRERENDER_DATA = join(ROOT, ".prerender-pages.json");
 
 function run(cmd, args, env) {
   return new Promise((resolveP, rejectP) => {
@@ -56,10 +58,23 @@ async function listTopLevel(dir) {
   }
 }
 
+async function collectPrerenderPages() {
+  const { collectUrls } = await import(pathToFileURL(join(ROOT, "src/prerender.ts")).toString());
+  const result = await collectUrls();
+  if (!result.pages?.length) {
+    throw new Error("URL collection returned 0 pages; refusing to run prerender pass");
+  }
+  await writeFile(PRERENDER_DATA, JSON.stringify({ pages: result.pages }, null, 2), "utf8");
+  console.log(`[build] Collected ${result.pages.length} URLs for prerender`);
+}
+
 async function main() {
   console.log("\n=== [build] Pass 1: prerender (no Cloudflare plugin) ===\n");
   await rm(DIST, { recursive: true, force: true });
   await rm(SNAPSHOT, { recursive: true, force: true });
+  await rm(PRERENDER_DATA, { force: true });
+
+  await collectPrerenderPages();
 
   await run("npx", ["vite", "build"], {
     NODE_ENV: "production",
@@ -135,6 +150,7 @@ async function main() {
   console.log(`\n[build] Final dist/client contains ${finalCount} prerendered index.html files`);
 
   await rm(SNAPSHOT, { recursive: true, force: true });
+  await rm(PRERENDER_DATA, { force: true });
   console.log("[build] Done.\n");
 }
 
