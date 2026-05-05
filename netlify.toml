@@ -8,7 +8,7 @@
 # Image proxy to legacy WordPress (Phase 1 per § 3.2)
 [[redirects]]
   from = "/wp-content/uploads/*"
-  to = "https://sareld.wpengine.com/wp-content/uploads/:splat"
+  to = "https://everything-pr.com/wp-content/uploads/:splat"
   status = 200
   force = true
 
