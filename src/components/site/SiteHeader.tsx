@@ -67,7 +67,7 @@ const NAV: NavItem[] = [
 function LeafLinkEl({ leaf, className }: { leaf: LeafLink; className?: string }) {
   if (leaf.kind === "category") {
     return (
-      <Link to="/category/$slug" params={{ slug: leaf.slug }} className={className}>
+      <Link to="/$slug" params={{ slug: leaf.slug }} className={className}>
         {leaf.label}
       </Link>
     );
