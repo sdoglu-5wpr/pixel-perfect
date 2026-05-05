@@ -347,12 +347,27 @@ async function importPostsFile(file: string, defaultType: "post" | "page" = "pos
   const tagBySlug = new Map((tags ?? []).map(t => [t.slug as string, t.id as number]));
 
   let total = 0;
+  let emptySlugCount = 0;
   const flush = async () => {
-    if (postsBuf.length) await upsert("posts", postsBuf, "id");
+    if (postsBuf.length) {
+      // Dedupe within batch by (type, slug), keep most recent modified_at, then highest id
+      const byKey = new Map<string, Record<string, unknown>>();
+      for (const row of postsBuf) {
+        const key = `${row.type}::${row.slug}`;
+        const prev = byKey.get(key);
+        if (!prev) { byKey.set(key, row); continue; }
+        const pm = (prev.modified_at as string | null) ?? "";
+        const rm = (row.modified_at as string | null) ?? "";
+        if (rm > pm || (rm === pm && (row.id as number) > (prev.id as number))) {
+          byKey.set(key, row);
+        }
+      }
+      await upsert("posts", [...byKey.values()], "type,slug");
+      total += byKey.size;
+    }
     if (seoBuf.length) await upsert("seo_meta", seoBuf, "url_path");
     if (pcBuf.length) await upsert("post_categories", pcBuf, "post_id,category_id");
     if (ptBuf.length) await upsert("post_tags", ptBuf, "post_id,tag_id");
-    total += postsBuf.length;
     postsBuf.length = 0; seoBuf.length = 0; pcBuf.length = 0; ptBuf.length = 0;
   };
 
@@ -380,11 +395,19 @@ async function importPostsFile(file: string, defaultType: "post" | "page" = "pos
       parent_id = null;
     }
 
+    // WordPress drafts often have empty post_name. Synthesize a stable
+    // slug from the id so the (type, slug) unique constraint holds.
+    let slug = (typeof p.slug === "string" ? p.slug.trim() : "");
+    if (!slug) {
+      slug = `draft-${p.id}`;
+      emptySlugCount++;
+    }
+
     postsBuf.push({
       id: p.id,
       type: p.type === "page" ? "page" : defaultType,
       status,
-      slug: p.slug,
+      slug,
       title: p.title,
       excerpt: p.excerpt || null,
       content_html: p.content || "",
@@ -398,7 +421,7 @@ async function importPostsFile(file: string, defaultType: "post" | "page" = "pos
     });
 
     // SEO row keyed by url path "/<slug>/"
-    const urlPath = `/${p.slug}/`;
+    const urlPath = `/${slug}/`;
     const seo = p.seo ?? {};
     seoBuf.push({
       object_type: p.type,
@@ -436,6 +459,9 @@ async function importPostsFile(file: string, defaultType: "post" | "page" = "pos
     if (postsBuf.length >= BATCH) await flush();
   }
   await flush();
+  if (emptySlugCount > 0) {
+    log(`[${file}] ${emptySlugCount} rows had empty slugs, replaced with draft-{id}`);
+  }
   log(`upserted ${total} ${defaultType}s`);
 }
 
