@@ -1,0 +1,20 @@
+INSERT INTO public.redirects (source_path, target_path, status_code, enabled) VALUES
+  ('/consumer-pr/', '/cpg/', 301, true),
+  ('/consumer-pr', '/cpg/', 301, true),
+  ('/pr-editorial/', '/pr-insights/', 301, true),
+  ('/pr-editorial', '/pr-insights/', 301, true),
+  ('/general-management/', '/pr-insights/', 301, true),
+  ('/general-management', '/pr-insights/', 301, true),
+  ('/insights/', '/pr-insights/', 301, true),
+  ('/insights', '/pr-insights/', 301, true),
+  ('/public-relations-insider/', '/pr-leaders/', 301, true),
+  ('/public-relations-insider', '/pr-leaders/', 301, true),
+  ('/top-pr/', '/pr-firms/', 301, true),
+  ('/top-pr', '/pr-firms/', 301, true),
+  ('/university-pr/', '/pr-jobs/', 301, true),
+  ('/university-pr', '/pr-jobs/', 301, true),
+  ('/featured/', '/research/', 301, true),
+  ('/featured', '/research/', 301, true),
+  ('/all-posts/', '/pr-news/', 301, true),
+  ('/all-posts', '/pr-news/', 301, true)
+ON CONFLICT (source_path) DO UPDATE SET target_path = EXCLUDED.target_path, status_code = EXCLUDED.status_code, enabled = true;

@@ -33,7 +33,6 @@ export function SiteFooter({ menu }: { menu?: FooterMenuItem[] }) {
         <div>
           <h4 className="text-sm font-semibold mb-3 uppercase tracking-wider text-ink-foreground/60">Contact</h4>
           <ul className="text-sm space-y-2 text-ink-foreground/80">
-            <li>Head Office: New York, USA</li>
             <li>Email: contact@everything-pr.com</li>
           </ul>
         </div>
