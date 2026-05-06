@@ -28,9 +28,9 @@
 - [AI Communications](https://everything-pr.com/category/ai-communications/)
 
 ## Network Properties
-- [5W](https://www.5wpr.com/)
 - [Ronn Torossian](https://ronntorossian.com/)
 - [Virgo PR](https://virgo-pr.com/)
+
 
 ## Sitemap
 - [Sitemap Index](https://everything-pr.com/sitemap_index.xml)
