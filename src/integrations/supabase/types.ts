@@ -169,32 +169,50 @@ export type Database = {
       }
       categories: {
         Row: {
+          canonical_url: string | null
           created_at: string
           description: string | null
+          focus_keyword: string | null
           id: number
           name: string
+          og_image: string | null
           parent_id: number | null
           post_count: number
+          robots: string | null
+          seo_description: string | null
+          seo_title: string | null
           slug: string
           updated_at: string
         }
         Insert: {
+          canonical_url?: string | null
           created_at?: string
           description?: string | null
+          focus_keyword?: string | null
           id: number
           name: string
+          og_image?: string | null
           parent_id?: number | null
           post_count?: number
+          robots?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
           slug: string
           updated_at?: string
         }
         Update: {
+          canonical_url?: string | null
           created_at?: string
           description?: string | null
+          focus_keyword?: string | null
           id?: number
           name?: string
+          og_image?: string | null
           parent_id?: number | null
           post_count?: number
+          robots?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
           slug?: string
           updated_at?: string
         }
@@ -898,29 +916,47 @@ export type Database = {
       }
       tags: {
         Row: {
+          canonical_url: string | null
           created_at: string
           description: string | null
+          focus_keyword: string | null
           id: number
           name: string
+          og_image: string | null
           post_count: number
+          robots: string | null
+          seo_description: string | null
+          seo_title: string | null
           slug: string
           updated_at: string
         }
         Insert: {
+          canonical_url?: string | null
           created_at?: string
           description?: string | null
+          focus_keyword?: string | null
           id: number
           name: string
+          og_image?: string | null
           post_count?: number
+          robots?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
           slug: string
           updated_at?: string
         }
         Update: {
+          canonical_url?: string | null
           created_at?: string
           description?: string | null
+          focus_keyword?: string | null
           id?: number
           name?: string
+          og_image?: string | null
           post_count?: number
+          robots?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
           slug?: string
           updated_at?: string
         }

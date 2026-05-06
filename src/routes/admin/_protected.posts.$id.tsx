@@ -9,6 +9,7 @@ import { MediaPicker, type PickedMedia } from "@/components/admin/MediaPicker";
 import {
   getAdminPost, saveAdminPost, deleteAdminPost,
 } from "@/serverFns/admin-editor.functions";
+import { htmlToPlainText } from "@/lib/text";
 
 export const Route = createFileRoute("/admin/_protected/posts/$id")({
   component: PostEditor,
@@ -69,7 +70,7 @@ function PostEditor() {
         if (r.post) {
           setTitle(r.post.title ?? "");
           setSlug(r.post.slug ?? "");
-          setExcerpt(r.post.excerpt ?? "");
+          setExcerpt(htmlToPlainText(r.post.excerpt) || "");
           setContent(r.post.content_html || "<p></p>");
           setType(r.post.type ?? "post");
           setStatus(r.post.status ?? "draft");
@@ -101,8 +102,9 @@ function PostEditor() {
     if (isNew && !slugTouched) setSlug(slugify(title));
   }, [title, isNew, slugTouched]);
 
+  const plainExcerpt = useMemo(() => htmlToPlainText(excerpt), [excerpt]);
   const titleLen = (seo.title || title).length;
-  const descLen = (seo.description || excerpt).length;
+  const descLen = (seo.description || plainExcerpt).length;
 
   const save = async (overrideStatus?: typeof status) => {
     if (!title.trim()) { toast.error("Title is required"); return; }
@@ -307,7 +309,7 @@ function PostEditor() {
                     Meta description <span className={`ml-1 ${descLen > 160 ? "text-red-600" : "text-muted-foreground"}`}>({descLen}/160)</span>
                   </label>
                   <textarea value={seo.description} onChange={(e) => setSeo({ ...seo, description: e.target.value })}
-                    rows={2} placeholder={excerpt} className="w-full rounded border px-3 py-1.5 text-sm" />
+                    rows={2} placeholder={plainExcerpt} className="w-full rounded border px-3 py-1.5 text-sm" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -331,7 +333,7 @@ function PostEditor() {
                   <div className="text-xs text-muted-foreground mb-1">Search preview</div>
                   <div className="text-[#1a0dab] text-base leading-tight truncate">{seo.title || title || "Untitled"}</div>
                   <div className="text-[#006621] text-xs">/{slug}/</div>
-                  <div className="text-[#545454] text-sm line-clamp-2">{seo.description || excerpt || "—"}</div>
+                  <div className="text-[#545454] text-sm line-clamp-2">{seo.description || plainExcerpt || "—"}</div>
                 </div>
               </div>
             )}
