@@ -1,6 +1,6 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ChevronDown, Search, Clock } from "lucide-react";
+import { ChevronDown, Search, Clock, Menu, X } from "lucide-react";
 import logoUrl from "@/assets/everything-pr-logo.png";
 
 type LeafLink =
@@ -19,24 +19,21 @@ const NAV: NavItem[] = [
     label: "News",
     kind: "menu",
     children: [
-      { label: "All News", kind: "category", slug: "news" },
+      { label: "All News", kind: "category", slug: "pr-news" },
       { label: "Corporate PR", kind: "category", slug: "corporate-pr" },
       { label: "Consumer PR", kind: "category", slug: "consumer-pr" },
       { label: "Crisis PR", kind: "category", slug: "crisis-pr" },
       { label: "Healthcare PR", kind: "category", slug: "healthcare-pr" },
       { label: "Agency of Record", kind: "category", slug: "agency-of-record" },
-      { label: "Editorial", kind: "category", slug: "editorial" },
+      { label: "Editorial", kind: "category", slug: "pr-editorial" },
       { label: "Entertainment PR", kind: "category", slug: "entertainment-pr" },
-      { label: "General Management", kind: "category", slug: "general-management" },
       { label: "Insights", kind: "category", slug: "insights" },
-      { label: "PR Insiders", kind: "category", slug: "pr-insiders" },
-      { label: "PR Insights & Strategy", kind: "category", slug: "pr-insights-strategy" },
-      { label: "PR Jobs & Careers", kind: "category", slug: "pr-jobs-careers" },
+      { label: "PR Insights & Strategy", kind: "category", slug: "pr-insights" },
+      { label: "PR Jobs & Careers", kind: "category", slug: "pr-jobs" },
       { label: "PR Leaders", kind: "category", slug: "pr-leaders" },
-      { label: "PR Perspectives", kind: "category", slug: "pr-perspectives" },
+      { label: "PR Perspectives", kind: "category", slug: "public-relations" },
       { label: "Press Release", kind: "category", slug: "press-release" },
       { label: "Technology PR", kind: "category", slug: "technology-pr" },
-      { label: "Top PR", kind: "category", slug: "top-pr" },
       { label: "University PR", kind: "category", slug: "university-pr" },
     ],
   },
@@ -66,7 +63,7 @@ const NAV: NavItem[] = [
     ],
   },
   { label: "PR Firms", kind: "category", slug: "pr-firms" },
-  { label: "Features", kind: "category", slug: "features" },
+  { label: "Features", kind: "category", slug: "featured" },
   {
     label: "Research",
     kind: "menu",
@@ -81,36 +78,72 @@ const NAV: NavItem[] = [
   },
 ];
 
-function LeafLinkEl({ leaf, className }: { leaf: LeafLink; className?: string }) {
-  if (leaf.kind === "category") {
+function LeafLinkEl({ leaf, className, onClick }: { leaf: LeafLink; className?: string; onClick?: () => void }) {
+  if (leaf.kind === "category" || leaf.kind === "post") {
     return (
-      <Link to="/$slug" params={{ slug: leaf.slug }} className={className}>
-        {leaf.label}
-      </Link>
-    );
-  }
-  if (leaf.kind === "post") {
-    return (
-      <Link to="/$slug" params={{ slug: leaf.slug }} className={className}>
+      <Link to="/$slug" params={{ slug: leaf.slug }} className={className} onClick={onClick}>
         {leaf.label}
       </Link>
     );
   }
   return (
-    <Link to={leaf.to} className={className}>
+    <Link to={leaf.to} className={className} onClick={onClick}>
       {leaf.label}
     </Link>
   );
 }
 
+function SearchBox({ onSubmit, autoFocus }: { onSubmit?: () => void; autoFocus?: boolean }) {
+  const navigate = useNavigate();
+  const [q, setQ] = useState("");
+  return (
+    <form
+      role="search"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const term = q.trim();
+        if (!term) return;
+        navigate({ to: "/search", search: { s: term, page: 1 } });
+        setQ("");
+        onSubmit?.();
+      }}
+      className="flex items-center gap-2 w-full"
+    >
+      <input
+        type="search"
+        autoFocus={autoFocus}
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Search articles…"
+        className="flex-1 min-w-0 border border-black/15 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-blue)]/30"
+        aria-label="Search articles"
+      />
+      <button
+        type="submit"
+        className="px-3 py-1.5 rounded bg-[color:var(--brand-blue)] text-white text-sm font-semibold inline-flex items-center gap-1"
+      >
+        <Search className="h-4 w-4" />
+      </button>
+    </form>
+  );
+}
+
 export function SiteHeader() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileSubmenu, setMobileSubmenu] = useState<string | null>(null);
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "short",
     day: "numeric",
     month: "short",
     year: "numeric",
   });
+
+  const closeMobile = () => {
+    setMobileOpen(false);
+    setMobileSubmenu(null);
+  };
 
   return (
     <header className="bg-white text-foreground border-b border-black/10 sticky top-0 z-40 shadow-sm">
@@ -191,9 +224,7 @@ export function SiteHeader() {
                   <ChevronDown className="h-3.5 w-3.5" />
                 </button>
                 {isOpen && (
-                  <div
-                    className="absolute left-0 top-full z-50 min-w-[260px] bg-white border border-black/10 shadow-lg border-l-4 border-l-[color:var(--brand-blue)] py-2"
-                  >
+                  <div className="absolute left-0 top-full z-50 min-w-[260px] bg-white border border-black/10 shadow-lg border-l-4 border-l-[color:var(--brand-blue)] py-2">
                     {item.children.map((child) => (
                       <LeafLinkEl
                         key={child.label}
@@ -206,15 +237,111 @@ export function SiteHeader() {
               </div>
             );
           })}
-          <Link
-            to="/search"
+          <button
+            type="button"
+            onClick={() => setSearchOpen((v) => !v)}
             aria-label="Search"
+            aria-expanded={searchOpen}
             className="ml-2 p-2 rounded hover:text-[color:var(--brand-blue)] transition-colors border-l border-black/10 pl-4"
           >
             <Search className="h-4 w-4" />
-          </Link>
+          </button>
         </nav>
+
+        {/* Mobile controls */}
+        <div className="ml-auto flex items-center gap-1 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setSearchOpen((v) => !v)}
+            aria-label="Search"
+            className="p-2 rounded hover:bg-black/5"
+          >
+            <Search className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            className="p-2 rounded hover:bg-black/5"
+          >
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
+
+      {/* Inline desktop search */}
+      {searchOpen ? (
+        <div className="border-t border-black/10 bg-surface-soft">
+          <div className="mx-auto max-w-7xl px-6 py-3">
+            <SearchBox autoFocus onSubmit={() => setSearchOpen(false)} />
+          </div>
+        </div>
+      ) : null}
+
+      {/* Mobile drawer */}
+      {mobileOpen ? (
+        <div className="lg:hidden border-t border-black/10 bg-white max-h-[80vh] overflow-y-auto">
+          <div className="px-6 py-4 space-y-1 text-sm font-semibold uppercase tracking-wide">
+            {NAV.map((item) => {
+              if (item.kind === "category") {
+                return (
+                  <Link
+                    key={item.label}
+                    to="/$slug"
+                    params={{ slug: item.slug }}
+                    onClick={closeMobile}
+                    className="block px-2 py-2.5 rounded hover:bg-black/5"
+                  >
+                    {item.label}
+                  </Link>
+                );
+              }
+              if (item.kind === "path") {
+                return (
+                  <Link key={item.label} to={item.to} onClick={closeMobile} className="block px-2 py-2.5 rounded hover:bg-black/5">
+                    {item.label}
+                  </Link>
+                );
+              }
+              const open = mobileSubmenu === item.label;
+              return (
+                <div key={item.label}>
+                  <button
+                    type="button"
+                    onClick={() => setMobileSubmenu(open ? null : item.label)}
+                    aria-expanded={open}
+                    className="w-full flex items-center justify-between px-2 py-2.5 rounded hover:bg-black/5"
+                  >
+                    <span>{item.label}</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+                  </button>
+                  {open ? (
+                    <div className="pl-4 border-l-2 border-[color:var(--brand-blue)]/30 ml-2 my-1">
+                      {item.children.map((child) => (
+                        <LeafLinkEl
+                          key={child.label}
+                          leaf={child}
+                          onClick={closeMobile}
+                          className="block px-2 py-2 text-[13px] font-normal normal-case text-foreground hover:bg-black/5 hover:text-[color:var(--brand-blue)] rounded"
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+            <div className="border-t pt-3 mt-3 grid grid-cols-2 gap-2 normal-case font-normal">
+              <Link to="/$slug" params={{ slug: "about" }} onClick={closeMobile} className="block px-2 py-2 rounded hover:bg-black/5 text-sm">
+                About Us
+              </Link>
+              <Link to="/$slug" params={{ slug: "contact" }} onClick={closeMobile} className="block px-2 py-2 rounded hover:bg-black/5 text-sm">
+                Contact
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </header>
   );
 }
