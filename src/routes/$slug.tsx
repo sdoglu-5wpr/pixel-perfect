@@ -16,6 +16,7 @@ import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
 import { PillarView } from "@/components/site/PillarView";
 import { htmlToPlainText } from "@/lib/text";
 import fivewprBanner from "@/assets/5wpr-banner.jpg";
+import virgoPrBanner from "@/assets/virgo-pr-banner.gif";
 
 async function loadArticle(slug: string): Promise<ArticlePayload | null> {
   // In the browser (e.g. Netlify static hosting where TanStack server functions
