@@ -24,8 +24,8 @@ function MediaBackfillPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [running, setRunning] = useState(false);
   const [building, setBuilding] = useState(false);
-  const [batchSize, setBatchSize] = useState(25);
-  const [parallel, setParallel] = useState(4);
+  const [batchSize, setBatchSize] = useState(50);
+  const [parallel, setParallel] = useState(6);
   const [log, setLog] = useState<string[]>([]);
   const [recentErrors, setRecentErrors] = useState<Array<{ url: string; error: string }>>([]);
   const [rewriteStats, setRewriteStats] = useState<{ remaining: number; remainingInline: number; remainingSeo: number } | null>(null);
@@ -237,13 +237,13 @@ function MediaBackfillPage() {
 
         <div className="flex items-center gap-2 pt-2 border-t">
           <label className="text-xs text-muted-foreground">Batch</label>
-          <input type="number" min={1} max={50} value={batchSize}
-            onChange={(e) => setBatchSize(Math.max(1, Math.min(50, Number(e.target.value) || 25)))}
+          <input type="number" min={1} max={100} value={batchSize}
+            onChange={(e) => setBatchSize(Math.max(1, Math.min(100, Number(e.target.value) || 50)))}
             disabled={running}
             className="w-20 rounded border px-2 py-1 text-sm" />
           <label className="text-xs text-muted-foreground">× parallel</label>
-          <input type="number" min={1} max={8} value={parallel}
-            onChange={(e) => setParallel(Math.max(1, Math.min(8, Number(e.target.value) || 4)))}
+          <input type="number" min={1} max={16} value={parallel}
+            onChange={(e) => setParallel(Math.max(1, Math.min(16, Number(e.target.value) || 6)))}
             disabled={running}
             className="w-20 rounded border px-2 py-1 text-sm" />
           {!running ? (

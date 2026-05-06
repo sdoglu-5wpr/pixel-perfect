@@ -137,7 +137,7 @@ async function processOne(row: { url: string; storage_key: string }, SUPABASE_UR
 
 export const runBackfillBatch = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
-    z.object({ batchSize: z.number().int().min(1).max(50).default(20) }).parse(input),
+    z.object({ batchSize: z.number().int().min(1).max(100).default(40) }).parse(input),
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
@@ -145,7 +145,7 @@ export const runBackfillBatch = createServerFn({ method: "POST" })
     await ensureStaff(supabase, userId);
 
     const SUPABASE_URL = process.env.EPR_SUPABASE_URL!;
-    const deadline = Date.now() + 22000; // stay under 30s edge timeout
+    const deadline = Date.now() + 25000;
 
     const { data: rows, error } = await supabaseAdmin
       .from("media_backfill_queue")
