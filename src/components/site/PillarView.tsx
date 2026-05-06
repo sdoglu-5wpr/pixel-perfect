@@ -4,7 +4,7 @@ import { SiteLayout } from "./SiteLayout";
 import { PostImage } from "./PostImage";
 import { decodeHtmlEntities, htmlToPlainText } from "@/lib/text";
 import type { PillarPayload } from "@/lib/pillars.shared";
-import fivewprBanner from "@/assets/5wpr-banner.jpg";
+
 import virgoPrBanner from "@/assets/virgo-pr-banner.gif";
 
 function formatDate(iso: string | null | undefined) {
