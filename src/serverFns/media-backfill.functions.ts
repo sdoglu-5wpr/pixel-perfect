@@ -94,6 +94,29 @@ export const buildBackfillQueue = createServerFn({ method: "POST" })
       offset += PAGE;
     }
 
+    // Also scan seo_meta (og_image, twitter_image, raw JSON blob).
+    let seoOff = 0;
+    while (true) {
+      const { data, error } = await supabaseAdmin
+        .from("seo_meta")
+        .select("og_image, twitter_image, raw")
+        .range(seoOff, seoOff + PAGE - 1);
+      if (error) throw new Error(error.message);
+      if (!data?.length) break;
+      for (const s of data) {
+        for (const v of [s.og_image, s.twitter_image]) {
+          if (v && /everything-pr\.com\/wp-content\/uploads\//i.test(v)) urls.add(normalizeUrl(v));
+        }
+        if (s.raw) {
+          const txt = typeof s.raw === "string" ? s.raw : JSON.stringify(s.raw);
+          const matches = txt.match(LEGACY_RE);
+          if (matches) for (const m of matches) urls.add(normalizeUrl(m));
+        }
+      }
+      if (data.length < PAGE) break;
+      seoOff += PAGE;
+    }
+
     // Insert in chunks; ignore duplicates.
     const rows = Array.from(urls)
       .map((u) => {
