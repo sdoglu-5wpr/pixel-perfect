@@ -8,7 +8,13 @@ export const Route = createFileRoute("/admin/_protected/categories")({
   component: CategoriesPage,
 });
 
-type Cat = { id: number; name: string; slug: string; description: string | null; parent_id: number | null; post_count: number };
+type Cat = {
+  id: number; name: string; slug: string; description: string | null;
+  parent_id: number | null; post_count: number;
+  seo_title?: string | null; seo_description?: string | null;
+  canonical_url?: string | null; robots?: string | null;
+  og_image?: string | null; focus_keyword?: string | null;
+};
 
 function CategoriesPage() {
   const [items, setItems] = useState<Cat[]>([]);
