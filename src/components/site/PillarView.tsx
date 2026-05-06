@@ -61,7 +61,7 @@ export function PillarView({ data }: { data: PillarPayload }) {
             {pillar.hero_image_url ? (
               <img
                 src={pillar.hero_image_url}
-                alt={pillar.title}
+                alt={`${pillar.title}${pillar.subtitle ? ` — ${pillar.subtitle}` : ""} | Everything-PR industry coverage`}
                 className="w-full h-auto rounded-lg shadow-2xl ring-1 ring-white/10"
                 loading="eager"
               />
