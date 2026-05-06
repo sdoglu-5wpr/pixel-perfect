@@ -118,12 +118,13 @@ export const buildBackfillQueue = createServerFn({ method: "POST" })
   });
 
 // ---------- Process a batch ----------
-async function processOne(row: { url: string; storage_key: string }, SUPABASE_URL: string) {
+async function processOne(row: { url: string; storage_key: string }, SUPABASE_URL: string, deadline: number) {
   const newUrl = publicUrl(SUPABASE_URL, row.storage_key);
   const mime = guessMime(row.storage_key);
   try {
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 15000);
+    const remaining = Math.max(1000, deadline - Date.now());
+    const t = setTimeout(() => ctrl.abort(), Math.min(8000, remaining));
     const res = await fetch(row.url, {
       headers: { "user-agent": "epr-media-backfill/1.0" },
       signal: ctrl.signal,
@@ -162,7 +163,7 @@ async function processOne(row: { url: string; storage_key: string }, SUPABASE_UR
 
 export const runBackfillBatch = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
-    z.object({ batchSize: z.number().int().min(1).max(20).default(8) }).parse(input),
+    z.object({ batchSize: z.number().int().min(1).max(10).default(5) }).parse(input),
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
@@ -170,6 +171,7 @@ export const runBackfillBatch = createServerFn({ method: "POST" })
     await ensureStaff(supabase, userId);
 
     const SUPABASE_URL = process.env.EPR_SUPABASE_URL!;
+    const deadline = Date.now() + 22000; // stay under 30s edge timeout
 
     const { data: rows, error } = await supabaseAdmin
       .from("media_backfill_queue")
@@ -178,7 +180,7 @@ export const runBackfillBatch = createServerFn({ method: "POST" })
       .limit(data.batchSize);
     if (error) throw new Error(error.message);
 
-    const results = await Promise.all((rows ?? []).map((r) => processOne(r as any, SUPABASE_URL)));
+    const results = await Promise.all((rows ?? []).map((r) => processOne(r as any, SUPABASE_URL, deadline)));
     let uploaded = 0, failed = 0;
     const errors: Array<{ url: string; error: string }> = [];
     for (const r of results) {

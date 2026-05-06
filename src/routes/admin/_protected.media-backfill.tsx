@@ -20,7 +20,7 @@ function MediaBackfillPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [running, setRunning] = useState(false);
   const [building, setBuilding] = useState(false);
-  const [batchSize, setBatchSize] = useState(8);
+  const [batchSize, setBatchSize] = useState(5);
   const [log, setLog] = useState<string[]>([]);
   const [recentErrors, setRecentErrors] = useState<Array<{ url: string; error: string }>>([]);
   const stopRef = useRef(false);
@@ -126,7 +126,7 @@ function MediaBackfillPage() {
 
         <div className="flex items-center gap-2 pt-2 border-t">
           <label className="text-xs text-muted-foreground">Batch</label>
-          <input type="number" min={1} max={20} value={batchSize}
+          <input type="number" min={1} max={10} value={batchSize}
             onChange={(e) => setBatchSize(Math.max(1, Math.min(20, Number(e.target.value) || 8)))}
             disabled={running}
             className="w-20 rounded border px-2 py-1 text-sm" />
