@@ -2,15 +2,18 @@ import { createFileRoute, Link, notFound, redirect, useRouter } from "@tanstack/
 import { ChevronRight, ArrowRight, Clock, Share2, Twitter, Linkedin, Facebook, Link as LinkIcon } from "lucide-react";
 import { getArticleBySlug, type RelatedPost, type ArticlePayload, type ArticleAuthor } from "@/serverFns/articles.functions";
 import { getArchive, type ArchivePayload } from "@/serverFns/archives.functions";
+import { getPillar, type PillarPayload } from "@/serverFns/pillars.functions";
 import { lookupRedirect } from "@/serverFns/redirects.functions";
 import { fetchArticleViaRpc } from "@/lib/articles.shared";
 import { fetchArchiveViaRpc } from "@/lib/archives.shared";
+import { fetchPillarViaRpc } from "@/lib/pillars.shared";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { NewsletterBanner } from "@/components/site/NewsletterBanner";
 import { PostImage } from "@/components/site/PostImage";
 import { ContactPage } from "@/components/site/ContactPage";
 import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
+import { PillarView } from "@/components/site/PillarView";
 import { htmlToPlainText } from "@/lib/text";
 
 async function loadArticle(slug: string): Promise<ArticlePayload | null> {
@@ -41,11 +44,17 @@ export const Route = createFileRoute("/$slug")({
   loader: async ({ params }) => {
     if (!params.slug || params.slug.includes(".")) throw notFound();
 
-    // Try article first
+    // 1. Try article
     const data = await loadArticle(params.slug);
     if (data) return { kind: "article" as const, data };
 
-    // Fall back to category archive (legacy permalinks like /social-media)
+    // 2. Try pillar (industry landing page)
+    const pillar = typeof window !== "undefined"
+      ? await fetchPillarViaRpc(supabase, params.slug, 1)
+      : await getPillar({ data: { slug: params.slug, page: 1 } });
+    if (pillar) return { kind: "pillar" as const, data: pillar };
+
+    // 3. Fall back to category archive
     const archive = typeof window !== "undefined"
       ? await fetchArchiveViaRpc(supabase, { kind: "category", slug: params.slug, page: 1 })
       : await getArchive({ data: { kind: "category", slug: params.slug, page: 1 } });
@@ -62,7 +71,28 @@ export const Route = createFileRoute("/$slug")({
     throw notFound();
   },
   head: ({ loaderData }) => {
-    if (!loaderData || loaderData.kind !== "article") return { meta: [{ title: "Everything-PR" }] };
+    if (!loaderData) return { meta: [{ title: "Everything-PR" }] };
+    if (loaderData.kind === "pillar") {
+      const p = loaderData.data.pillar;
+      const description = p.subtitle || `${p.title} — long-form guide and the latest coverage on Everything-PR.`;
+      const meta = [
+        { title: `${p.title} · Everything-PR` },
+        { name: "description", content: description },
+        { property: "og:title", content: p.title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "article" },
+        { name: "twitter:card", content: "summary_large_image" },
+      ];
+      if (p.hero_image_url) {
+        meta.push({ property: "og:image", content: p.hero_image_url });
+        meta.push({ name: "twitter:image", content: p.hero_image_url });
+      }
+      const scripts = p.schema_jsonld
+        ? [{ type: "application/ld+json", children: JSON.stringify(p.schema_jsonld) }]
+        : [];
+      return { meta, scripts };
+    }
+    if (loaderData.kind !== "article") return { meta: [{ title: "Everything-PR" }] };
     const { article } = loaderData.data;
     const title = article.seo?.title || `${article.title} · Everything-PR`;
     const description =
