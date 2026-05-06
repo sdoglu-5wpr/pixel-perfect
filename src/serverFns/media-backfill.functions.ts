@@ -269,7 +269,7 @@ export const rewritePostsBatch = createServerFn({ method: "POST" })
       }
 
       if (html !== original || inline !== originalInline) {
-        const patch: Record<string, unknown> = {};
+        const patch: { content_html?: string; first_inline_image?: string | null } = {};
         if (html !== original) patch.content_html = html;
         if (inline !== originalInline) patch.first_inline_image = inline;
         const { error: uErr } = await supabaseAdmin.from("posts").update(patch).eq("id", p.id);
