@@ -160,13 +160,22 @@ function MediaBackfillPage() {
   const start = async () => {
     if (running) return;
     stopRef.current = false; setRunning(true); setRecentErrors([]);
-    while (!stopRef.current) {
+    let drainedFlag = false;
+    while (!stopRef.current && !drainedFlag) {
       try {
-        const r = await runBackfillBatch({ data: { batchSize } });
-        if (r.errors?.length) setRecentErrors(r.errors);
-        setLog((l) => [`${new Date().toLocaleTimeString()}  +${r.uploaded} ok · ${r.failed} fail`, ...l].slice(0, 50));
+        const results = await Promise.all(
+          Array.from({ length: parallel }, () => runBackfillBatch({ data: { batchSize } })),
+        );
+        let upTotal = 0, failTotal = 0, procTotal = 0;
+        const allErrs: Array<{ url: string; error: string }> = [];
+        for (const r of results) {
+          upTotal += r.uploaded; failTotal += r.failed; procTotal += r.processed ?? 0;
+          if (r.errors?.length) allErrs.push(...r.errors);
+        }
+        if (allErrs.length) setRecentErrors(allErrs.slice(0, 10));
+        setLog((l) => [`${new Date().toLocaleTimeString()}  +${upTotal} ok · ${failTotal} fail (${parallel}×${batchSize})`, ...l].slice(0, 50));
         await refresh();
-        if ((r.processed ?? 0) === 0) { toast.success("Queue drained"); break; }
+        if (procTotal === 0) { toast.success("Queue drained"); drainedFlag = true; }
       } catch (e: any) {
         toast.error(e?.message ?? "Batch failed");
         setLog((l) => [`${new Date().toLocaleTimeString()}  ERROR ${e?.message}`, ...l].slice(0, 50));
