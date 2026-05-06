@@ -10,6 +10,7 @@ import {
   resetFailedBackfill,
   getRewriteStats,
   rewritePostsBatch,
+  rewriteSeoBatch,
 } from "@/serverFns/media-backfill.functions";
 
 export const Route = createFileRoute("/admin/_protected/media-backfill")({
