@@ -374,6 +374,14 @@ function ArticlePage() {
                 ))}
               </ul>
             </div>
+            <a
+              href="https://virgo-pr.com/?utm_source=everything-pr&utm_medium=banner&utm_campaign=epr-banner"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="block overflow-hidden rounded-lg border hover:opacity-90 transition-opacity"
+            >
+              <img src={virgoPrBanner} alt="Virgo PR" className="w-full h-auto" loading="lazy" />
+            </a>
             <div className="rounded-lg border bg-surface-soft p-5">
               <h3 className="font-serif text-lg font-bold mb-2">Get the PR Brief</h3>
               <p className="text-sm text-muted-foreground mb-3">
