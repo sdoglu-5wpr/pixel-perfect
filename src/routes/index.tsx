@@ -15,6 +15,7 @@ const EMPTY_PAYLOAD: HomePayload = {
   hero: null,
   topStories: [],
   sections: [
+    { key: "research", title: "Research", slug: "research", posts: [] },
     { key: "pr-news", title: "PR News", slug: "pr-news", posts: [] },
     { key: "pr-insights", title: "Insights", slug: "pr-insights", posts: [] },
     { key: "marketing", title: "Marketing", slug: "marketing", posts: [] },
@@ -91,10 +92,64 @@ function HomePage() {
 
       <SectionRow title="Other news" categorySlug={null} posts={data.otherNews} />
 
+      <AboutEverythingPR />
+
       <div className="mx-auto max-w-7xl px-6">
         <NewsletterBanner />
       </div>
     </SiteLayout>
+  );
+}
+
+function AboutEverythingPR() {
+  return (
+    <section className="mx-auto max-w-7xl px-6 mt-16">
+      <div className="rounded-2xl border bg-surface-soft p-8 md:p-12">
+        <p className="text-[11px] uppercase tracking-wider font-semibold text-brand-blue">
+          Published Daily Since 2009
+        </p>
+        <h2 className="mt-2 font-serif font-extrabold text-2xl md:text-3xl leading-tight">
+          Everything-PR — the leading independent publication covering the public relations and marketing communications industry.
+        </h2>
+        <p className="mt-4 text-sm md:text-base text-muted-foreground leading-relaxed">
+          We publish daily news, analysis, agency coverage, crisis PR strategy, digital marketing insights, industry research, and expert commentary across every sector of the communications business. Founded in January 2009 and operated by 5W Public Relations — one of the largest independently owned PR and digital marketing firms in the United States — Everything-PR brings a practitioner perspective to industry coverage that trade aggregators and outside observers cannot replicate.
+        </p>
+        <p className="mt-3 text-sm md:text-base text-muted-foreground leading-relaxed">
+          Explore coverage by category: consumer PR, corporate PR, crisis PR, healthcare PR, technology PR, entertainment PR, social media, marketing, PR firms, PR insights, PR leaders, agency of record, RFPs, and PR jobs.
+        </p>
+
+        <div className="mt-8 grid md:grid-cols-2 gap-8">
+          <div>
+            <h3 className="font-serif font-bold text-lg">What is Everything-PR?</h3>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+              Everything-PR is an independent PR and marketing industry publication that has published continuously since January 2009 — making it one of the longest-running and most comprehensive sources of public relations news and intelligence available online. The publication covers PR agency news and account wins, brand communications strategy, crisis PR and reputation management, digital marketing and social media, industry research and data, executive appointments and leadership profiles, PR RFPs and new business opportunities, and the strategic and cultural forces shaping how communications is practiced and valued across every sector. Everything-PR is operated by 5W Public Relations and publishes with the editorial independence and practitioner authority that 17 years of continuous coverage of this industry provides.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-serif font-bold text-lg">What does Everything-PR cover?</h3>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+              Everything-PR covers the full spectrum of the public relations and marketing communications industry. <strong>Consumer PR</strong> — campaigns, agencies, and strategies that build brand awareness and drive purchase decisions. <strong>Corporate PR</strong> — executive communications, investor relations, ESG, and institutional reputation programs. <strong>Crisis PR</strong> — real-time coverage of how organizations manage reputational emergencies. <strong>Healthcare PR</strong> — pharmaceutical, hospital, digital health, and health technology communications. <strong>Technology PR</strong> — startup, enterprise, AI, SaaS, and consumer tech communications. <strong>Entertainment PR</strong> — film, television, music, sports, gaming, and celebrity. And <strong>marketing and social media</strong> — the digital disciplines increasingly integrated with PR into unified communications programs.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-serif font-bold text-lg">Why is Everything-PR the authoritative source?</h3>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+              Everything-PR's authority comes from three sources newer publications and aggregators cannot replicate. First, 17 years of continuous daily publishing since January 2009 — an archive of tens of thousands of articles indexed across every major search engine and AI model. Second, the practitioner perspective of 5W Public Relations, which operates this publication — giving Everything-PR insight only an active participant can provide. Third, editorial breadth that covers not just PR but the full spectrum of communications and marketing — digital marketing, social media strategy, GEO and AI search, agency of record assignments, RFPs, and PR jobs — making it a comprehensive resource for everyone who works in or hires from the communications industry.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-serif font-bold text-lg">How is the PR and marketing industry changing in 2026?</h3>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+              The industry in 2026 is undergoing structural change at a pace with no recent precedent. Agency consolidation — driven by major M&amp;A activity across the holding company landscape — is reshaping which agencies exist, which brands they own, and how the competitive landscape is structured. Artificial intelligence is restructuring how brands are discovered, how content is created and distributed, and how agencies demonstrate value — with generative engine optimization emerging as a core discipline alongside traditional media relations, social media, and digital marketing. And the definition of what PR agencies do continues to expand — those gaining the most ground have built genuinely integrated capabilities across earned, owned, paid, and AI-optimized channels.
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-8 text-sm font-semibold text-foreground">
+          PR Firms, PR Agencies: Visit Everything-PR for the best PR news and trends.
+        </p>
+      </div>
+    </section>
   );
 }
 
