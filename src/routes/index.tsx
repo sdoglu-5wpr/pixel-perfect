@@ -112,7 +112,7 @@ function AboutEverythingPR() {
           Everything-PR — the leading independent publication covering the public relations and marketing communications industry.
         </h2>
         <p className="mt-4 text-sm md:text-base text-muted-foreground leading-relaxed">
-          We publish daily news, analysis, agency coverage, crisis PR strategy, digital marketing insights, industry research, and expert commentary across every sector of the communications business. Founded in January 2009 and operated by <a href="https://www.5wpr.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-blue">5W Public Relations</a> — one of the largest independently owned PR and digital marketing firms in the United States — Everything-PR brings a practitioner perspective to industry coverage that trade aggregators and outside observers cannot replicate.
+          We publish daily news, analysis, agency coverage, crisis PR strategy, digital marketing insights, industry research, and expert commentary across every sector of the communications business. Founded in January 2009, Everything-PR is an independent publication that brings a practitioner perspective to industry coverage that trade aggregators and outside observers cannot replicate.
         </p>
         <p className="mt-3 text-sm md:text-base text-muted-foreground leading-relaxed">
           Explore coverage by category:{" "}
