@@ -70,7 +70,7 @@ function PostEditor() {
         if (r.post) {
           setTitle(r.post.title ?? "");
           setSlug(r.post.slug ?? "");
-          setExcerpt(r.post.excerpt ?? "");
+          setExcerpt(htmlToPlainText(r.post.excerpt) || "");
           setContent(r.post.content_html || "<p></p>");
           setType(r.post.type ?? "post");
           setStatus(r.post.status ?? "draft");
