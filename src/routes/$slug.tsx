@@ -197,11 +197,16 @@ function readingTime(html: string | null | undefined): number {
 
 type LoaderData =
   | { kind: "article"; data: ArticlePayload }
+  | { kind: "pillar"; data: PillarPayload }
   | { kind: "archive"; data: ArchivePayload; slug: string };
 
 function ArticlePage() {
   const loaderData = Route.useLoaderData() as LoaderData | undefined;
   if (!loaderData) return <NotFound />;
+
+  if (loaderData.kind === "pillar") {
+    return <PillarView data={loaderData.data} />;
+  }
 
   if (loaderData.kind === "archive") {
     const { data, slug } = loaderData;
