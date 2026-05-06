@@ -48,6 +48,23 @@ const NAV: NavItem[] = [
       { label: "Marketing", kind: "category", slug: "marketing" },
     ],
   },
+  {
+    label: "Industries",
+    kind: "menu",
+    children: [
+      { label: "AI Communications", kind: "category", slug: "ai-communications" },
+      { label: "Crisis Communications", kind: "category", slug: "crisis-pr" },
+      { label: "Financial Services", kind: "category", slug: "financial-services" },
+      { label: "Health Tech", kind: "category", slug: "health-tech" },
+      { label: "Cybersecurity", kind: "category", slug: "cybersecurity" },
+      { label: "Beauty", kind: "category", slug: "beauty" },
+      { label: "Cannabis", kind: "category", slug: "cannabis" },
+      { label: "Gambling & iGaming", kind: "category", slug: "gambling" },
+      { label: "CPG", kind: "category", slug: "cpg" },
+      { label: "AdTech", kind: "category", slug: "adtech" },
+      { label: "Hospitality & Travel", kind: "category", slug: "hospitality" },
+    ],
+  },
   { label: "PR Firms", kind: "category", slug: "pr-firms" },
   { label: "Features", kind: "category", slug: "features" },
   {
