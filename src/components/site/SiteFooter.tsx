@@ -41,8 +41,11 @@ export function SiteFooter({ menu }: { menu?: FooterMenuItem[] }) {
       <div className="border-t border-white/10">
         <div className="mx-auto max-w-7xl px-6 py-5 flex flex-col md:flex-row items-center justify-between text-xs text-ink-foreground/60">
           <span>© {new Date().getFullYear()} Everything-PR. All Rights Reserved.</span>
-          <div className="flex gap-5 mt-2 md:mt-0">
+          <div className="flex flex-wrap gap-x-5 gap-y-2 mt-2 md:mt-0 justify-center md:justify-end">
+            <Link to="/terms-of-use" className="hover:text-ink-foreground">Terms of Use</Link>
             <Link to="/privacy-policy" className="hover:text-ink-foreground">Privacy Policy</Link>
+            <Link to="/cookie-policy" className="hover:text-ink-foreground">Cookie Policy</Link>
+            <Link to="/editorial-policy" className="hover:text-ink-foreground">Editorial Policy</Link>
             <Link to="/terms" className="hover:text-ink-foreground">Terms &amp; Conditions</Link>
           </div>
         </div>
