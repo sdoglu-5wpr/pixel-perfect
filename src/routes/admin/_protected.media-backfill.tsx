@@ -330,8 +330,6 @@ function MediaBackfillPage() {
             ⚡ Rewrite ALL via SQL (chunked)
           </button>
           {rewriting && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-          </button>
-          {rewriting && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
         </div>
       </div>
 
