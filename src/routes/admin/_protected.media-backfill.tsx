@@ -31,8 +31,28 @@ function MediaBackfillPage() {
   const stopRef = useRef(false);
 
   const refresh = async () => {
-    try { setStats((await getBackfillStats()) as Stats); }
-    catch (e: any) { toast.error(e?.message ?? "Failed to load stats"); }
+    try {
+      setStats((await getBackfillStats()) as Stats);
+      setRewriteStats(await getRewriteStats());
+    } catch (e: any) { toast.error(e?.message ?? "Failed to load stats"); }
+  };
+
+  const startRewrite = async () => {
+    if (rewriting) return;
+    stopRewriteRef.current = false; setRewriting(true);
+    while (!stopRewriteRef.current) {
+      try {
+        const r = await rewritePostsBatch({ data: { batchSize: 25 } });
+        setLog((l) => [`${new Date().toLocaleTimeString()}  rewrite: updated=${r.updated}/${r.processed}, remaining=${r.remaining}`, ...l].slice(0, 50));
+        await refresh();
+        if (r.processed === 0 || r.remaining === 0) { toast.success("Posts rewritten"); break; }
+      } catch (e: any) {
+        toast.error(e?.message ?? "Rewrite failed");
+        setLog((l) => [`${new Date().toLocaleTimeString()}  ERROR rewrite ${e?.message}`, ...l].slice(0, 50));
+        break;
+      }
+    }
+    setRewriting(false);
   };
 
   useEffect(() => {
