@@ -7,11 +7,11 @@ export function NewsletterBanner() {
       style={{ background: "var(--gradient-newsletter)" }}
     >
       <h2 className="font-serif text-3xl md:text-4xl font-bold max-w-2xl mx-auto leading-tight">
-        Join 1M+ Readers Who Never Miss a Headline
+        Never Miss a Headline
       </h2>
       <p className="mt-4 text-white/80 max-w-xl mx-auto text-sm md:text-base">
-        Stay informed wherever you are — join our growing community of readers
-        and followers across social platforms.
+        Daily PR headlines, weekly long-form analysis, and our proprietary
+        research drops — straight to your inbox.
       </p>
       <form className="mt-7 max-w-md mx-auto flex gap-2">
         <input

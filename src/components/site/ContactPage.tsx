@@ -50,10 +50,9 @@ export function ContactPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
           <ContactCard icon={<Phone className="w-6 h-6" />} label="Give us a call" value="+1 (212) 999-5585" href="tel:+12129995585" />
           <ContactCard icon={<Mail className="w-6 h-6" />} label="Send us an email" value="info@everything-pr.com" href="mailto:info@everything-pr.com" />
-          <ContactCard icon={<MapPin className="w-6 h-6" />} label="Visit us in person" value="230 Park Avenue, New York, NY 10169" />
         </div>
       </section>
 
