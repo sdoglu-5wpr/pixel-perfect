@@ -123,7 +123,7 @@ async function processOne(row: { url: string; storage_key: string }, SUPABASE_UR
 
 export const runBackfillBatch = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
-    z.object({ batchSize: z.number().int().min(1).max(10).default(5) }).parse(input),
+    z.object({ batchSize: z.number().int().min(1).max(50).default(20) }).parse(input),
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
