@@ -48,6 +48,7 @@ import { Route as TagSlugPagePageRouteImport } from './routes/tag.$slug.page.$pa
 import { Route as CategorySlugPagePageRouteImport } from './routes/category.$slug.page.$page'
 import { Route as AuthorSlugPagePageRouteImport } from './routes/author.$slug.page.$page'
 import { Route as ApiPublicHooksPublishScheduledRouteImport } from './routes/api/public/hooks/publish-scheduled'
+import { Route as ApiPublicHooksGenerateMissingFeaturedImagesRouteImport } from './routes/api/public/hooks/generate-missing-featured-images'
 import { Route as AdminProtectedPostsIdRouteImport } from './routes/admin/_protected.posts.$id'
 
 const Sitemap_indexDotxmlRoute = Sitemap_indexDotxmlRouteImport.update({
@@ -249,6 +250,12 @@ const ApiPublicHooksPublishScheduledRoute =
     path: '/api/public/hooks/publish-scheduled',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksGenerateMissingFeaturedImagesRoute =
+  ApiPublicHooksGenerateMissingFeaturedImagesRouteImport.update({
+    id: '/api/public/hooks/generate-missing-featured-images',
+    path: '/api/public/hooks/generate-missing-featured-images',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminProtectedPostsIdRoute = AdminProtectedPostsIdRouteImport.update({
   id: '/posts/$id',
   path: '/posts/$id',
@@ -291,6 +298,7 @@ export interface FileRoutesByFullPath {
   '/admin/tags': typeof AdminProtectedTagsRoute
   '/admin/': typeof AdminProtectedIndexRoute
   '/admin/posts/$id': typeof AdminProtectedPostsIdRoute
+  '/api/public/hooks/generate-missing-featured-images': typeof ApiPublicHooksGenerateMissingFeaturedImagesRoute
   '/api/public/hooks/publish-scheduled': typeof ApiPublicHooksPublishScheduledRoute
   '/author/$slug/page/$page': typeof AuthorSlugPagePageRoute
   '/category/$slug/page/$page': typeof CategorySlugPagePageRoute
@@ -332,6 +340,7 @@ export interface FileRoutesByTo {
   '/admin/tags': typeof AdminProtectedTagsRoute
   '/admin': typeof AdminProtectedIndexRoute
   '/admin/posts/$id': typeof AdminProtectedPostsIdRoute
+  '/api/public/hooks/generate-missing-featured-images': typeof ApiPublicHooksGenerateMissingFeaturedImagesRoute
   '/api/public/hooks/publish-scheduled': typeof ApiPublicHooksPublishScheduledRoute
   '/author/$slug/page/$page': typeof AuthorSlugPagePageRoute
   '/category/$slug/page/$page': typeof CategorySlugPagePageRoute
@@ -375,6 +384,7 @@ export interface FileRoutesById {
   '/admin/_protected/tags': typeof AdminProtectedTagsRoute
   '/admin/_protected/': typeof AdminProtectedIndexRoute
   '/admin/_protected/posts/$id': typeof AdminProtectedPostsIdRoute
+  '/api/public/hooks/generate-missing-featured-images': typeof ApiPublicHooksGenerateMissingFeaturedImagesRoute
   '/api/public/hooks/publish-scheduled': typeof ApiPublicHooksPublishScheduledRoute
   '/author/$slug/page/$page': typeof AuthorSlugPagePageRoute
   '/category/$slug/page/$page': typeof CategorySlugPagePageRoute
@@ -419,6 +429,7 @@ export interface FileRouteTypes {
     | '/admin/tags'
     | '/admin/'
     | '/admin/posts/$id'
+    | '/api/public/hooks/generate-missing-featured-images'
     | '/api/public/hooks/publish-scheduled'
     | '/author/$slug/page/$page'
     | '/category/$slug/page/$page'
@@ -460,6 +471,7 @@ export interface FileRouteTypes {
     | '/admin/tags'
     | '/admin'
     | '/admin/posts/$id'
+    | '/api/public/hooks/generate-missing-featured-images'
     | '/api/public/hooks/publish-scheduled'
     | '/author/$slug/page/$page'
     | '/category/$slug/page/$page'
@@ -502,6 +514,7 @@ export interface FileRouteTypes {
     | '/admin/_protected/tags'
     | '/admin/_protected/'
     | '/admin/_protected/posts/$id'
+    | '/api/public/hooks/generate-missing-featured-images'
     | '/api/public/hooks/publish-scheduled'
     | '/author/$slug/page/$page'
     | '/category/$slug/page/$page'
@@ -532,6 +545,7 @@ export interface RootRouteChildren {
   AuthorSlugRoute: typeof AuthorSlugRouteWithChildren
   CategorySlugRoute: typeof CategorySlugRouteWithChildren
   TagSlugRoute: typeof TagSlugRouteWithChildren
+  ApiPublicHooksGenerateMissingFeaturedImagesRoute: typeof ApiPublicHooksGenerateMissingFeaturedImagesRoute
   ApiPublicHooksPublishScheduledRoute: typeof ApiPublicHooksPublishScheduledRoute
 }
 
@@ -810,6 +824,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPublishScheduledRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/generate-missing-featured-images': {
+      id: '/api/public/hooks/generate-missing-featured-images'
+      path: '/api/public/hooks/generate-missing-featured-images'
+      fullPath: '/api/public/hooks/generate-missing-featured-images'
+      preLoaderRoute: typeof ApiPublicHooksGenerateMissingFeaturedImagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/_protected/posts/$id': {
       id: '/admin/_protected/posts/$id'
       path: '/posts/$id'
@@ -916,6 +937,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthorSlugRoute: AuthorSlugRouteWithChildren,
   CategorySlugRoute: CategorySlugRouteWithChildren,
   TagSlugRoute: TagSlugRouteWithChildren,
+  ApiPublicHooksGenerateMissingFeaturedImagesRoute:
+    ApiPublicHooksGenerateMissingFeaturedImagesRoute,
   ApiPublicHooksPublishScheduledRoute: ApiPublicHooksPublishScheduledRoute,
 }
 export const routeTree = rootRouteImport
