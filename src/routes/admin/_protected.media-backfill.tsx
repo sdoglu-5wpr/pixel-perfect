@@ -11,6 +11,7 @@ import {
   getRewriteStats,
   rewritePostsBatch,
   rewriteSeoBatch,
+  rewriteAllLegacyUrls,
 } from "@/serverFns/media-backfill.functions";
 
 export const Route = createFileRoute("/admin/_protected/media-backfill")({
@@ -23,7 +24,8 @@ function MediaBackfillPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [running, setRunning] = useState(false);
   const [building, setBuilding] = useState(false);
-  const [batchSize, setBatchSize] = useState(5);
+  const [batchSize, setBatchSize] = useState(25);
+  const [parallel, setParallel] = useState(4);
   const [log, setLog] = useState<string[]>([]);
   const [recentErrors, setRecentErrors] = useState<Array<{ url: string; error: string }>>([]);
   const [rewriteStats, setRewriteStats] = useState<{ remaining: number; remainingInline: number; remainingSeo: number } | null>(null);
@@ -158,13 +160,22 @@ function MediaBackfillPage() {
   const start = async () => {
     if (running) return;
     stopRef.current = false; setRunning(true); setRecentErrors([]);
-    while (!stopRef.current) {
+    let drainedFlag = false;
+    while (!stopRef.current && !drainedFlag) {
       try {
-        const r = await runBackfillBatch({ data: { batchSize } });
-        if (r.errors?.length) setRecentErrors(r.errors);
-        setLog((l) => [`${new Date().toLocaleTimeString()}  +${r.uploaded} ok · ${r.failed} fail`, ...l].slice(0, 50));
+        const results = await Promise.all(
+          Array.from({ length: parallel }, () => runBackfillBatch({ data: { batchSize } })),
+        );
+        let upTotal = 0, failTotal = 0, procTotal = 0;
+        const allErrs: Array<{ url: string; error: string }> = [];
+        for (const r of results) {
+          upTotal += r.uploaded; failTotal += r.failed; procTotal += r.processed ?? 0;
+          if (r.errors?.length) allErrs.push(...r.errors);
+        }
+        if (allErrs.length) setRecentErrors(allErrs.slice(0, 10));
+        setLog((l) => [`${new Date().toLocaleTimeString()}  +${upTotal} ok · ${failTotal} fail (${parallel}×${batchSize})`, ...l].slice(0, 50));
         await refresh();
-        if ((r.processed ?? 0) === 0) { toast.success("Queue drained"); break; }
+        if (procTotal === 0) { toast.success("Queue drained"); drainedFlag = true; }
       } catch (e: any) {
         toast.error(e?.message ?? "Batch failed");
         setLog((l) => [`${new Date().toLocaleTimeString()}  ERROR ${e?.message}`, ...l].slice(0, 50));
@@ -226,8 +237,13 @@ function MediaBackfillPage() {
 
         <div className="flex items-center gap-2 pt-2 border-t">
           <label className="text-xs text-muted-foreground">Batch</label>
-          <input type="number" min={1} max={10} value={batchSize}
-            onChange={(e) => setBatchSize(Math.max(1, Math.min(20, Number(e.target.value) || 8)))}
+          <input type="number" min={1} max={50} value={batchSize}
+            onChange={(e) => setBatchSize(Math.max(1, Math.min(50, Number(e.target.value) || 25)))}
+            disabled={running}
+            className="w-20 rounded border px-2 py-1 text-sm" />
+          <label className="text-xs text-muted-foreground">× parallel</label>
+          <input type="number" min={1} max={8} value={parallel}
+            onChange={(e) => setParallel(Math.max(1, Math.min(8, Number(e.target.value) || 4)))}
             disabled={running}
             className="w-20 rounded border px-2 py-1 text-sm" />
           {!running ? (
@@ -279,6 +295,26 @@ function MediaBackfillPage() {
           <button onClick={startSeoRewrite} disabled={rewriting || (rewriteStats?.remainingSeo ?? 0) === 0}
             className="inline-flex items-center gap-1 rounded border bg-white px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:opacity-50">
             <Play className="h-4 w-4" /> Rewrite SEO meta
+          </button>
+          <button
+            onClick={async () => {
+              if (rewriting) return;
+              setRewriting(true);
+              try {
+                const r = await rewriteAllLegacyUrls();
+                if (r.error) { toast.error(r.error); }
+                else {
+                  toast.success(`SQL rewrite: SEO ${r.seo_updated}, inline ${r.posts_inline_updated}, HTML ${r.posts_html_updated}`);
+                  setLog((l) => [`${new Date().toLocaleTimeString()}  SQL rewrite: seo=${r.seo_updated} inline=${r.posts_inline_updated} html=${r.posts_html_updated} (map=${r.mapping_size})`, ...l].slice(0, 50));
+                }
+                await refresh();
+              } catch (e: any) {
+                toast.error(e?.message ?? "SQL rewrite failed");
+              } finally { setRewriting(false); }
+            }}
+            disabled={rewriting}
+            className="inline-flex items-center gap-1 rounded bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
+            ⚡ Rewrite ALL via SQL (instant)
           </button>
           {rewriting && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
         </div>
