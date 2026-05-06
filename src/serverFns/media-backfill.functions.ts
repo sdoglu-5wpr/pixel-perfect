@@ -267,7 +267,7 @@ export const rewriteSeoBatch = createServerFn({ method: "POST" })
       .from("seo_meta")
       .select("id, og_image, twitter_image, raw")
       .gt("id", data.afterId)
-      .or("og_image.ilike.%everything-pr.com/wp-content/uploads/%,twitter_image.ilike.%everything-pr.com/wp-content/uploads/%,raw.ilike.%everything-pr.com/wp-content/uploads/%")
+      .or("og_image.ilike.%everything-pr.com/wp-content/uploads/%,twitter_image.ilike.%everything-pr.com/wp-content/uploads/%")
       .order("id", { ascending: true })
       .limit(data.batchSize);
     if (error) throw new Error(error.message);
