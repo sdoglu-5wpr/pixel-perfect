@@ -118,12 +118,13 @@ export const buildBackfillQueue = createServerFn({ method: "POST" })
   });
 
 // ---------- Process a batch ----------
-async function processOne(row: { url: string; storage_key: string }, SUPABASE_URL: string) {
+async function processOne(row: { url: string; storage_key: string }, SUPABASE_URL: string, deadline: number) {
   const newUrl = publicUrl(SUPABASE_URL, row.storage_key);
   const mime = guessMime(row.storage_key);
   try {
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 15000);
+    const remaining = Math.max(1000, deadline - Date.now());
+    const t = setTimeout(() => ctrl.abort(), Math.min(8000, remaining));
     const res = await fetch(row.url, {
       headers: { "user-agent": "epr-media-backfill/1.0" },
       signal: ctrl.signal,
