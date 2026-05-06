@@ -86,8 +86,18 @@ function normalizeAnchorTargets(html: string): string {
   });
 }
 
+/** Add loading="lazy" + decoding="async" to inline <img> tags that don't already specify them. */
+function addImgPerfHints(html: string): string {
+  return html.replace(/<img\b([^>]*)>/gi, (full, attrs: string) => {
+    let next = attrs;
+    if (!/\bloading=/i.test(next)) next += ' loading="lazy"';
+    if (!/\bdecoding=/i.test(next)) next += ' decoding="async"';
+    return `<img${next}>`;
+  });
+}
+
 export function rewriteLegacyHtml(html: string | null | undefined): string {
-  return normalizeAnchorTargets(rewriteWpContentUrls(html));
+  return addImgPerfHints(normalizeAnchorTargets(rewriteWpContentUrls(html)));
 }
 
 export function pickFirstImageSrc(html: string | null | undefined): string | null {
