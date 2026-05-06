@@ -33,8 +33,61 @@ export function rewriteWpContentUrls(html: string | null | undefined): string {
   return html.replace(LEGACY_ATTR_PATTERN, "$1=$2$3$2").replace(HOST_PATTERN, "$2");
 }
 
+/**
+ * Convert legacy everything-pr.com anchors into internal relative paths and
+ * mark cross-domain anchors to open in a new tab with safe rel attributes.
+ */
+function normalizeAnchorTargets(html: string): string {
+  return html.replace(/<a\b([^>]*)>/gi, (full, attrsRaw: string) => {
+    let attrs = attrsRaw;
+    const hrefMatch = attrs.match(/\shref=(["'])([^"']+)\1/i);
+    if (!hrefMatch) return full;
+    let href = hrefMatch[2];
+
+    // Rewrite legacy everything-pr.com links to internal relative paths
+    for (const host of LEGACY_HOSTS) {
+      if (href === host || href === `${host}/` || href.startsWith(`${host}/`)) {
+        const path = href.slice(host.length) || "/";
+        if (!path.startsWith("/wp-content/")) {
+          href = path;
+          attrs = attrs.replace(/\shref=(["'])[^"']+\1/i, ` href="${href}"`);
+        }
+        break;
+      }
+    }
+
+    const isInternal =
+      href.startsWith("/") ||
+      href.startsWith("#") ||
+      href.startsWith("mailto:") ||
+      href.startsWith("tel:");
+
+    if (isInternal) {
+      attrs = attrs.replace(/\starget=(["'])[^"']*\1/gi, "");
+      return `<a${attrs}>`;
+    }
+
+    if (/\starget=/i.test(attrs)) {
+      attrs = attrs.replace(/\starget=(["'])[^"']*\1/i, ' target="_blank"');
+    } else {
+      attrs += ' target="_blank"';
+    }
+    if (/\srel=/i.test(attrs)) {
+      attrs = attrs.replace(/\srel=(["'])([^"']*)\1/i, (_m, q, val) => {
+        const parts = new Set(String(val).split(/\s+/).filter(Boolean));
+        parts.add("noopener");
+        parts.add("noreferrer");
+        return ` rel=${q}${Array.from(parts).join(" ")}${q}`;
+      });
+    } else {
+      attrs += ' rel="noopener noreferrer"';
+    }
+    return `<a${attrs}>`;
+  });
+}
+
 export function rewriteLegacyHtml(html: string | null | undefined): string {
-  return rewriteWpContentUrls(html);
+  return normalizeAnchorTargets(rewriteWpContentUrls(html));
 }
 
 export function pickFirstImageSrc(html: string | null | undefined): string | null {
