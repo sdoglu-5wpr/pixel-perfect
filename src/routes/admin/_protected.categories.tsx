@@ -38,6 +38,12 @@ function CategoriesPage() {
       await saveCategory({ data: {
         id: editing.id ?? null, name: editing.name, slug: editing.slug ?? "",
         description: editing.description ?? null, parent_id: editing.parent_id ?? null,
+        seo_title: editing.seo_title ?? null,
+        seo_description: editing.seo_description ?? null,
+        canonical_url: editing.canonical_url ?? null,
+        robots: editing.robots ?? null,
+        og_image: editing.og_image ?? null,
+        focus_keyword: editing.focus_keyword ?? null,
       } });
       toast.success("Saved"); setEditing(null); refresh();
     } catch (e: any) { toast.error(e?.message ?? "Save failed"); }
