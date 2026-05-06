@@ -94,7 +94,14 @@ function buildHeader(input: ArchiveInput, term: any, total: number): ArchiveHead
     return {
       kind: input.kind,
       title: term?.name ?? input.slug,
-      subtitle: term?.description ?? null,
+      subtitle: htmlToPlainText(term?.description) || null,
+      seo: {
+        title: term?.seo_title ?? null,
+        description: term?.seo_description ?? null,
+        canonical_url: term?.canonical_url ?? null,
+        robots: term?.robots ?? null,
+        og_image: term?.og_image ?? null,
+      },
     };
   }
   if (input.kind === "author") {
