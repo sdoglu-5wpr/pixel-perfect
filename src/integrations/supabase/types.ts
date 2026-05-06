@@ -1062,6 +1062,7 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      rewrite_legacy_media_urls: { Args: never; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "editor" | "author"
