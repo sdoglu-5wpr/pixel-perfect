@@ -78,7 +78,7 @@ export async function fetchHomepageViaRpc(client: any): Promise<HomePayload> {
 
   const sectionsObj = (rpc?.sections ?? {}) as Record<string, any[]>;
   const sections = SECTION_DEFS.map((s) => {
-    const limit = s.slug === "research" ? 4 : s.slug === "marketing" || s.slug === "social-media" ? 4 : 3;
+    const limit = 3;
     const posts = (sectionsObj[s.slug] ?? [])
       .map((r) => toPost(r, { name: s.title, slug: s.slug }))
       .filter((p) => !usedIds.has(p.id))
@@ -90,7 +90,7 @@ export async function fetchHomepageViaRpc(client: any): Promise<HomePayload> {
   const crisisPosts = ((rpc?.crisis ?? []) as any[])
     .map((r) => toPost(r, { name: "Crisis", slug: "crisis-pr" }))
     .filter((p) => !usedIds.has(p.id))
-    .slice(0, 5);
+    .slice(0, 3);
   for (const p of crisisPosts) usedIds.add(p.id);
 
   const economyRow = rpc?.economy ?? null;
