@@ -81,41 +81,77 @@ type PaginationProps = {
   buildHref: (page: number) => PageHref;
 };
 
+function buildPageList(current: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages: (number | "…")[] = [1];
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  if (start > 2) pages.push("…");
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (end < total - 1) pages.push("…");
+  pages.push(total);
+  return pages;
+}
+
 export function Pagination({ page, totalPages, buildHref }: PaginationProps) {
   if (totalPages <= 1) return null;
   const prev = page > 1 ? buildHref(page - 1) : null;
   const next = page < totalPages ? buildHref(page + 1) : null;
+  const pages = buildPageList(page, totalPages);
   return (
-    <nav className="flex items-center justify-between mt-10" aria-label="Pagination">
+    <nav className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-10" aria-label="Pagination">
       <div className="text-sm text-muted-foreground">
         Page {page} of {totalPages}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {prev ? (
           <Link
             to={prev.to as any}
             params={prev.params as any}
             search={prev.search as any}
-            className="inline-flex items-center px-4 py-2 rounded-md border text-sm font-medium hover:bg-surface-soft"
+            className="inline-flex items-center px-3 py-2 rounded-md border text-sm font-medium hover:bg-surface-soft"
           >
             ← Previous
           </Link>
         ) : (
-          <span className="inline-flex items-center px-4 py-2 rounded-md border text-sm font-medium opacity-40">
+          <span className="inline-flex items-center px-3 py-2 rounded-md border text-sm font-medium opacity-40">
             ← Previous
           </span>
+        )}
+        {pages.map((p, i) =>
+          p === "…" ? (
+            <span key={`e-${i}`} className="px-2 text-sm text-muted-foreground">…</span>
+          ) : p === page ? (
+            <span
+              key={p}
+              aria-current="page"
+              className="inline-flex items-center px-3 py-2 rounded-md border text-sm font-semibold bg-foreground text-background"
+            >
+              {p}
+            </span>
+          ) : (
+            <Link
+              key={p}
+              to={buildHref(p).to as any}
+              params={buildHref(p).params as any}
+              search={buildHref(p).search as any}
+              className="inline-flex items-center px-3 py-2 rounded-md border text-sm font-medium hover:bg-surface-soft"
+            >
+              {p}
+            </Link>
+          ),
         )}
         {next ? (
           <Link
             to={next.to as any}
             params={next.params as any}
             search={next.search as any}
-            className="inline-flex items-center px-4 py-2 rounded-md border text-sm font-medium hover:bg-surface-soft"
+            className="inline-flex items-center px-3 py-2 rounded-md border text-sm font-medium hover:bg-surface-soft"
           >
             Next →
           </Link>
         ) : (
-          <span className="inline-flex items-center px-4 py-2 rounded-md border text-sm font-medium opacity-40">
+          <span className="inline-flex items-center px-3 py-2 rounded-md border text-sm font-medium opacity-40">
             Next →
           </span>
         )}
