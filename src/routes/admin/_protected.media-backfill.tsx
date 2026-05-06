@@ -281,6 +281,26 @@ function MediaBackfillPage() {
             className="inline-flex items-center gap-1 rounded border bg-white px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:opacity-50">
             <Play className="h-4 w-4" /> Rewrite SEO meta
           </button>
+          <button
+            onClick={async () => {
+              if (rewriting) return;
+              setRewriting(true);
+              try {
+                const r = await rewriteAllLegacyUrls();
+                if (r.error) { toast.error(r.error); }
+                else {
+                  toast.success(`SQL rewrite: SEO ${r.seo_updated}, inline ${r.posts_inline_updated}, HTML ${r.posts_html_updated}`);
+                  setLog((l) => [`${new Date().toLocaleTimeString()}  SQL rewrite: seo=${r.seo_updated} inline=${r.posts_inline_updated} html=${r.posts_html_updated} (map=${r.mapping_size})`, ...l].slice(0, 50));
+                }
+                await refresh();
+              } catch (e: any) {
+                toast.error(e?.message ?? "SQL rewrite failed");
+              } finally { setRewriting(false); }
+            }}
+            disabled={rewriting}
+            className="inline-flex items-center gap-1 rounded bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
+            ⚡ Rewrite ALL via SQL (instant)
+          </button>
           {rewriting && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
         </div>
       </div>
