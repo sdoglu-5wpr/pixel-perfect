@@ -104,14 +104,6 @@ export function PillarView({ data }: { data: PillarPayload }) {
 
         <aside className="lg:col-span-4">
           <div className="sticky top-6 space-y-6">
-            <a
-              href="https://www.5wpr.com/?utm_source=everything-pr&utm_medium=banner&utm_campaign=5wpr-banner"
-              target="_blank"
-              rel="noopener noreferrer sponsored"
-              className="block overflow-hidden rounded-lg border hover:opacity-90 transition-opacity"
-            >
-              <img src={fivewprBanner} alt="5WPR — Built for now" className="w-full h-auto" loading="lazy" />
-            </a>
 
             <div className="rounded-lg border bg-white p-5 shadow-sm">
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#FF3366] mb-3 flex items-center gap-2">
