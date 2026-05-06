@@ -32,6 +32,13 @@ export type ArchiveHeader = {
   kind: "category" | "tag" | "author" | "date" | "search";
   title: string;
   subtitle: string | null;
+  seo?: {
+    title: string | null;
+    description: string | null;
+    canonical_url: string | null;
+    robots: string | null;
+    og_image: string | null;
+  };
   author?: {
     display_name: string;
     slug: string;
