@@ -15,6 +15,7 @@ import { ContactPage } from "@/components/site/ContactPage";
 import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
 import { PillarView } from "@/components/site/PillarView";
 import { htmlToPlainText } from "@/lib/text";
+import { buildArticleHead } from "@/serverFns/seo.article";
 import fivewprBanner from "@/assets/5wpr-banner.jpg";
 import virgoPrBanner from "@/assets/virgo-pr-banner.gif";
 
