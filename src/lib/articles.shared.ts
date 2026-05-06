@@ -58,11 +58,13 @@ export async function fetchArticleViaRpc(
   const inlineFallback = pickFirstImageSrc(post.content_html);
   const seoOg = rewriteLegacyUrl(seo?.og_image);
   const featuredUrl = resolvePostImageUrl(media?.url, seoOg, inlineFallback);
-  const featuredFromInline =
-    !media?.url && !seoOg && !!inlineFallback && featuredUrl === inlineFallback;
+  // Strip the first inline image whenever it matches the featured image we
+  // are about to render at the top of the article — otherwise the same
+  // picture appears twice (once as the hero, once as the first paragraph).
+  const shouldStripFirstImage = !!featuredUrl && !!inlineFallback && featuredUrl === inlineFallback;
 
   const renderedHtml = rewriteLegacyHtml(
-    featuredFromInline ? stripFirstImage(post.content_html) : post.content_html,
+    shouldStripFirstImage ? stripFirstImage(post.content_html) : post.content_html,
   );
 
   const rewrittenSeo = seo
