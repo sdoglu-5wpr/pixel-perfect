@@ -9,6 +9,7 @@ import { MediaPicker, type PickedMedia } from "@/components/admin/MediaPicker";
 import {
   getAdminPost, saveAdminPost, deleteAdminPost,
 } from "@/serverFns/admin-editor.functions";
+import { htmlToPlainText } from "@/lib/text";
 
 export const Route = createFileRoute("/admin/_protected/posts/$id")({
   component: PostEditor,
