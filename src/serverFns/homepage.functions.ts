@@ -39,6 +39,7 @@ export type HomePayload = {
 };
 
 const SECTION_DEFS: { key: string; title: string; slug: string }[] = [
+  { key: "research", title: "Research", slug: "research" },
   { key: "pr-news", title: "PR News", slug: "pr-news" },
   { key: "pr-insights", title: "Insights", slug: "pr-insights" },
   { key: "marketing", title: "Marketing", slug: "marketing" },
@@ -121,10 +122,11 @@ export const getHomepage = createServerFn({ method: "GET" }).handler(async (): P
 
     const sectionsObj = (rpc?.sections ?? {}) as Record<string, any[]>;
     const sections = SECTION_DEFS.map((s) => {
+      const limit = s.slug === "research" ? 4 : s.slug === "marketing" || s.slug === "social-media" ? 4 : 3;
       const posts = (sectionsObj[s.slug] ?? [])
         .map((r) => toPost(r, { name: s.title, slug: s.slug }))
         .filter((p) => !usedIds.has(p.id))
-        .slice(0, 3);
+        .slice(0, limit);
       for (const p of posts) usedIds.add(p.id);
       return { ...s, posts };
     });
@@ -132,7 +134,7 @@ export const getHomepage = createServerFn({ method: "GET" }).handler(async (): P
     const crisisPosts = ((rpc?.crisis ?? []) as any[])
       .map((r) => toPost(r, { name: "Crisis", slug: "crisis-pr" }))
       .filter((p) => !usedIds.has(p.id))
-      .slice(0, 3);
+      .slice(0, 5);
     for (const p of crisisPosts) usedIds.add(p.id);
 
     const economyRow = rpc?.economy ?? null;
