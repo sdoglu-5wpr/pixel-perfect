@@ -18,7 +18,7 @@ import { htmlToPlainText } from "@/lib/text";
 import { buildArticleHead } from "@/serverFns/seo.article";
 import { extractFaqPairs } from "@/lib/faq";
 import { FaqSection } from "@/components/site/FaqSection";
-import fivewprBanner from "@/assets/5wpr-banner.jpg";
+
 import virgoPrBanner from "@/assets/virgo-pr-banner.gif";
 
 async function loadArticle(slug: string): Promise<ArticlePayload | null> {
