@@ -151,6 +151,23 @@ export const runBackfillBatch = createServerFn({ method: "POST" })
   });
 
 
+// ---------- Rewrite EVERYTHING via SQL (fast path) ----------
+export const rewriteAllLegacyUrls = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await ensureStaff(supabase, userId);
+    const { data, error } = await supabaseAdmin.rpc("rewrite_legacy_media_urls");
+    if (error) throw new Error(error.message);
+    return (data ?? {}) as {
+      seo_updated?: number;
+      posts_inline_updated?: number;
+      posts_html_updated?: number;
+      mapping_size?: number;
+      error?: string;
+    };
+  });
+
 // ---------- Rewrite posts: swap legacy URLs → Supabase URLs ----------
 export const getRewriteStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
