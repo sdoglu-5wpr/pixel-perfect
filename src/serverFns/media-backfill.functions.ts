@@ -228,7 +228,89 @@ export const getRewriteStats = createServerFn({ method: "GET" })
       .from("posts")
       .select("id", { count: "exact", head: true })
       .ilike("first_inline_image", "%everything-pr.com/wp-content/uploads/%");
-    return { remaining: remaining ?? 0, remainingInline: remainingInline ?? 0 };
+    const { count: remainingSeo } = await supabaseAdmin
+      .from("seo_meta")
+      .select("id", { count: "exact", head: true })
+      .or("og_image.ilike.%everything-pr.com/wp-content/uploads/%,twitter_image.ilike.%everything-pr.com/wp-content/uploads/%");
+    return { remaining: remaining ?? 0, remainingInline: remainingInline ?? 0, remainingSeo: remainingSeo ?? 0 };
+  });
+
+export const rewriteSeoBatch = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({
+      batchSize: z.number().int().min(1).max(200).default(80),
+      afterId: z.number().int().min(0).default(0),
+    }).parse(input),
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await ensureStaff(supabase, userId);
+    const SUPABASE_URL = process.env.EPR_SUPABASE_URL!;
+
+    // Build URL → newUrl map from done queue.
+    const map = new Map<string, string>();
+    let off = 0;
+    while (true) {
+      const { data: rows, error } = await supabaseAdmin
+        .from("media_backfill_queue").select("url, storage_key")
+        .eq("status", "done").range(off, off + 999);
+      if (error) throw new Error(error.message);
+      if (!rows?.length) break;
+      for (const r of rows) map.set(r.url, publicUrl(SUPABASE_URL, r.storage_key));
+      if (rows.length < 1000) break;
+      off += 1000;
+    }
+    if (map.size === 0) return { processed: 0, updated: 0, lastId: data.afterId };
+
+    const { data: rows, error } = await supabaseAdmin
+      .from("seo_meta")
+      .select("id, og_image, twitter_image, raw")
+      .gt("id", data.afterId)
+      .or("og_image.ilike.%everything-pr.com/wp-content/uploads/%,twitter_image.ilike.%everything-pr.com/wp-content/uploads/%,raw.ilike.%everything-pr.com/wp-content/uploads/%")
+      .order("id", { ascending: true })
+      .limit(data.batchSize);
+    if (error) throw new Error(error.message);
+
+    const replaceUrl = (s: string | null) => {
+      if (!s) return s;
+      const clean = normalizeUrl(s);
+      return map.get(clean) ?? s;
+    };
+    const replaceInText = (txt: string) =>
+      txt.replace(LEGACY_RE, (raw) => {
+        const clean = normalizeUrl(raw);
+        const trail = raw.slice(clean.length);
+        const mapped = map.get(clean);
+        return mapped ? mapped + trail : raw;
+      });
+
+    let updated = 0;
+    let lastId = data.afterId;
+    const updates: Promise<unknown>[] = [];
+    for (const r of rows ?? []) {
+      lastId = r.id;
+      const patch: any = {};
+      const newOg = replaceUrl(r.og_image);
+      const newTw = replaceUrl(r.twitter_image);
+      if (newOg !== r.og_image) patch.og_image = newOg;
+      if (newTw !== r.twitter_image) patch.twitter_image = newTw;
+      if (r.raw) {
+        const txt = JSON.stringify(r.raw);
+        const newTxt = replaceInText(txt);
+        if (newTxt !== txt) {
+          try { patch.raw = JSON.parse(newTxt); } catch {}
+        }
+      }
+      if (Object.keys(patch).length > 0) {
+        updates.push((async () => {
+          const u = await supabaseAdmin.from("seo_meta").update(patch).eq("id", r.id);
+          if (!u.error) updated++;
+        })());
+      }
+    }
+    await Promise.all(updates);
+    return { processed: rows?.length ?? 0, updated, lastId, done: (rows?.length ?? 0) < data.batchSize };
   });
 
 export const rewritePostsBatch = createServerFn({ method: "POST" })
