@@ -11,7 +11,9 @@ import {
   getRewriteStats,
   rewritePostsBatch,
   rewriteSeoBatch,
-  rewriteAllLegacyUrls,
+  rewriteSeoMetaSql,
+  rewritePostsInlineSql,
+  rewritePostsHtmlSqlChunk,
 } from "@/serverFns/media-backfill.functions";
 
 export const Route = createFileRoute("/admin/_protected/media-backfill")({
