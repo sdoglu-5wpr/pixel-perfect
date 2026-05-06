@@ -333,7 +333,7 @@ function PostEditor() {
                   <div className="text-xs text-muted-foreground mb-1">Search preview</div>
                   <div className="text-[#1a0dab] text-base leading-tight truncate">{seo.title || title || "Untitled"}</div>
                   <div className="text-[#006621] text-xs">/{slug}/</div>
-                  <div className="text-[#545454] text-sm line-clamp-2">{seo.description || excerpt || "—"}</div>
+                  <div className="text-[#545454] text-sm line-clamp-2">{seo.description || plainExcerpt || "—"}</div>
                 </div>
               </div>
             )}
