@@ -281,9 +281,10 @@ export const rewritePostsBatch = createServerFn({ method: "POST" })
         if (html !== original) patch.content_html = html;
         if (inline !== originalInline) patch.first_inline_image = inline;
         updates.push(
-          supabaseAdmin.from("posts").update(patch).eq("id", p.id).then((r) => {
+          (async () => {
+            const r = await supabaseAdmin.from("posts").update(patch).eq("id", p.id);
             if (!r.error) updated++;
-          }),
+          })(),
         );
       }
     }
