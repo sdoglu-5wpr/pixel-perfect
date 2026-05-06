@@ -92,8 +92,9 @@ export const buildBackfillQueue = createServerFn({ method: "POST" })
 
 // ---------- Process a batch ----------
 async function processOne(row: { url: string; storage_key: string }, SUPABASE_URL: string, deadline: number) {
-  const newUrl = publicUrl(SUPABASE_URL, row.storage_key);
-  const mime = guessMime(row.storage_key);
+  const safeKey = sanitizeStorageKey(row.storage_key);
+  const newUrl = publicUrl(SUPABASE_URL, safeKey);
+  const mime = guessMime(safeKey);
   try {
     const ctrl = new AbortController();
     const remaining = Math.max(1000, deadline - Date.now());
@@ -110,18 +111,18 @@ async function processOne(row: { url: string; storage_key: string }, SUPABASE_UR
     }
     const buf = new Uint8Array(await res.arrayBuffer());
 
-    const { error: upErr } = await supabaseAdmin.storage.from(BUCKET).upload(row.storage_key, buf, {
+    const { error: upErr } = await supabaseAdmin.storage.from(BUCKET).upload(safeKey, buf, {
       contentType: res.headers.get("content-type") ?? mime, upsert: true,
     });
     if (upErr && !/exists/i.test(upErr.message)) throw new Error(`upload:${upErr.message}`);
 
     await Promise.all([
       supabaseAdmin.from("media").update({
-        storage_path: row.storage_key, url: newUrl, mime_type: mime, filesize: buf.byteLength,
+        storage_path: safeKey, url: newUrl, mime_type: mime, filesize: buf.byteLength,
       }).eq("url", row.url),
       supabaseAdmin.from("posts").update({ first_inline_image: newUrl }).eq("first_inline_image", row.url),
       supabaseAdmin.from("media_backfill_queue").update({
-        status: "done", bytes: buf.byteLength, last_error: null, updated_at: new Date().toISOString(),
+        status: "done", storage_key: safeKey, bytes: buf.byteLength, last_error: null, updated_at: new Date().toISOString(),
       }).eq("url", row.url),
     ]);
     return { ok: true as const, bytes: buf.byteLength };
