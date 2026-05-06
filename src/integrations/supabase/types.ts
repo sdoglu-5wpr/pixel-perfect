@@ -1021,6 +1021,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      build_media_backfill_queue: { Args: never; Returns: Json }
       claim_first_admin: { Args: never; Returns: Json }
       get_archive_list: {
         Args: {
