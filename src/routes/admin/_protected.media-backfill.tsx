@@ -20,7 +20,7 @@ function MediaBackfillPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [running, setRunning] = useState(false);
   const [building, setBuilding] = useState(false);
-  const [batchSize, setBatchSize] = useState(8);
+  const [batchSize, setBatchSize] = useState(5);
   const [log, setLog] = useState<string[]>([]);
   const [recentErrors, setRecentErrors] = useState<Array<{ url: string; error: string }>>([]);
   const stopRef = useRef(false);
