@@ -118,9 +118,51 @@ export const buildBackfillQueue = createServerFn({ method: "POST" })
   });
 
 // ---------- Process a batch ----------
+async function processOne(row: { url: string; storage_key: string }, SUPABASE_URL: string) {
+  const newUrl = publicUrl(SUPABASE_URL, row.storage_key);
+  const mime = guessMime(row.storage_key);
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 15000);
+    const res = await fetch(row.url, {
+      headers: { "user-agent": "epr-media-backfill/1.0" },
+      signal: ctrl.signal,
+    }).finally(() => clearTimeout(t));
+    if (!res.ok) {
+      await supabaseAdmin.from("media_backfill_queue").update({
+        status: "failed", last_error: `http_${res.status}`, updated_at: new Date().toISOString(),
+      }).eq("url", row.url);
+      return { ok: false as const, err: `http_${res.status}`, url: row.url };
+    }
+    const buf = new Uint8Array(await res.arrayBuffer());
+
+    const { error: upErr } = await supabaseAdmin.storage.from(BUCKET).upload(row.storage_key, buf, {
+      contentType: res.headers.get("content-type") ?? mime, upsert: true,
+    });
+    if (upErr && !/exists/i.test(upErr.message)) throw new Error(`upload:${upErr.message}`);
+
+    await Promise.all([
+      supabaseAdmin.from("media").update({
+        storage_path: row.storage_key, url: newUrl, mime_type: mime, filesize: buf.byteLength,
+      }).eq("url", row.url),
+      supabaseAdmin.from("posts").update({ first_inline_image: newUrl }).eq("first_inline_image", row.url),
+      supabaseAdmin.from("media_backfill_queue").update({
+        status: "done", bytes: buf.byteLength, last_error: null, updated_at: new Date().toISOString(),
+      }).eq("url", row.url),
+    ]);
+    return { ok: true as const, bytes: buf.byteLength };
+  } catch (e: any) {
+    const msg = String(e?.message ?? e).slice(0, 500);
+    await supabaseAdmin.from("media_backfill_queue").update({
+      status: "failed", last_error: msg, updated_at: new Date().toISOString(),
+    }).eq("url", row.url);
+    return { ok: false as const, err: msg, url: row.url };
+  }
+}
+
 export const runBackfillBatch = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
-    z.object({ batchSize: z.number().int().min(1).max(50).default(10) }).parse(input),
+    z.object({ batchSize: z.number().int().min(1).max(20).default(8) }).parse(input),
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
@@ -136,61 +178,16 @@ export const runBackfillBatch = createServerFn({ method: "POST" })
       .limit(data.batchSize);
     if (error) throw new Error(error.message);
 
+    const results = await Promise.all((rows ?? []).map((r) => processOne(r as any, SUPABASE_URL)));
     let uploaded = 0, failed = 0;
     const errors: Array<{ url: string; error: string }> = [];
-
-    for (const row of rows ?? []) {
-      const newUrl = publicUrl(SUPABASE_URL, row.storage_key);
-      const mime = guessMime(row.storage_key);
-
-      try {
-        const res = await fetch(row.url, { headers: { "user-agent": "epr-media-backfill/1.0" } });
-        if (!res.ok) {
-          await supabaseAdmin.from("media_backfill_queue").update({
-            status: "failed", attempts: 1 as any, last_error: `http_${res.status}`, updated_at: new Date().toISOString(),
-          }).eq("url", row.url);
-          failed++;
-          errors.push({ url: row.url, error: `http_${res.status}` });
-          continue;
-        }
-        const buf = new Uint8Array(await res.arrayBuffer());
-
-        const { error: upErr } = await supabaseAdmin.storage
-          .from(BUCKET)
-          .upload(row.storage_key, buf, {
-            contentType: res.headers.get("content-type") ?? mime,
-            upsert: true,
-          });
-        if (upErr && !/exists/i.test(upErr.message)) throw new Error(`upload:${upErr.message}`);
-
-        // Rewrite media table rows pointing at this URL (if any).
-        await supabaseAdmin.from("media").update({
-          storage_path: row.storage_key, url: newUrl, mime_type: mime, filesize: buf.byteLength,
-        }).eq("url", row.url);
-
-        // Rewrite posts.first_inline_image references.
-        await supabaseAdmin.from("posts").update({ first_inline_image: newUrl }).eq("first_inline_image", row.url);
-
-        // Note: posts.content_html is left as-is — `rewriteWpContentUrls` already
-        // handles legacy URLs at render time, and now those proxied URLs will hit
-        // Supabase storage (we'll patch the proxy / lib).
-
-        await supabaseAdmin.from("media_backfill_queue").update({
-          status: "done", bytes: buf.byteLength, last_error: null, updated_at: new Date().toISOString(),
-        }).eq("url", row.url);
-
-        uploaded++;
-      } catch (e: any) {
-        await supabaseAdmin.from("media_backfill_queue").update({
-          status: "failed", last_error: String(e?.message ?? e).slice(0, 500), updated_at: new Date().toISOString(),
-        }).eq("url", row.url);
-        failed++;
-        errors.push({ url: row.url, error: String(e?.message ?? e) });
-      }
+    for (const r of results) {
+      if (r.ok) uploaded++;
+      else { failed++; errors.push({ url: r.url, error: r.err }); }
     }
-
     return { processed: rows?.length ?? 0, uploaded, failed, errors: errors.slice(0, 5) };
   });
+
 
 // ---------- Reset failed → pending ----------
 export const resetFailedBackfill = createServerFn({ method: "POST" })
