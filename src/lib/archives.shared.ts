@@ -1,6 +1,7 @@
 // Shared archive-fetch logic that runs in both browser (Netlify static
 // post-hydration nav) and on the server.
 import { resolvePostImageUrl, rewriteLegacyUrl } from "@/lib/legacy-urls";
+import { htmlToPlainText } from "@/lib/text";
 import type { ArchivePayload, ArchiveItem, ArchiveHeader } from "@/serverFns/archives.functions";
 
 export const PAGE_SIZE = 10;
@@ -35,7 +36,14 @@ function buildHeader(input: ArchiveInput, term: any, total: number): ArchiveHead
     return {
       kind: input.kind,
       title: term?.name ?? input.slug,
-      subtitle: term?.description ?? null,
+      subtitle: htmlToPlainText(term?.description) || null,
+      seo: {
+        title: term?.seo_title ?? null,
+        description: term?.seo_description ?? null,
+        canonical_url: term?.canonical_url ?? null,
+        robots: term?.robots ?? null,
+        og_image: term?.og_image ?? null,
+      },
     };
   }
   if (input.kind === "author") {

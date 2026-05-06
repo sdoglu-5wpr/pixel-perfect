@@ -50,6 +50,7 @@ export const Route = createFileRoute("/category/$slug")({
       totalItems: loaderData.data.totalItems,
       items: loaderData.data.items.map((i) => ({ title: i.title, slug: i.slug })),
       pathPrefix: `/category/${(params as { slug: string }).slug}`,
+      seoOverrides: loaderData.data.header.seo,
     });
   },
   component: CategoryArchive,

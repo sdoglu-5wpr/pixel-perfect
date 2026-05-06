@@ -3,6 +3,7 @@ import { setResponseHeader } from "@tanstack/react-start/server";
 import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
 import { cached } from "@/serverFns/loader-cache.server";
 import { pickFirstImageSrc, resolvePostImageUrl, rewriteLegacyUrl } from "@/lib/legacy-urls";
+import { htmlToPlainText } from "@/lib/text";
 
 function setArchiveCache() {
   try {
@@ -32,6 +33,13 @@ export type ArchiveHeader = {
   kind: "category" | "tag" | "author" | "date" | "search";
   title: string;
   subtitle: string | null;
+  seo?: {
+    title: string | null;
+    description: string | null;
+    canonical_url: string | null;
+    robots: string | null;
+    og_image: string | null;
+  };
   author?: {
     display_name: string;
     slug: string;
@@ -86,7 +94,14 @@ function buildHeader(input: ArchiveInput, term: any, total: number): ArchiveHead
     return {
       kind: input.kind,
       title: term?.name ?? input.slug,
-      subtitle: term?.description ?? null,
+      subtitle: htmlToPlainText(term?.description) || null,
+      seo: {
+        title: term?.seo_title ?? null,
+        description: term?.seo_description ?? null,
+        canonical_url: term?.canonical_url ?? null,
+        robots: term?.robots ?? null,
+        og_image: term?.og_image ?? null,
+      },
     };
   }
   if (input.kind === "author") {
