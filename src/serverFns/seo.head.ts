@@ -93,8 +93,15 @@ export function buildArchiveHead(opts: {
   pathPrefix: string; // e.g. "/category/news-slug"
   searchPhrase?: string;
   author?: AuthorMeta;
+  seoOverrides?: {
+    title?: string | null;
+    description?: string | null;
+    canonical_url?: string | null;
+    robots?: string | null;
+    og_image?: string | null;
+  };
 }): HeadOutput {
-  const { kind, termTitle, termDescription, page, totalItems, items, pathPrefix, searchPhrase, author } = opts;
+  const { kind, termTitle, termDescription, page, totalItems, items, pathPrefix, searchPhrase, author, seoOverrides } = opts;
 
   let titleTemplate: string;
   let descTemplate: string;
@@ -121,13 +128,17 @@ export function buildArchiveHead(opts: {
       breadcrumbLabel = "Search";
       break;
   }
-  const title = page > 1 ? `${titleTemplate} — Page ${page}` : titleTemplate;
-  const description = truncate(descTemplate);
+  const baseTitle = seoOverrides?.title || titleTemplate;
+  const title = page > 1 ? `${baseTitle} — Page ${page}` : baseTitle;
+  const description = truncate(seoOverrides?.description || descTemplate);
   const url = page > 1 ? `${SITE_URL}${pathPrefix}/page/${page}/` : `${SITE_URL}${pathPrefix}/`;
   const ogType = kind === "author" ? "article" : "website";
-  const ogImage = kind === "author" && author?.avatar_url ? author.avatar_url : DEFAULT_OG_IMAGE;
+  const ogImage = seoOverrides?.og_image
+    || (kind === "author" && author?.avatar_url ? author.avatar_url : DEFAULT_OG_IMAGE);
   const meta = baseMeta(title, description, url, ogImage, ogType);
-  const links: Link = [{ rel: "canonical", href: url }];
+  if (seoOverrides?.robots) meta.push({ name: "robots", content: seoOverrides.robots });
+  const canonicalHref = seoOverrides?.canonical_url || url;
+  const links: Link = [{ rel: "canonical", href: canonicalHref }];
 
   const itemList = {
     "@type": "ItemList",
