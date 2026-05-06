@@ -8,6 +8,8 @@ import {
   buildBackfillQueue,
   runBackfillBatch,
   resetFailedBackfill,
+  getRewriteStats,
+  rewritePostsBatch,
 } from "@/serverFns/media-backfill.functions";
 
 export const Route = createFileRoute("/admin/_protected/media-backfill")({
@@ -23,11 +25,34 @@ function MediaBackfillPage() {
   const [batchSize, setBatchSize] = useState(5);
   const [log, setLog] = useState<string[]>([]);
   const [recentErrors, setRecentErrors] = useState<Array<{ url: string; error: string }>>([]);
+  const [rewriteStats, setRewriteStats] = useState<{ remaining: number; remainingInline: number } | null>(null);
+  const [rewriting, setRewriting] = useState(false);
+  const stopRewriteRef = useRef(false);
   const stopRef = useRef(false);
 
   const refresh = async () => {
-    try { setStats((await getBackfillStats()) as Stats); }
-    catch (e: any) { toast.error(e?.message ?? "Failed to load stats"); }
+    try {
+      setStats((await getBackfillStats()) as Stats);
+      setRewriteStats(await getRewriteStats());
+    } catch (e: any) { toast.error(e?.message ?? "Failed to load stats"); }
+  };
+
+  const startRewrite = async () => {
+    if (rewriting) return;
+    stopRewriteRef.current = false; setRewriting(true);
+    while (!stopRewriteRef.current) {
+      try {
+        const r = await rewritePostsBatch({ data: { batchSize: 25 } });
+        setLog((l) => [`${new Date().toLocaleTimeString()}  rewrite: updated=${r.updated}/${r.processed}, remaining=${r.remaining}`, ...l].slice(0, 50));
+        await refresh();
+        if (r.processed === 0 || r.remaining === 0) { toast.success("Posts rewritten"); break; }
+      } catch (e: any) {
+        toast.error(e?.message ?? "Rewrite failed");
+        setLog((l) => [`${new Date().toLocaleTimeString()}  ERROR rewrite ${e?.message}`, ...l].slice(0, 50));
+        break;
+      }
+    }
+    setRewriting(false);
   };
 
   useEffect(() => {
@@ -148,6 +173,34 @@ function MediaBackfillPage() {
             </button>
           )}
           {running && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        </div>
+      </div>
+
+      <div className="rounded-lg border bg-white p-4 space-y-3">
+        <div>
+          <div className="font-medium text-sm">3. Rewrite posts to use Supabase URLs</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Replaces every legacy <code>everything-pr.com/wp-content/uploads/…</code> URL inside post
+            content and inline-image fields with the matching Supabase Storage URL.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <Stat label="Posts w/ legacy HTML" value={rewriteStats?.remaining ?? 0} />
+          <Stat label="Posts w/ legacy inline" value={rewriteStats?.remainingInline ?? 0} />
+        </div>
+        <div className="flex items-center gap-2">
+          {!rewriting ? (
+            <button onClick={startRewrite} disabled={(rewriteStats?.remaining ?? 0) + (rewriteStats?.remainingInline ?? 0) === 0}
+              className="inline-flex items-center gap-1 rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+              <Play className="h-4 w-4" /> Start rewrite
+            </button>
+          ) : (
+            <button onClick={() => { stopRewriteRef.current = true; }}
+              className="inline-flex items-center gap-1 rounded border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100">
+              <Square className="h-4 w-4" /> Stop
+            </button>
+          )}
+          {rewriting && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
         </div>
       </div>
 

@@ -191,6 +191,102 @@ export const runBackfillBatch = createServerFn({ method: "POST" })
   });
 
 
+// ---------- Rewrite posts: swap legacy URLs → Supabase URLs ----------
+export const getRewriteStats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await ensureStaff(supabase, userId);
+    const { count: remaining } = await supabaseAdmin
+      .from("posts")
+      .select("id", { count: "exact", head: true })
+      .ilike("content_html", "%everything-pr.com/wp-content/uploads/%");
+    const { count: remainingInline } = await supabaseAdmin
+      .from("posts")
+      .select("id", { count: "exact", head: true })
+      .ilike("first_inline_image", "%everything-pr.com/wp-content/uploads/%");
+    return { remaining: remaining ?? 0, remainingInline: remainingInline ?? 0 };
+  });
+
+export const rewritePostsBatch = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({ batchSize: z.number().int().min(1).max(100).default(25) }).parse(input),
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await ensureStaff(supabase, userId);
+
+    const SUPABASE_URL = process.env.EPR_SUPABASE_URL!;
+    const deadline = Date.now() + 22000;
+
+    // Load full URL → storage_key map of all successfully migrated images.
+    const map = new Map<string, string>();
+    let off = 0;
+    while (true) {
+      const { data: rows, error } = await supabaseAdmin
+        .from("media_backfill_queue")
+        .select("url, storage_key")
+        .eq("status", "done")
+        .range(off, off + 999);
+      if (error) throw new Error(error.message);
+      if (!rows?.length) break;
+      for (const r of rows) map.set(r.url, publicUrl(SUPABASE_URL, r.storage_key));
+      if (rows.length < 1000) break;
+      off += 1000;
+    }
+    if (map.size === 0) return { processed: 0, updated: 0, remaining: 0 };
+
+    // Fetch a batch of posts that still contain a legacy URL.
+    const { data: posts, error: pErr } = await supabaseAdmin
+      .from("posts")
+      .select("id, content_html, first_inline_image")
+      .or(
+        "content_html.ilike.%everything-pr.com/wp-content/uploads/%,first_inline_image.ilike.%everything-pr.com/wp-content/uploads/%",
+      )
+      .order("id", { ascending: true })
+      .limit(data.batchSize);
+    if (pErr) throw new Error(pErr.message);
+
+    let updated = 0;
+    for (const p of posts ?? []) {
+      if (Date.now() > deadline) break;
+      let html = p.content_html ?? "";
+      let inline = p.first_inline_image ?? null;
+      const original = html;
+      const originalInline = inline;
+
+      html = html.replace(LEGACY_RE, (raw) => {
+        const clean = normalizeUrl(raw);
+        const trail = raw.slice(clean.length);
+        const mapped = map.get(clean);
+        return mapped ? mapped + trail : raw;
+      });
+      if (inline) {
+        const clean = normalizeUrl(inline);
+        const mapped = map.get(clean);
+        if (mapped) inline = mapped;
+      }
+
+      if (html !== original || inline !== originalInline) {
+        const patch: { content_html?: string; first_inline_image?: string | null } = {};
+        if (html !== original) patch.content_html = html;
+        if (inline !== originalInline) patch.first_inline_image = inline;
+        const { error: uErr } = await supabaseAdmin.from("posts").update(patch).eq("id", p.id);
+        if (!uErr) updated++;
+      }
+    }
+
+    const { count: remaining } = await supabaseAdmin
+      .from("posts")
+      .select("id", { count: "exact", head: true })
+      .or(
+        "content_html.ilike.%everything-pr.com/wp-content/uploads/%,first_inline_image.ilike.%everything-pr.com/wp-content/uploads/%",
+      );
+
+    return { processed: posts?.length ?? 0, updated, remaining: remaining ?? 0 };
+  });
+
 // ---------- Reset failed → pending ----------
 export const resetFailedBackfill = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
