@@ -38,6 +38,7 @@ function readingTime(text: string): number {
 }
 
 export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput {
+  const a = article as any;
   const slug = article.slug;
   const isResearch = RESEARCH_SLUGS.has(slug);
   const url = `${SITE_URL}/${slug}/`;
@@ -52,7 +53,7 @@ export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput
   const image = article.seo?.og_image || article.featured_image?.url || DEFAULT_OG_IMAGE;
   const canonical = article.seo?.canonical_url || url;
   const primaryCategory = article.categories?.[0] ?? null;
-  const tags = article.tags ?? [];
+  const tags: { name: string; slug: string }[] = a.tags ?? [];
   const author = article.author;
   const published = article.published_at ?? undefined;
   const modified = article.modified_at ?? published;
@@ -73,9 +74,9 @@ export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:site", content: TWITTER_HANDLE },
     { name: "twitter:creator", content: TWITTER_HANDLE },
-    { name: "twitter:title", content: article.seo?.twitter_title || article.title },
-    { name: "twitter:description", content: article.seo?.twitter_description || description },
-    { name: "twitter:image", content: article.seo?.twitter_image || image },
+    { name: "twitter:title", content: a.seo?.twitter_title || article.title },
+    { name: "twitter:description", content: a.seo?.twitter_description || description },
+    { name: "twitter:image", content: a.seo?.twitter_image || image },
     { name: "twitter:label1", content: "Written by" },
     { name: "twitter:data1", content: author?.display_name || `${SITE_NAME} Editorial Team` },
     { name: "twitter:label2", content: "Reading time" },
