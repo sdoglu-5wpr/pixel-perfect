@@ -36,28 +36,43 @@ export function NewsletterBanner() {
       className="rounded-2xl px-8 py-14 md:py-20 my-12 text-center text-white relative overflow-hidden"
       style={{ background: "var(--gradient-newsletter)" }}
     >
-      <h2 className="font-serif text-3xl md:text-4xl font-bold max-w-2xl mx-auto leading-tight">
-        Never Miss a Headline
-      </h2>
-      <p className="mt-4 text-white/80 max-w-xl mx-auto text-sm md:text-base">
-        Daily PR headlines, weekly long-form analysis, and our proprietary
-        research drops — straight to your inbox.
-      </p>
-      <form onSubmit={onSubmit} className="mt-7 max-w-md mx-auto flex gap-2">
-        <input
-          type="email"
-          name="email"
-          required
-          placeholder="Enter your email address"
-          className="flex-1 rounded-md px-4 py-2.5 text-sm text-foreground bg-white/95 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white"
-        />
-        <Button type="submit" disabled={state === "submitting"} className="bg-ink text-white hover:bg-ink/90">
-          {state === "submitting" ? "…" : "Subscribe"}
-        </Button>
-      </form>
-      {message ? (
-        <p className={`mt-4 text-sm ${state === "success" ? "text-white" : "text-red-200"}`}>{message}</p>
-      ) : null}
+      {state === "success" ? (
+        <div className="max-w-xl mx-auto">
+          <div className="mx-auto w-14 h-14 rounded-full bg-white/15 flex items-center justify-center text-3xl">
+            ✓
+          </div>
+          <h2 className="mt-5 font-serif text-3xl md:text-4xl font-bold">You're subscribed!</h2>
+          <p className="mt-3 text-white/85 text-sm md:text-base">
+            Thanks for joining — check your inbox for our next edition.
+          </p>
+        </div>
+      ) : (
+        <>
+          <h2 className="font-serif text-3xl md:text-4xl font-bold max-w-2xl mx-auto leading-tight">
+            Never Miss a Headline
+          </h2>
+          <p className="mt-4 text-white/80 max-w-xl mx-auto text-sm md:text-base">
+            Daily PR headlines, weekly long-form analysis, and our proprietary
+            research drops — straight to your inbox.
+          </p>
+          <form onSubmit={onSubmit} className="mt-7 max-w-md mx-auto flex gap-2">
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="Enter your email address"
+              className="flex-1 rounded-md px-4 py-2.5 text-sm text-foreground bg-white/95 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white"
+            />
+            <Button type="submit" disabled={state === "submitting"} className="bg-ink text-white hover:bg-ink/90">
+              {state === "submitting" ? "…" : "Subscribe"}
+            </Button>
+          </form>
+          {message && state === "error" ? (
+            <p className="mt-4 text-sm text-red-200">{message}</p>
+          ) : null}
+        </>
+      )}
     </section>
   );
 }
+
