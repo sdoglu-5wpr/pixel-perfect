@@ -1,7 +1,6 @@
 import { TopTicker } from "./TopTicker";
 import { SiteHeader } from "./SiteHeader";
 import { SiteFooter, type FooterMenuItem } from "./SiteFooter";
-import { InlineNewsletter } from "./InlineNewsletter";
 
 type Props = {
   children: React.ReactNode;
@@ -16,7 +15,6 @@ export function SiteLayout({ children, tickerItems, footerMenu, afterNewsletter 
       <SiteHeader />
       <TopTicker items={tickerItems} />
       <main className="flex-1">{children}</main>
-      <InlineNewsletter />
       {afterNewsletter}
       <SiteFooter menu={footerMenu} />
     </div>
