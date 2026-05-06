@@ -1,0 +1,1 @@
+UPDATE public.redirects SET enabled = false WHERE source_path = '/research/';
