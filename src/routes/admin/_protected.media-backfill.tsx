@@ -8,6 +8,8 @@ import {
   buildBackfillQueue,
   runBackfillBatch,
   resetFailedBackfill,
+  getRewriteStats,
+  rewritePostsBatch,
 } from "@/serverFns/media-backfill.functions";
 
 export const Route = createFileRoute("/admin/_protected/media-backfill")({
