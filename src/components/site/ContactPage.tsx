@@ -168,18 +168,34 @@ function ContactForm() {
     }
   }
 
+  if (state === "success") {
+    return (
+      <div className="rounded-lg border bg-background p-10 text-center">
+        <div className="mx-auto w-14 h-14 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-3xl">
+          ✓
+        </div>
+        <h2 className="mt-5 font-serif text-2xl md:text-3xl font-bold">Thank you!</h2>
+        <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
+          Your message has been received. A member of our editorial team will get
+          back to you within 24–48 hours.
+        </p>
+        <button
+          type="button"
+          onClick={() => setState("idle")}
+          className="mt-6 inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted"
+        >
+          Send another message
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-lg border bg-background p-8">
       <h2 className="font-serif text-2xl md:text-3xl font-bold">Contact Form</h2>
       <p className="mt-2 text-sm text-muted-foreground">We aim to respond to all messages within 24–48 hours.</p>
 
-      {state === "success" ? (
-        <div className="mt-6 rounded-md border border-green-600/30 bg-green-50 p-4 text-sm text-green-900">
-          Thanks — your message is on its way. We'll be in touch soon.
-        </div>
-      ) : null}
-
-      <form onSubmit={onSubmit} className="mt-6 space-y-5" noValidate>
+      <form onSubmit={onSubmit} method="post" action="#" className="mt-6 space-y-5" noValidate>
         <Field label="Name" name="name" required />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Email" name="email" type="email" required />
