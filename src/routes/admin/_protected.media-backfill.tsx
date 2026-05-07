@@ -14,6 +14,9 @@ import {
   rewriteSeoMetaSql,
   rewritePostsInlineSql,
   rewritePostsHtmlSqlChunk,
+  rewriteSeoMetaVariantsSql,
+  rewritePostsInlineVariantsSql,
+  rewritePostsHtmlVariantsSqlChunk,
 } from "@/serverFns/media-backfill.functions";
 
 export const Route = createFileRoute("/admin/_protected/media-backfill")({
