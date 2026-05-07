@@ -132,12 +132,12 @@ async function main() {
     await cp(join(DIST, "prerender-manifest.json"), join(SNAPSHOT, "prerender-manifest.json"));
   }
 
-  console.log("\n=== [build] Pass 2: Cloudflare worker bundle ===\n");
+  console.log(`\n=== [build] Pass 2: ${TARGET === "netlify" ? "Netlify Functions" : "Cloudflare Worker"} bundle ===\n`);
   await rm(DIST, { recursive: true, force: true });
 
   await run("npx", ["vite", "build"], {
     NODE_ENV: "production",
-    LOVABLE_BUILD_PASS: "worker",
+    LOVABLE_BUILD_PASS: TARGET === "netlify" ? "netlify" : "worker",
   });
 
   console.log("\n[build] Restoring prerendered HTML + _headers on top of worker output...");
