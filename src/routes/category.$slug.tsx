@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, Outlet, useChildMatches } from "@tanstack/react-router";
 import { getArchive } from "@/serverFns/archives.functions";
 import { getPillar, type PillarPayload } from "@/serverFns/pillars.functions";
 import { fetchArchiveViaRpc } from "@/lib/archives.shared";
