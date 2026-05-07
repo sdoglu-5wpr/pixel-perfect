@@ -4,7 +4,7 @@ export const SITE_NAME = "Everything-PR";
 export const SITE_TAGLINE = "Public Relations News & Analysis";
 export const TWITTER_HANDLE = "@everythingpr";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
-export const SITE_LOGO = `${SITE_URL}/logo.png`;
+export const SITE_LOGO = `${SITE_URL}/everything-pr-logo.png`;
 export const SITEMAP_PAGE_SIZE = 1000;
 
 export const ORG_SAME_AS = [
