@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { SiteLayout } from "./SiteLayout";
 import { PostImage } from "./PostImage";
+import { Pagination } from "./ArchiveView";
 import { decodeHtmlEntities, htmlToPlainText } from "@/lib/text";
 import type { PillarPayload } from "@/lib/pillars.shared";
 
@@ -17,7 +18,8 @@ function formatDate(iso: string | null | undefined) {
 }
 
 export function PillarView({ data }: { data: PillarPayload }) {
-  const { pillar, items, total } = data;
+  const { pillar, items, total, page, pageSize } = data;
+  const totalPages = Math.max(1, Math.ceil(total / (pageSize || 12)));
   return (
     <SiteLayout>
       {/* HERO */}
@@ -213,6 +215,16 @@ export function PillarView({ data }: { data: PillarPayload }) {
               ))}
             </div>
           )}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            buildHref={(p) => ({
+              to: "/$slug",
+              params: { slug: pillar.slug },
+              search: p === 1 ? {} : { page: p },
+              hash: "articles",
+            })}
+          />
         </div>
       </section>
     </SiteLayout>

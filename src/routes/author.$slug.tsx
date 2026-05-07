@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, Outlet, useChildMatches } from "@tanstack/react-router";
 import { getArchive } from "@/serverFns/archives.functions";
 import { fetchArchiveViaRpc } from "@/lib/archives.shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,5 +32,7 @@ export const Route = createFileRoute("/author/$slug")({
 
 function Page() {
   const data = Route.useLoaderData();
+  const childMatches = useChildMatches();
+  if (childMatches.length > 0) return <Outlet />;
   return <AuthorPage data={data} />;
 }

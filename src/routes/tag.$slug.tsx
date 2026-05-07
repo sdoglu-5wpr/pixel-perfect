@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, Outlet, useChildMatches } from "@tanstack/react-router";
 import { getArchive } from "@/serverFns/archives.functions";
 import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
 import { buildArchiveHead } from "@/serverFns/seo.head";
@@ -28,6 +28,8 @@ export const Route = createFileRoute("/tag/$slug")({
 function Page() {
   const data = Route.useLoaderData();
   const { slug } = Route.useParams();
+  const childMatches = useChildMatches();
+  if (childMatches.length > 0) return <Outlet />;
   return (
     <ArchiveView
       data={data}
