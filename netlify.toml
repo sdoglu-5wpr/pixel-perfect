@@ -22,10 +22,33 @@
   to = "/category/rfp/"
   status = 301
 
-# NOTE: SPA fallback removed. The @netlify/vite-plugin-tanstack-start plugin
-# emits a Netlify Function that handles every non-static request (admin,
-# /_serverFn/*, server routes, SSR fallbacks). Adding a `/* -> /index.html`
-# rewrite here would shadow that function and break the admin panel.
+# Force dynamic / server-handled paths through the SSR function FIRST
+# (admin panel, server functions, public ingest API, sitemaps, feed).
+[[redirects]]
+  from = "/admin/*"
+  to = "/.netlify/functions/server"
+  status = 200
+  force = true
+[[redirects]]
+  from = "/_serverFn/*"
+  to = "/.netlify/functions/server"
+  status = 200
+  force = true
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/server"
+  status = 200
+  force = true
+
+# SPA fallback: any URL that isn't a prerendered HTML file or static asset
+# falls back to index.html so the client-side TanStack Router can resolve
+# dynamic routes ($slug, category/$slug, author/$slug, tag/$slug) by
+# fetching from Supabase. Without this, non-prerendered slugs (e.g.
+# /cybersecurity) return Netlify's default 404 page.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 # Cache headers for static assets
 [[headers]]
