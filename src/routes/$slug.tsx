@@ -20,7 +20,7 @@ import { buildArticleHead } from "@/serverFns/seo.article";
 import { extractFaqPairs } from "@/lib/faq";
 import { FaqSection } from "@/components/site/FaqSection";
 
-import virgoPrBanner from "@/assets/virgo-pr-banner.gif";
+import fiveWBanner from "@/assets/5wpr-banner.jpg";
 
 async function loadArticle(slug: string): Promise<ArticlePayload | null> {
   // In the browser (e.g. Netlify static hosting where TanStack server functions
