@@ -44,6 +44,7 @@ const NAV: NavItem[] = [
     ],
   },
   { label: "Research", kind: "path", to: "/research" },
+  { label: "AI & GEO", kind: "path", to: "/generative-engine-optimization" },
   { label: "PR Firms", kind: "category", slug: "pr-firms" },
   { label: "RFPs", kind: "category", slug: "rfp" },
   { label: "About", kind: "path", to: "/about" },
