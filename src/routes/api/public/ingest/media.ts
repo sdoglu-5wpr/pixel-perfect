@@ -86,7 +86,7 @@ export const Route = createFileRoute("/api/public/ingest/media")({
               alt_text: parsed.alt_text ?? null,
               caption: parsed.caption ?? null,
               uploaded_at: new Date().toISOString(),
-            })
+            } as any)
             .select("id, url")
             .single();
           if (mErr) return jsonResponse({ error: `media insert failed: ${mErr.message}` }, 500);

@@ -58,7 +58,7 @@ export const Route = createFileRoute("/api/public/ingest/categories")({
             name: parsed.name,
             description: parsed.description ?? null,
             parent_id: parsed.parent_id ?? null,
-          })
+          } as any)
           .select("id, slug, name, description, parent_id, post_count")
           .single();
         if (error) return jsonResponse({ error: error.message }, 500);
