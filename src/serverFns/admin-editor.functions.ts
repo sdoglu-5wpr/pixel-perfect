@@ -39,11 +39,18 @@ export const getAdminPost = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await ensureStaff(supabase, userId);
 
-    const [catsRes, tagsRes, authRes] = await Promise.all([
-      supabase.from("categories").select("id, name, slug").order("name"),
-      supabase.from("tags").select("id, name, slug").order("name"),
-      supabase.from("authors").select("id, display_name, slug").order("display_name"),
-    ]);
+    const meta = await cached("admin:editor:meta:v1", 60_000, async () => {
+      const [c, t, a] = await Promise.all([
+        supabase.from("categories").select("id, name, slug").order("name"),
+        supabase.from("tags").select("id, name, slug").order("name"),
+        supabase.from("authors").select("id, display_name, slug").order("display_name"),
+      ]);
+      return {
+        categories: c.data ?? [],
+        tags: t.data ?? [],
+        authors: a.data ?? [],
+      };
+    });
 
     if (data.id == null) {
       return {
