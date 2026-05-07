@@ -263,7 +263,7 @@ export function SiteHeader() {
                     to="/$slug"
                     params={{ slug: item.slug }}
                     onClick={closeMobile}
-                    className="block px-2 py-2.5 rounded hover:bg-black/5"
+                    className="block px-2 py-2 rounded hover:bg-black/5"
                   >
                     {item.label}
                   </Link>
@@ -271,7 +271,7 @@ export function SiteHeader() {
               }
               if (item.kind === "path") {
                 return (
-                  <Link key={item.label} to={item.to} onClick={closeMobile} className="block px-2 py-2.5 rounded hover:bg-black/5">
+                  <Link key={item.label} to={item.to} onClick={closeMobile} className="block px-2 py-2 rounded hover:bg-black/5">
                     {item.label}
                   </Link>
                 );
@@ -283,7 +283,7 @@ export function SiteHeader() {
                     type="button"
                     onClick={() => setMobileSubmenu(open ? null : item.label)}
                     aria-expanded={open}
-                    className="w-full flex items-center justify-between px-2 py-2.5 rounded hover:bg-black/5"
+                    className="w-full flex items-center justify-between px-2 py-2 rounded hover:bg-black/5"
                   >
                     <span>{item.label}</span>
                     <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
