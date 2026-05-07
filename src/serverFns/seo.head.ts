@@ -30,10 +30,11 @@ const websiteNode = {
   },
 };
 
-function baseMeta(title: string, description: string, url: string, image: string | null, ogType: "website" | "article"): Meta {
+function baseMeta(title: string, description: string, url: string, image: string | null, ogType: "website" | "article" | "profile"): Meta {
   const m: Meta = [
     { title },
     { name: "description", content: description },
+    { property: "og:locale", content: "en_US" },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:type", content: ogType },
@@ -46,6 +47,8 @@ function baseMeta(title: string, description: string, url: string, image: string
   ];
   if (image) {
     m.push({ property: "og:image", content: image });
+    m.push({ property: "og:image:width", content: "1200" });
+    m.push({ property: "og:image:height", content: "630" });
     m.push({ name: "twitter:image", content: image });
   }
   return m;
