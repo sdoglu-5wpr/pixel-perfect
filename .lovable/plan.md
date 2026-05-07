@@ -1,88 +1,64 @@
+# Add GEO pillar + first article (with images)
 
-## Revised plan — incorporating your three additions
+## Author / structure confirmed
 
-Shipping order unchanged: (1) prerender + URL collector → deploy → report `cf-cache-status` → (2) cache headers + perf-test cleanup → (3) revalidate webhook + admin hook + cron → (4) acceptance script.
+- Author for the article: **Ronn Torossian** (id 6, slug `ronn-torossian`).
+- Pillar matches existing pattern (cybersecurity, beauty, etc.): `pillars` row + matching `categories` row, both slug `generative-engine-optimization`. Same `PillarView` renders it — no new component, no layout changes.
+- `byline` will be `EPR Staff` to match other pillars.
 
-### 1. Prerender wiring + URL collector (this push)
+## What lands in one pass
 
-**Wiring**
-- `vite.config.ts`: pass `prerender: { enabled: true, concurrency: 4, crawlLinks: false, routes: async () => collectUrls() }` to TanStack Start (the default config wrapper accepts overrides via `defineConfig({ tanstackStart: { ... } })`).
-- New file `src/prerender.ts` exports `collectUrls()`. Build-time only — uses `supabaseAdmin` (service role) directly, no RLS round-trips.
+### 1. Images (generated up front, committed to `public/`)
 
-**URLs collected** (with your additions)
-- `/`, `/feed`, `/robots.txt`, `/sitemap_index.xml`, `/post-sitemap.xml` (paginated), `/category-sitemap.xml`, `/post_tag-sitemap.xml`, `/author-sitemap.xml`, `/page-sitemap.xml`
-- Every `posts` row where `status='publish' AND type IN ('post','page')` → `/$slug`. This naturally includes:
-  - The ~12K posts
-  - The 19 pages (ethics-policy, corrections-policy, etc.) — verified via `select count(*) from posts where type='page' and status='publish'` before the build commits
-  - The 4 study landing pages — same query covers them; we'll log their slugs explicitly during collection so you can grep the build output to confirm
-- All 41 categories → `/category/$slug` plus `/category/$slug/page/$n` for n=2..ceil(post_count/pageSize)
-- All tags with `post_count >= 5` → `/tag/$slug` (+ paginated)
-- All 21 authors → `/author/$slug` (+ paginated)
-- **Redirects**: select `source_path` from `redirects where enabled=true`. These are NOT prerendered as pages. Instead, `collectUrls()` also returns a `redirects` array that gets emitted to `dist/_redirects.json`. The Worker reads this map at startup and serves a 301 directly — no Supabase call, no React render.
+Both as **WebP**, named after the slug, alt text describes the content.
 
-**Determinism**: collection runs once per build. Slug list snapshot is written to `dist/prerender-manifest.json` for debugging.
+- `public/pillars/generative-engine-optimization.webp` — pillar hero
+  - prompt direction: editorial illustration of an AI search interface citing brand sources, dark navy `#0A1628` background to match pillar hero gradient, brand red `#FF3366` accents, no text rendered in the image.
+  - alt: `"Generative Engine Optimization (GEO) — how brands earn citations inside ChatGPT, Claude, Perplexity, and Google AI Overviews"`
+- `public/articles/geo-vs-seo.webp` — article featured image
+  - prompt direction: split-frame visual contrasting a traditional Google SERP (left) with an AI answer panel showing inline citations (right), same dark navy + red accent palette, clean editorial style, no text.
+  - alt: `"GEO vs SEO — search results page versus AI-generated answer with inline citations"`
+- Generated via the agent-side `generate_image` tool (premium tier) so they ship as real files in the repo. If the prompt produces a PNG, I'll convert to WebP with `cwebp` before commit. Both files end up tracked in git, immediately referenced by the seed migration.
 
-### 2. Tiered fallback (documented + wired)
+A `media` row + `post_categories`/`featured_media_id` wiring is added so the article's featured image renders the same way every other post does.
 
-In `src/prerender.ts`:
-```
-const MAX_PRERENDER = 2500;       // hard cap before tier-1 fallback
-const BUILD_TIME_BUDGET_MS = 8 * 60_000;
-```
-- Tier 1 set (always): `/`, all pages (19), all category roots + first 3 pagination, all author roots + first 3 pagination, top 500 posts ordered by `seo_meta.incoming_link_count desc nulls last`, top 100 by `published_at desc`. Deduped.
-- If full URL count ≤ `MAX_PRERENDER` and the build elapsed budget hasn't been exceeded by the time the collector finishes, prerender everything. Otherwise emit only Tier 1 and write `tier=1` into the manifest.
-- Tier 2 (everything else) falls back to dynamic SSR at request time. Worker sets `Cache-Control: public, s-maxage=3600, stale-while-revalidate=86400` on those responses so the second visitor gets edge-cached HTML.
-- Build log prints: total URLs found, tier chosen, included counts per type, elapsed seconds.
+### 2. Database migration (single file, fully idempotent)
 
-`incoming_link_count` doesn't exist on `seo_meta` today — I'll use `internal_links` aggregated by `target_post_id` as the proxy. If you want a real column added I can do that in step 3.
+- `insert ... on conflict (slug) do update` for:
+  - `categories` row `generative-engine-optimization`, name "Generative Engine Optimization", description from the doc lead.
+  - `pillars` row `generative-engine-optimization`:
+    - `title`: "Generative Engine Optimization (GEO)"
+    - `subtitle`: "What GEO is, why it matters, and how brands win citations inside AI answers."
+    - `byline`: "EPR Staff"
+    - `body_html`: full doc 1 rendered to HTML (h2/h3 headings, table for the SEO-vs-GEO comparison, bullet lists, blockquote for the About 5W block at the end). FAQ section stripped from `body_html` and moved into `faq` JSONB.
+    - `faq`: 5 Q/A pairs from the bottom of doc 1 → `[{q,a}, …]`.
+    - `schema_jsonld`: `{ "@context": "schema.org", "@graph": [Article + FAQPage] }` keyed to `https://everything-pr.com/generative-engine-optimization/`.
+    - `hero_image_url`: `/pillars/generative-engine-optimization.webp`.
+    - `published: true`.
+- `media` row for the article image, then `posts` row `geo-vs-seo`:
+  - `type='post'`, `status='publish'`, `published_at=now()`
+  - `author_id`: 6 (Ronn Torossian)
+  - `featured_media_id`: id of the new media row
+  - `title`: "GEO vs SEO: What's the Difference?"
+  - `excerpt`: short-answer paragraph from doc 2.
+  - `content_html`: doc 2 rendered to HTML (table preserved, FAQ section preserved, About 5W blockquote at the end).
+- `post_categories` join: link the new post to the new category.
+- Internal links inside the pillar `body_html` "Related reading" list: "GEO vs SEO" → `/geo-vs-seo`. Other related items stay as plain text since no pages exist yet.
 
-### 3. Cache-header + noindex correctness on staging
+### 3. Markdown → HTML
 
-Two facets, both handled in step 2 of the rollout (cache-header pass), called out here so we agree on the contract:
+Conversion done **once** during migration authoring (server-side, before SQL is generated) using `marked` in a one-shot Node script — only the resulting HTML strings end up in the migration file. No new runtime dep added to the app.
 
-| Surface | `INDEXING_ENABLED=false` (staging) | `INDEXING_ENABLED=true` (prod) |
-| --- | --- | --- |
-| Prerendered HTML `<head>` | `<meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">` baked in at build | `<meta name="robots" content="index,follow,max-image-preview:large">` baked in |
-| Worker response header on every request | `X-Robots-Tag: noindex,nofollow,noarchive,nosnippet,noimageindex` | header omitted |
-| `/robots.txt` (prerendered as static file) | `User-agent: *\nDisallow: /` | full allow + AI bots + sitemap link |
-| `/sitemap*.xml` | not in prerender list → Worker returns `404` | prerendered XML |
-| Cache-Control on HTML | `public, max-age=60, s-maxage=86400, stale-while-revalidate=604800` (same as prod — staging perf parity is the whole point) | same |
+### 4. Prerender list
 
-The `<meta robots>` and the indexing-aware skip of sitemap URLs both happen inside `collectUrls()` / route `head()` at build time, reading `process.env.INDEXING_ENABLED`. The `X-Robots-Tag` response header is added by the Worker middleware (`src/start.ts`) at request time so it's correct even for Tier-2 lazy renders.
+Add `/generative-engine-optimization` and `/geo-vs-seo` to the Tier-1 set in `src/prerender.ts` so they ship as static HTML on first deploy. (Pillars + posts already get picked up by the bulk collector; this just guarantees Tier-1 inclusion regardless of cap.)
 
-**Two artifacts per env — wrangler answer**: `wrangler.jsonc` supports `[env.production]` / `[env.staging]` blocks with per-env `vars`. We add:
-```
-{
-  "vars": { "INDEXING_ENABLED": "false" },
-  "env": {
-    "production": { "vars": { "INDEXING_ENABLED": "true" } }
-  }
-}
-```
-Lovable's deploy publishes a single Worker per project, so the practical model is:
-- Staging deploys = current behavior, `INDEXING_ENABLED=false` → noindex artifact.
-- Production cutover = flip the secret to `true` and trigger a rebuild. The build reads the new value, prerenders index-allowed HTML, swaps `robots.txt`, includes sitemaps. ~3-10 min downtime-free (old artifact serves until the new one promotes).
+### 5. No route changes
 
-If you want truly two simultaneous artifacts (staging at noindex AND production at index, both live), that requires either two Lovable projects or a custom deploy pipeline outside what I can configure from here. I'll flag it explicitly in the docs file.
+`/$slug` already resolves: article → pillar → archive. The moment the rows exist, both URLs work. `PillarView` renders the new pillar identically to `/cybersecurity`.
 
-### Step 1 deliverable (what hits the repo on this push)
-- `src/prerender.ts` — collector + tiering logic
-- `vite.config.ts` — prerender config + route function
-- `src/start.ts` — Worker static-file + redirect-map handler (reads `dist/_redirects.json`)
-- `dist/_redirects.json` written at build (committed to artifact, not source)
-- `src/server/indexing.constants.ts` — exports the meta-robots strings used by both `head()` and the middleware so they can't drift
-- Build log shows: total/tier/per-type counts + study-page slugs explicitly listed
-- No changes yet to admin publish flow, no webhook, no cron — those are step 3
+## Out of scope (still queued from earlier)
 
-After this lands and deploys, I'll run:
-```
-for url in / /category/pr-news/ /the-ai-coding-tools-ai-visibility-index-2026/ /robots.txt /sitemap_index.xml; do
-  for i in 1 2 3; do
-    curl -sI "https://everythingpr.lovable.app$url?cb=$RANDOM" | grep -iE 'cf-cache-status|cache-control|x-robots|content-type'
-    curl -s -o /dev/null -w "$url hit$i %{time_starttransfer}s\n" "https://everythingpr.lovable.app$url"
-  done
-done
-```
-and report back `cf-cache-status` per URL plus TTFB, before starting step 2.
+Homepage QA fixes (Crisis PR / Other News / 5W bar / FAQPage schema / Ronn sidebar bio cap / hydration error in `ByLine`) — I'll resume that list right after this lands.
 
-Approve and I'll start step 1.
+Approve and I'll generate both images, then ship the migration + prerender update in one go.
