@@ -25,7 +25,7 @@ export const Route = createFileRoute("/api/public/ingest/posts")({
           .order("modified_at", { ascending: false })
           .range(from, to);
 
-        if (status) q = q.eq("status", status);
+        if (status) q = q.eq("status", status as any);
         if (search) q = q.ilike("title", `%${search}%`);
 
         const { data, count, error } = await q;
