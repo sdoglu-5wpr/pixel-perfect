@@ -100,7 +100,7 @@ export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput
   const imageId = `${url}#primaryimage`;
   const breadcrumbId = `${url}#breadcrumb`;
   const personId = author?.slug
-    ? `${SITE_URL}/#/schema/person/${author.slug}`
+    ? `${SITE_URL}/author/${author.slug}/#person`
     : `${SITE_URL}/#/schema/person/editorial`;
 
   const articleType = isResearch ? "Report" : "NewsArticle";
