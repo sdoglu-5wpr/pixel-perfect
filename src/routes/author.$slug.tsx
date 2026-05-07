@@ -14,8 +14,9 @@ export const Route = createFileRoute("/author/$slug")({
     if (!data) throw notFound();
     return data;
   },
-  head: ({ loaderData, params }) => {
+  head: ({ loaderData, params, matches }) => {
     if (!loaderData) return { meta: [{ title: "Author · Everything-PR" }] };
+    const isLeaf = !matches.some((m: { routeId: string }) => m.routeId !== "/author/$slug" && m.routeId.startsWith("/author/$slug"));
     return buildArchiveHead({
       kind: "author",
       termTitle: loaderData.header.title,
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/author/$slug")({
       items: loaderData.items.map((i) => ({ title: i.title, slug: i.slug })),
       pathPrefix: `/author/${(params as { slug: string }).slug}`,
       author: loaderData.header.author,
+      emitCanonical: isLeaf,
     });
   },
   component: Page,

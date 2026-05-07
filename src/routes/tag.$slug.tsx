@@ -9,8 +9,9 @@ export const Route = createFileRoute("/tag/$slug")({
     if (!data) throw notFound();
     return data;
   },
-  head: ({ loaderData, params }) => {
+  head: ({ loaderData, params, matches }) => {
     if (!loaderData) return { meta: [{ title: "Tag · Everything-PR" }] };
+    const isLeaf = !matches.some((m: { routeId: string }) => m.routeId !== "/tag/$slug" && m.routeId.startsWith("/tag/$slug"));
     return buildArchiveHead({
       kind: "tag",
       termTitle: loaderData.header.title,
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/tag/$slug")({
       items: loaderData.items.map((i) => ({ title: i.title, slug: i.slug })),
       pathPrefix: `/tag/${(params as { slug: string }).slug}`,
       seoOverrides: loaderData.header.seo,
+      emitCanonical: isLeaf,
     });
   },
   component: Page,

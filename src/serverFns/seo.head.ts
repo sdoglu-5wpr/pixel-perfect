@@ -149,8 +149,9 @@ export function buildArchiveHead(opts: {
     robots?: string | null;
     og_image?: string | null;
   };
+  emitCanonical?: boolean;
 }): HeadOutput {
-  const { kind, termTitle, termDescription, page, totalItems, items, pathPrefix, searchPhrase, author, seoOverrides } = opts;
+  const { kind, termTitle, termDescription, page, totalItems, items, pathPrefix, searchPhrase, author, seoOverrides, emitCanonical = true } = opts;
 
   let titleTemplate: string;
   let descTemplate: string;
@@ -187,7 +188,7 @@ export function buildArchiveHead(opts: {
   const meta = baseMeta(title, description, url, ogImage, ogType);
   if (seoOverrides?.robots) meta.push({ name: "robots", content: seoOverrides.robots });
   const canonicalHref = seoOverrides?.canonical_url || url;
-  const links: Link = [{ rel: "canonical", href: canonicalHref }];
+  const links: Link = emitCanonical ? [{ rel: "canonical", href: canonicalHref }] : [];
 
   const itemList = {
     "@type": "ItemList",
