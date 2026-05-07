@@ -59,11 +59,7 @@ export const getAdminPost = createServerFn({ method: "POST" })
         categoryIds: [] as number[],
         tagIds: [] as number[],
         featuredMedia: null as null | { id: number; url: string; alt_text: string | null },
-        meta: {
-          categories: catsRes.data ?? [],
-          tags: tagsRes.data ?? [],
-          authors: authRes.data ?? [],
-        },
+        meta,
       };
     }
 
@@ -90,11 +86,7 @@ export const getAdminPost = createServerFn({ method: "POST" })
       categoryIds: (pcRes.data ?? []).map((r: any) => r.category_id as number),
       tagIds: (ptRes.data ?? []).map((r: any) => r.tag_id as number),
       featuredMedia: mediaRes.data ?? null,
-      meta: {
-        categories: catsRes.data ?? [],
-        tags: tagsRes.data ?? [],
-        authors: authRes.data ?? [],
-      },
+      meta,
     };
   });
 
