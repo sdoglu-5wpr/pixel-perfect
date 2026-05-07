@@ -28,6 +28,8 @@ export const Route = createFileRoute("/tag/$slug")({
 function Page() {
   const data = Route.useLoaderData();
   const { slug } = Route.useParams();
+  const childMatches = useChildMatches();
+  if (childMatches.length > 0) return <Outlet />;
   return (
     <ArchiveView
       data={data}
