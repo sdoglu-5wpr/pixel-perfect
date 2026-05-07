@@ -44,6 +44,7 @@ const NAV: NavItem[] = [
     ],
   },
   { label: "Research", kind: "path", to: "/research" },
+  { label: "AI & GEO", kind: "path", to: "/generative-engine-optimization" },
   { label: "PR Firms", kind: "category", slug: "pr-firms" },
   { label: "RFPs", kind: "category", slug: "rfp" },
   { label: "About", kind: "path", to: "/about" },
@@ -147,7 +148,7 @@ export function SiteHeader() {
           />
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-1 ml-auto text-[13px] font-semibold uppercase tracking-wide">
+        <nav className="hidden lg:flex items-center gap-1 ml-auto text-[13px] font-semibold tracking-tight">
           {NAV.map((item) => {
             if (item.kind === "category") {
               return (
@@ -253,7 +254,7 @@ export function SiteHeader() {
       {/* Mobile drawer */}
       {mobileOpen ? (
         <div className="lg:hidden border-t border-black/10 bg-white max-h-[80vh] overflow-y-auto">
-          <div className="px-6 py-4 space-y-1 text-sm font-semibold uppercase tracking-wide">
+          <div className="px-6 py-3 space-y-0.5 text-sm font-semibold tracking-tight">
             {NAV.map((item) => {
               if (item.kind === "category") {
                 return (
@@ -262,7 +263,7 @@ export function SiteHeader() {
                     to="/$slug"
                     params={{ slug: item.slug }}
                     onClick={closeMobile}
-                    className="block px-2 py-2.5 rounded hover:bg-black/5"
+                    className="block px-2 py-2 rounded hover:bg-black/5"
                   >
                     {item.label}
                   </Link>
@@ -270,7 +271,7 @@ export function SiteHeader() {
               }
               if (item.kind === "path") {
                 return (
-                  <Link key={item.label} to={item.to} onClick={closeMobile} className="block px-2 py-2.5 rounded hover:bg-black/5">
+                  <Link key={item.label} to={item.to} onClick={closeMobile} className="block px-2 py-2 rounded hover:bg-black/5">
                     {item.label}
                   </Link>
                 );
@@ -282,7 +283,7 @@ export function SiteHeader() {
                     type="button"
                     onClick={() => setMobileSubmenu(open ? null : item.label)}
                     aria-expanded={open}
-                    className="w-full flex items-center justify-between px-2 py-2.5 rounded hover:bg-black/5"
+                    className="w-full flex items-center justify-between px-2 py-2 rounded hover:bg-black/5"
                   >
                     <span>{item.label}</span>
                     <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
