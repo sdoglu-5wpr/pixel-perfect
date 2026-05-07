@@ -1,11 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { clearLoaderCache } from "@/serverFns/loader-cache.server";
-
-function bustEditorMetaCache() {
-  try { clearLoaderCache("admin:editor:meta"); } catch {}
-}
 
 const STAFF_ROLES = ["admin", "editor", "author"] as const;
 
