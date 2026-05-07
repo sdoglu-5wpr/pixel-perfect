@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 type TickerItem = { slug: string; title: string };
 
@@ -6,12 +8,31 @@ interface TopTickerProps {
   items?: TickerItem[];
 }
 
-const FALLBACK: TickerItem[] = [
-  { slug: "", title: "Welcome to Everything-PR" },
-];
-
 export function TopTicker({ items }: TopTickerProps) {
-  const list = items && items.length ? items : FALLBACK;
+  const [fetched, setFetched] = useState<TickerItem[] | null>(null);
+
+  useEffect(() => {
+    if (items && items.length) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("posts")
+        .select("slug,title")
+        .eq("type", "post")
+        .eq("status", "publish")
+        .order("published_at", { ascending: false })
+        .limit(15);
+      if (!cancelled && Array.isArray(data)) setFetched(data as TickerItem[]);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [items]);
+
+  const list = (items && items.length ? items : fetched) ?? [];
+  if (!list.length) {
+    return <div className="bg-ticker text-ticker-foreground border-y border-black/10 h-9" aria-hidden />;
+  }
   // Duplicate so the marquee loop is seamless.
   const loop = [...list, ...list];
   return (
