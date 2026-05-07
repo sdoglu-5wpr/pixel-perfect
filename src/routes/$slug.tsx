@@ -293,6 +293,10 @@ function ArticlePage() {
             dangerouslySetInnerHTML={{ __html: article.content_html }}
           />
 
+          <Related5WResearch />
+          <Work5WCTA />
+          <About5WBoilerplate />
+
           {categories.length > 1 ? (
             <div className="mt-8 flex flex-wrap items-center gap-2">
               <span className="text-xs uppercase tracking-wider text-muted-foreground mr-2">Tags</span>
