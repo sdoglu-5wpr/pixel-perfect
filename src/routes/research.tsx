@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import { z } from "zod";
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeader } from "@tanstack/react-start/server";
@@ -72,6 +72,7 @@ const getResearch = createServerFn({ method: "GET" })
 
 export const Route = createFileRoute("/research")({
   validateSearch: (s) => searchSchema.parse(s),
+  search: { middlewares: [stripSearchParams({ page: 1 }) as any] },
   loaderDeps: ({ search }) => ({ page: search.page }),
   loader: async ({ deps }) => getResearch({ data: { page: deps.page } }),
   head: ({ loaderData }) =>
