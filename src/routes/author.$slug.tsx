@@ -32,5 +32,7 @@ export const Route = createFileRoute("/author/$slug")({
 
 function Page() {
   const data = Route.useLoaderData();
+  const childMatches = useChildMatches();
+  if (childMatches.length > 0) return <Outlet />;
   return <AuthorPage data={data} />;
 }
