@@ -9,6 +9,7 @@ import { fetchHomepageViaRpc } from "@/lib/homepage.shared";
 import { supabase } from "@/integrations/supabase/client";
 import { buildHomepageHead } from "@/serverFns/seo.head";
 import { htmlToPlainText, decodeHtmlEntities } from "@/lib/text";
+import fiveWBanner from "@/assets/5wpr-banner.jpg";
 
 const EMPTY_PAYLOAD: HomePayload = {
   ticker: [],
