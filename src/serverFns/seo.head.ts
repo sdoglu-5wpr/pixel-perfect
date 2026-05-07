@@ -212,7 +212,7 @@ export function buildArchiveHead(opts: {
 
   // Author archive → ProfilePage + Person; otherwise CollectionPage
   if (kind === "author" && author) {
-    const personId = `${SITE_URL}/#/schema/person/${author.slug}`;
+    const personId = `${SITE_URL}/author/${author.slug}/#person`;
     const sameAs = [author.social?.linkedin, author.social?.twitter, author.social?.facebook, author.social?.instagram, author.website]
       .filter((u): u is string => Boolean(u));
     const personNode: Record<string, unknown> = {
