@@ -115,6 +115,13 @@ async function main() {
   await writeFile(join(DIST, "client", "_headers"), headersBody, "utf8");
   console.log("[build] Wrote dist/client/_headers");
 
+  // Generate static sitemap XML files into dist/client so static hosts
+  // (Netlify) serve them as files instead of falling through to index.html.
+  console.log("\n[build] Generating static sitemap XML files...");
+  await run("npx", ["tsx", "scripts/generate-sitemaps.ts"], {
+    NODE_ENV: "production",
+  });
+
   if (TARGET === "netlify") {
     await rm(PRERENDER_DATA, { force: true });
     console.log("\n[build] Netlify target complete: keeping static dist/client output.\n");

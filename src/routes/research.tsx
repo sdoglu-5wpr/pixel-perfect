@@ -6,6 +6,7 @@ import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
 import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
 import type { ArchivePayload, ArchiveItem } from "@/serverFns/archives.functions";
 import { resolvePostImageUrl, rewriteLegacyUrl } from "@/lib/legacy-urls";
+import { buildStaticPageHead } from "@/serverFns/seo.head";
 
 const PAGE_SIZE = 12;
 
@@ -73,21 +74,16 @@ export const Route = createFileRoute("/research")({
   validateSearch: (s) => searchSchema.parse(s),
   loaderDeps: ({ search }) => ({ page: search.page }),
   loader: async ({ deps }) => getResearch({ data: { page: deps.page } }),
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: "Research, Studies & Reports · Everything-PR" },
-      {
-        name: "description",
-        content:
-          "Browse Everything-PR's research, studies, surveys, and industry reports on public relations, marketing, comms, and the business of media.",
-      },
-      { property: "og:title", content: "Research, Studies & Reports · Everything-PR" },
-      {
-        property: "og:description",
-        content: `${loaderData?.totalItems ?? ""} research articles, studies, and industry reports.`,
-      },
-    ],
-  }),
+  head: ({ loaderData }) =>
+    buildStaticPageHead({
+      path: "/research/",
+      title: "Research, Studies & Reports · Everything-PR",
+      description:
+        loaderData?.totalItems
+          ? `${loaderData.totalItems} research articles, studies, surveys, and industry reports on public relations, marketing, comms, and the business of media from Everything-PR.`
+          : "Browse Everything-PR's research, studies, surveys, and industry reports on public relations, marketing, comms, and the business of media.",
+      breadcrumbs: [{ name: "Research" }],
+    }),
   component: Page,
 });
 
