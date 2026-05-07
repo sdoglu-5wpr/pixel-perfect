@@ -294,7 +294,7 @@ function ArticlePage() {
             dangerouslySetInnerHTML={{ __html: article.content_html }}
           />
 
-          <Related5WResearch />
+          <Related5WResearch slug={article.slug} />
           <Work5WCTA />
           <About5WBoilerplate />
 
