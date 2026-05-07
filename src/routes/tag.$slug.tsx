@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, Outlet, useChildMatches } from "@tanstack/react-router";
 import { getArchive } from "@/serverFns/archives.functions";
 import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
 import { buildArchiveHead } from "@/serverFns/seo.head";
