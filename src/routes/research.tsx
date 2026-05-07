@@ -6,6 +6,7 @@ import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
 import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
 import type { ArchivePayload, ArchiveItem } from "@/serverFns/archives.functions";
 import { resolvePostImageUrl, rewriteLegacyUrl } from "@/lib/legacy-urls";
+import { buildStaticPageHead } from "@/serverFns/seo.head";
 
 const PAGE_SIZE = 12;
 
