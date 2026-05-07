@@ -64,11 +64,25 @@ export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput
   const slug = article.slug;
   const isResearch = RESEARCH_SLUGS.has(slug);
   const url = `${SITE_URL}/${slug}/`;
-  const title = article.seo?.title || `${article.title} - PR News`;
+  const plainExcerpt = htmlToPlainText(article.excerpt) || "";
+  const placeholderCtx = {
+    title: article.title,
+    sitename: SITE_NAME,
+    excerpt: plainExcerpt,
+    category: article.categories?.[0]?.name || "",
+  };
+  const seoTitle = resolvePlaceholders(article.seo?.title, placeholderCtx);
+  const seoDesc = resolvePlaceholders(article.seo?.description, placeholderCtx);
+  const seoOgTitle = resolvePlaceholders(article.seo?.og_title, placeholderCtx);
+  const seoOgDesc = resolvePlaceholders(article.seo?.og_description, placeholderCtx);
+  const seoTwTitle = resolvePlaceholders(a.seo?.twitter_title, placeholderCtx);
+  const seoTwDesc = resolvePlaceholders(a.seo?.twitter_description, placeholderCtx);
+
+  const title = seoTitle || `${article.title} - PR News`;
   const plain = htmlToPlainText(article.content_html || "");
   const description = truncate(
-    article.seo?.description ||
-      htmlToPlainText(article.excerpt) ||
+    seoDesc ||
+      plainExcerpt ||
       plain ||
       `${article.title} — read the full story on ${SITE_NAME}.`,
   );
