@@ -165,26 +165,61 @@ function MediaBackfillPage() {
   const start = async () => {
     if (running) return;
     stopRef.current = false; setRunning(true); setRecentErrors([]);
-    let drainedFlag = false;
-    while (!stopRef.current && !drainedFlag) {
+    let retry = 0;
+    let triedFailedReset = false;
+    let grandUploaded = 0, grandFailed = 0;
+    while (!stopRef.current) {
       try {
         const results = await Promise.all(
           Array.from({ length: parallel }, () => runBackfillBatch({ data: { batchSize } })),
         );
+        retry = 0;
         let upTotal = 0, failTotal = 0, procTotal = 0;
         const allErrs: Array<{ url: string; error: string }> = [];
         for (const r of results) {
           upTotal += r.uploaded; failTotal += r.failed; procTotal += r.processed ?? 0;
           if (r.errors?.length) allErrs.push(...r.errors);
         }
+        grandUploaded += upTotal; grandFailed += failTotal;
         if (allErrs.length) setRecentErrors(allErrs.slice(0, 10));
-        setLog((l) => [`${new Date().toLocaleTimeString()}  +${upTotal} ok · ${failTotal} fail (${parallel}×${batchSize})`, ...l].slice(0, 50));
+        setLog((l) => [`${new Date().toLocaleTimeString()}  +${upTotal} ok · ${failTotal} fail (${parallel}×${batchSize}) · total ✓${grandUploaded}/✗${grandFailed}`, ...l].slice(0, 50));
         await refresh();
-        if (procTotal === 0) { toast.success("Queue drained"); drainedFlag = true; }
+        if (procTotal === 0) {
+          // Nothing pending. If there are failed items, auto-reset & retry once.
+          const s = (await getBackfillStats()) as Stats;
+          if (s.failed > 0 && !triedFailedReset) {
+            triedFailedReset = true;
+            const r = await resetFailedBackfill();
+            setLog((l) => [`${new Date().toLocaleTimeString()}  auto-reset ${r.reset} failed → pending, continuing…`, ...l].slice(0, 50));
+            await refresh();
+            continue;
+          }
+          // Auto-rewrite once the queue is fully drained, so new originals
+          // get linked into posts/SEO without another click.
+          setLog((l) => [`${new Date().toLocaleTimeString()}  queue drained · auto-running variant remap…`, ...l].slice(0, 50));
+          try {
+            const seo = await rewriteSeoMetaVariantsSql();
+            const inline = await rewritePostsInlineVariantsSql();
+            setLog((l) => [`${new Date().toLocaleTimeString()}  remap: og=${seo.og_updated} tw=${seo.tw_updated} inline=${inline.inline_updated}`, ...l].slice(0, 50));
+            let safety = 0;
+            while (!stopRef.current && safety++ < 1000) {
+              const r = await rewritePostsHtmlVariantsSqlChunk({ data: { limit: 10 } });
+              setLog((l) => [`${new Date().toLocaleTimeString()}  remap html: +${r.updated} (remaining=${r.remaining})`, ...l].slice(0, 50));
+              if ((r.updated ?? 0) === 0) break;
+            }
+          } catch (e: any) {
+            setLog((l) => [`${new Date().toLocaleTimeString()}  remap err: ${e?.message ?? e}`, ...l].slice(0, 50));
+          }
+          await refresh();
+          toast.success(`Auto-run done · ${grandUploaded} uploaded, ${grandFailed} failed`);
+          break;
+        }
       } catch (e: any) {
-        toast.error(e?.message ?? "Batch failed");
-        setLog((l) => [`${new Date().toLocaleTimeString()}  ERROR ${e?.message}`, ...l].slice(0, 50));
-        break;
+        retry++;
+        const wait = Math.min(20000, 750 * 2 ** retry);
+        setLog((l) => [`${new Date().toLocaleTimeString()}  ERROR (retry ${retry} in ${wait}ms): ${e?.message ?? e}`, ...l].slice(0, 50));
+        if (retry >= 8) { toast.error("Too many failures, stopping"); break; }
+        await new Promise((r) => setTimeout(r, wait));
       }
     }
     setRunning(false);
