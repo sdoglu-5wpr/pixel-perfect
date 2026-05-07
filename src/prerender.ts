@@ -74,21 +74,32 @@ const STUDY_SLUG_HINTS = [
   "ai-visibility-index",
 ];
 
-/** Fetch all rows of a builder in chunks of 1000 to bypass Supabase's row cap. */
+/** Fetch all rows of a builder in chunks to bypass Supabase's row cap.
+ * If a page fails (e.g. statement timeout under RLS with the anon key),
+ * log and return what we have so the build can continue. */
 async function fetchAll<T>(
   build: () => { range: (a: number, b: number) => PromiseLike<{ data: unknown; error: unknown }> },
-  pageSize = 1000,
+  label = "query",
+  pageSize = 500,
 ): Promise<T[]> {
   const out: T[] = [];
   let from = 0;
   while (true) {
-    const { data, error } = await build().range(from, from + pageSize - 1);
-    if (error) throw error;
-    const rows = (data ?? []) as T[];
-    if (rows.length === 0) break;
-    out.push(...rows);
-    if (rows.length < pageSize) break;
-    from += pageSize;
+    try {
+      const { data, error } = await build().range(from, from + pageSize - 1);
+      if (error) {
+        console.warn(`[prerender] ${label} page from=${from} failed:`, (error as { message?: string })?.message ?? error);
+        break;
+      }
+      const rows = (data ?? []) as T[];
+      if (rows.length === 0) break;
+      out.push(...rows);
+      if (rows.length < pageSize) break;
+      from += pageSize;
+    } catch (e) {
+      console.warn(`[prerender] ${label} page from=${from} threw:`, (e as Error)?.message ?? e);
+      break;
+    }
   }
   return out;
 }
