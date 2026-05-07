@@ -19,6 +19,27 @@ const RESEARCH_SLUGS = new Set([
   "the-municipal-state-pr-spend-study-2026",
 ]);
 
+function resolvePlaceholders(
+  s: string | null | undefined,
+  ctx: { title: string; sitename: string; sitedesc?: string; excerpt?: string; category?: string },
+): string | null {
+  if (!s) return s ?? null;
+  let out = s
+    .replace(/%%title%%/gi, ctx.title)
+    .replace(/%%sitename%%/gi, ctx.sitename)
+    .replace(/%%sitedesc%%/gi, ctx.sitedesc || "")
+    .replace(/%%sep%%/gi, "-")
+    .replace(/%%page%%/gi, "")
+    .replace(/%%pagenumber%%/gi, "")
+    .replace(/%%pagetotal%%/gi, "")
+    .replace(/%%excerpt(?:_only)?%%/gi, ctx.excerpt || "")
+    .replace(/%%primary_category%%/gi, ctx.category || "")
+    .replace(/%%category%%/gi, ctx.category || "")
+    .replace(/%%[^%]+%%/g, ""); // strip any remaining unknown placeholders
+  out = out.replace(/\s+-\s+-\s+/g, " - ").replace(/\s{2,}/g, " ").replace(/\s*-\s*$/g, "").trim();
+  return out || null;
+}
+
 function truncate(s: string, n = 160): string {
   if (!s) return s;
   const clean = s.replace(/\s+/g, " ").trim();
@@ -43,11 +64,25 @@ export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput
   const slug = article.slug;
   const isResearch = RESEARCH_SLUGS.has(slug);
   const url = `${SITE_URL}/${slug}/`;
-  const title = article.seo?.title || `${article.title} - PR News`;
+  const plainExcerpt = htmlToPlainText(article.excerpt) || "";
+  const placeholderCtx = {
+    title: article.title,
+    sitename: SITE_NAME,
+    excerpt: plainExcerpt,
+    category: article.categories?.[0]?.name || "",
+  };
+  const seoTitle = resolvePlaceholders(article.seo?.title, placeholderCtx);
+  const seoDesc = resolvePlaceholders(article.seo?.description, placeholderCtx);
+  const seoOgTitle = resolvePlaceholders(article.seo?.og_title, placeholderCtx);
+  const seoOgDesc = resolvePlaceholders(article.seo?.og_description, placeholderCtx);
+  const seoTwTitle = resolvePlaceholders(a.seo?.twitter_title, placeholderCtx);
+  const seoTwDesc = resolvePlaceholders(a.seo?.twitter_description, placeholderCtx);
+
+  const title = seoTitle || `${article.title} - PR News`;
   const plain = htmlToPlainText(article.content_html || "");
   const description = truncate(
-    article.seo?.description ||
-      htmlToPlainText(article.excerpt) ||
+    seoDesc ||
+      plainExcerpt ||
       plain ||
       `${article.title} — read the full story on ${SITE_NAME}.`,
   );
@@ -67,8 +102,8 @@ export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput
     { name: "author", content: author?.display_name || `${SITE_NAME} Editorial Team` },
     { property: "og:locale", content: "en_US" },
     { property: "og:type", content: "article" },
-    { property: "og:title", content: article.seo?.og_title || article.title },
-    { property: "og:description", content: article.seo?.og_description || description },
+    { property: "og:title", content: seoOgTitle || article.title },
+    { property: "og:description", content: seoOgDesc || description },
     { property: "og:url", content: canonical },
     { property: "og:site_name", content: `${SITE_NAME} News` },
     { property: "og:image", content: image },
@@ -78,8 +113,8 @@ export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:site", content: TWITTER_HANDLE },
     { name: "twitter:creator", content: TWITTER_HANDLE },
-    { name: "twitter:title", content: a.seo?.twitter_title || article.title },
-    { name: "twitter:description", content: a.seo?.twitter_description || description },
+    { name: "twitter:title", content: seoTwTitle || article.title },
+    { name: "twitter:description", content: seoTwDesc || description },
     { name: "twitter:image", content: a.seo?.twitter_image || image },
     { name: "twitter:label1", content: "Written by" },
     { name: "twitter:data1", content: author?.display_name || `${SITE_NAME} Editorial Team` },
