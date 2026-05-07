@@ -11,7 +11,7 @@ export const Route = createFileRoute("/tag/$slug")({
   },
   head: ({ loaderData, params, matches }) => {
     if (!loaderData) return { meta: [{ title: "Tag · Everything-PR" }] };
-    const isLeaf = !matches.some((m) => m.routeId !== "/tag/$slug" && m.routeId.startsWith("/tag/$slug"));
+    const isLeaf = !matches.some((m: { routeId: string }) => m.routeId !== "/tag/$slug" && m.routeId.startsWith("/tag/$slug"));
     return buildArchiveHead({
       kind: "tag",
       termTitle: loaderData.header.title,

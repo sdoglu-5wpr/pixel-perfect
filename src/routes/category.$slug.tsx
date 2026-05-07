@@ -24,7 +24,7 @@ export const Route = createFileRoute("/category/$slug")({
   },
   head: ({ loaderData, params, matches }) => {
     if (!loaderData) return { meta: [{ title: "Category · Everything-PR" }] };
-    const isLeaf = !matches.some((m) => m.routeId !== "/category/$slug" && m.routeId.startsWith("/category/$slug"));
+    const isLeaf = !matches.some((m: { routeId: string }) => m.routeId !== "/category/$slug" && m.routeId.startsWith("/category/$slug"));
     if (loaderData.kind === "pillar") {
       const p = loaderData.data.pillar;
       const description = p.subtitle || `${p.title} — long-form guide and the latest coverage on Everything-PR.`;
