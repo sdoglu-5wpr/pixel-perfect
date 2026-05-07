@@ -19,6 +19,27 @@ const RESEARCH_SLUGS = new Set([
   "the-municipal-state-pr-spend-study-2026",
 ]);
 
+function resolvePlaceholders(
+  s: string | null | undefined,
+  ctx: { title: string; sitename: string; sitedesc?: string; excerpt?: string; category?: string },
+): string | null {
+  if (!s) return s ?? null;
+  let out = s
+    .replace(/%%title%%/gi, ctx.title)
+    .replace(/%%sitename%%/gi, ctx.sitename)
+    .replace(/%%sitedesc%%/gi, ctx.sitedesc || "")
+    .replace(/%%sep%%/gi, "-")
+    .replace(/%%page%%/gi, "")
+    .replace(/%%pagenumber%%/gi, "")
+    .replace(/%%pagetotal%%/gi, "")
+    .replace(/%%excerpt(?:_only)?%%/gi, ctx.excerpt || "")
+    .replace(/%%primary_category%%/gi, ctx.category || "")
+    .replace(/%%category%%/gi, ctx.category || "")
+    .replace(/%%[^%]+%%/g, ""); // strip any remaining unknown placeholders
+  out = out.replace(/\s+-\s+-\s+/g, " - ").replace(/\s{2,}/g, " ").replace(/\s*-\s*$/g, "").trim();
+  return out || null;
+}
+
 function truncate(s: string, n = 160): string {
   if (!s) return s;
   const clean = s.replace(/\s+/g, " ").trim();
