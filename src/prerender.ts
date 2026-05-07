@@ -192,7 +192,6 @@ export async function collectUrls(): Promise<CollectResult> {
   // on static hosts (Netlify).
   const sitemapUrls: string[] = [];
   void postCount; // referenced to keep parallel fetch typed; sitemap script re-counts
-  void indexingEnabled;
 
   const utilityUrls = ["/feed"];
 
