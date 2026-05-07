@@ -1,21 +1,26 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import netlify from "@netlify/vite-plugin-tanstack-start";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-// Two-pass production build (driven by scripts/build.mjs):
-//   LOVABLE_BUILD_PASS=prerender → no Cloudflare plugin, prerender enabled.
-//     TanStack's preview server expects dist/server/server.js, so we set
-//     server input to "src/server.ts" (basename "server"). This pass writes
-//     static HTML into dist/client/<route>/index.html.
+// Build passes (driven by scripts/build.mjs):
+//   LOVABLE_BUILD_PASS=prerender → no Cloudflare, no Netlify plugin. Prerender
+//     enabled. TanStack's preview server expects dist/server/server.js, so we
+//     keep the default server entry. Writes static HTML into
+//     dist/client/<route>/index.html.
 //
 //   LOVABLE_BUILD_PASS=worker → Cloudflare plugin enabled, prerender disabled.
-//     Emits the runtime worker (dist/server/index.js + wrangler.json).
+//     Emits the Cloudflare Worker (dist/server/index.js + wrangler.json).
 //
-//   Anything else (dev, single-pass `vite build` for local sanity) → no
-//     prerender, no special server input, Cloudflare plugin on by default
-//     during build only.
+//   LOVABLE_BUILD_PASS=netlify → Netlify plugin enabled, prerender disabled.
+//     Cloudflare plugin disabled. Emits Netlify Functions bundle alongside
+//     dist/client. Used by `npm run build:netlify`.
+//
+//   Anything else (dev, ad-hoc `vite build`) → no prerender, Cloudflare plugin
+//     on by default during build.
 const PASS = process.env.LOVABLE_BUILD_PASS;
 const isPrerenderPass = PASS === "prerender";
+const isNetlifyPass = PASS === "netlify";
 const PRERENDER_DATA_PATH = resolve(process.cwd(), ".prerender-pages.json");
 
 function loadPrerenderPages() {
@@ -29,18 +34,9 @@ function loadPrerenderPages() {
 }
 
 function buildTanstackOptions() {
-  if (!isPrerenderPass) {
-    // Worker pass + dev: no prerender. Use default server entry.
-    return {} as Record<string, unknown>;
-  }
+  if (!isPrerenderPass) return {} as Record<string, unknown>;
   return {
     pages: loadPrerenderPages(),
-    // Force TanStack's server bundle to be named "server.js" so the
-    // preview-server plugin (which prerender uses to fetch routes)
-    // can locate dist/server/server.js. Without this it defaults to
-    // "server" basename anyway, but the Cloudflare plugin overrides it
-    // to "index" — which is why we ONLY enable prerender in pass 1
-    // (Cloudflare plugin disabled).
     prerender: {
       enabled: true,
       concurrency: 4,
@@ -56,8 +52,7 @@ const tanstackStart = buildTanstackOptions();
 
 export default defineConfig({
   tanstackStart,
-  // Disable Cloudflare plugin during the prerender pass. The plugin renames
-  // the worker entry to dist/server/index.js, which breaks TanStack's
-  // preview server (it hard-codes basename(serverInput)+".js" = "server.js").
-  cloudflare: isPrerenderPass ? false : undefined,
+  // Disable Cloudflare plugin during prerender + netlify passes.
+  cloudflare: isPrerenderPass || isNetlifyPass ? false : undefined,
+  plugins: isNetlifyPass ? [netlify()] : [],
 });

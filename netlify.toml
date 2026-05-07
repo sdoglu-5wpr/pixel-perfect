@@ -22,12 +22,10 @@
   to = "/category/rfp/"
   status = 301
 
-# SPA fallback only for routes the static build didn't pre-render
-# (must come AFTER specific redirects above)
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# NOTE: SPA fallback removed. The @netlify/vite-plugin-tanstack-start plugin
+# emits a Netlify Function that handles every non-static request (admin,
+# /_serverFn/*, server routes, SSR fallbacks). Adding a `/* -> /index.html`
+# rewrite here would shadow that function and break the admin panel.
 
 # Cache headers for static assets
 [[headers]]
