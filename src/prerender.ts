@@ -126,16 +126,21 @@ export async function collectUrls(): Promise<CollectResult> {
           .from("posts")
           .select("id,slug,type,published_at")
           .eq("status", "publish")
-          .in("type", ["post", "page"]),
+          .in("type", ["post", "page"])
+          .order("published_at", { ascending: false, nullsFirst: false }),
+      "posts",
     ),
-    fetchAll<{ id: number; slug: string; post_count: number }>(() =>
-      sb.from("categories").select("id,slug,post_count"),
+    fetchAll<{ id: number; slug: string; post_count: number }>(
+      () => sb.from("categories").select("id,slug,post_count"),
+      "categories",
     ),
-    fetchAll<{ id: number; slug: string; post_count: number }>(() =>
-      sb.from("tags").select("id,slug,post_count").gte("post_count", TAG_MIN_POSTS),
+    fetchAll<{ id: number; slug: string; post_count: number }>(
+      () => sb.from("tags").select("id,slug,post_count").gte("post_count", TAG_MIN_POSTS),
+      "tags",
     ),
-    fetchAll<{ id: number; slug: string }>(() =>
-      sb.from("authors").select("id,slug"),
+    fetchAll<{ id: number; slug: string }>(
+      () => sb.from("authors").select("id,slug"),
+      "authors",
     ),
     fetchAll<{ source_path: string; target_path: string; status_code: number }>(
       () =>
@@ -143,9 +148,11 @@ export async function collectUrls(): Promise<CollectResult> {
           .from("redirects")
           .select("source_path,target_path,status_code")
           .eq("enabled", true),
+      "redirects",
     ),
-    fetchAll<{ target_post_id: number | null }>(() =>
-      sb.from("internal_links").select("target_post_id"),
+    fetchAll<{ target_post_id: number | null }>(
+      () => sb.from("internal_links").select("target_post_id"),
+      "internal_links",
     ),
     sb
       .from("posts")
