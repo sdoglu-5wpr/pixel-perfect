@@ -72,6 +72,52 @@ export function buildHomepageHead(opts: { title?: string; description?: string }
   return { meta, links, scripts: [jsonLd(ORG_JSONLD, websiteNode, webPage)] };
 }
 
+/**
+ * Generic head builder for static informational pages (about, contact,
+ * research landing, etc.). Emits Organization + WebSite + WebPage JSON-LD
+ * plus full OG / Twitter meta and a canonical link.
+ */
+export function buildStaticPageHead(opts: {
+  path: string;
+  title: string;
+  description: string;
+  image?: string | null;
+  breadcrumbs?: Array<{ name: string; item?: string }>;
+}): HeadOutput {
+  const url = `${SITE_URL}${opts.path.startsWith("/") ? "" : "/"}${opts.path}`;
+  const description = truncate(opts.description);
+  const image = opts.image || DEFAULT_OG_IMAGE;
+  const meta = baseMeta(opts.title, description, url, image, "website");
+  const links: Link = [{ rel: "canonical", href: url }];
+  const webPage = {
+    "@type": "WebPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: opts.title,
+    description,
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+    about: { "@id": `${SITE_URL}/#organization` },
+    inLanguage: "en-US",
+  };
+  const graph: unknown[] = [ORG_JSONLD, websiteNode, webPage];
+  if (opts.breadcrumbs && opts.breadcrumbs.length > 0) {
+    graph.push({
+      "@type": "BreadcrumbList",
+      "@id": `${url}#breadcrumb`,
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
+        ...opts.breadcrumbs.map((b, i) => ({
+          "@type": "ListItem",
+          position: i + 2,
+          name: b.name,
+          ...(b.item ? { item: b.item } : {}),
+        })),
+      ],
+    });
+  }
+  return { meta, links, scripts: [jsonLd(...graph)] };
+}
+
 type ArchiveKind = "category" | "tag" | "author" | "search";
 
 type AuthorMeta = {
