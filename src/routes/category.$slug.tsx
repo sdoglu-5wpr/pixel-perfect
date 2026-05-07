@@ -22,8 +22,9 @@ export const Route = createFileRoute("/category/$slug")({
     if (!data) throw notFound();
     return { kind: "archive" as const, data };
   },
-  head: ({ loaderData, params }) => {
+  head: ({ loaderData, params, matches }) => {
     if (!loaderData) return { meta: [{ title: "Category · Everything-PR" }] };
+    const isLeaf = !matches.some((m) => m.routeId !== "/category/$slug" && m.routeId.startsWith("/category/$slug"));
     if (loaderData.kind === "pillar") {
       const p = loaderData.data.pillar;
       const description = p.subtitle || `${p.title} — long-form guide and the latest coverage on Everything-PR.`;
@@ -51,6 +52,7 @@ export const Route = createFileRoute("/category/$slug")({
       items: loaderData.data.items.map((i) => ({ title: i.title, slug: i.slug })),
       pathPrefix: `/category/${(params as { slug: string }).slug}`,
       seoOverrides: loaderData.data.header.seo,
+      emitCanonical: isLeaf,
     });
   },
   component: CategoryArchive,
