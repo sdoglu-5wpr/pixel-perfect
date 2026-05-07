@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound, redirect, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect, stripSearchParams, useRouter } from "@tanstack/react-router";
 
 import { ChevronRight, ArrowRight, Clock, Share2, Twitter, Linkedin, Facebook, Link as LinkIcon } from "lucide-react";
 import { getArticleBySlug, type RelatedPost, type ArticlePayload, type ArticleAuthor } from "@/serverFns/articles.functions";
@@ -51,6 +51,7 @@ export const Route = createFileRoute("/$slug")({
   validateSearch: (s: Record<string, unknown>) => ({
     page: Math.max(1, Number(s.page) || 1),
   }),
+  search: { middlewares: [stripSearchParams({ page: 1 }) as any] },
   loaderDeps: ({ search }) => ({ page: search.page }),
   loader: async ({ params, deps }) => {
     if (!params.slug || params.slug.includes(".")) throw notFound();
