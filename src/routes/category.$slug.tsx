@@ -61,6 +61,9 @@ function CategoryArchive() {
     | { kind: "pillar"; data: PillarPayload }
     | { kind: "archive"; data: any };
   const { slug } = Route.useParams();
+  const childMatches = useChildMatches();
+  // If a child route (e.g. /page/$page) matched, render only the child.
+  if (childMatches.length > 0) return <Outlet />;
   if (loaderData.kind === "pillar") return <PillarView data={loaderData.data} />;
   return (
     <ArchiveView
