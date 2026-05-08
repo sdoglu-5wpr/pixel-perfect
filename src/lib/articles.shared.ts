@@ -54,6 +54,7 @@ export async function fetchArticleViaRpc(
   const categories = (rpc.categories ?? []) as ArticleCategory[];
   const topStoriesRaw = (rpc.top_stories ?? []) as any[];
   const otherNewsRaw = (rpc.other_news ?? []) as any[];
+  const relatedRaw = (rpc.related ?? []) as any[];
 
   const inlineFallback = pickFirstImageSrc(post.content_html);
   const seoOg = rewriteLegacyUrl(seo?.og_image);
