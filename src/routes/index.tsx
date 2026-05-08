@@ -9,7 +9,7 @@ import { fetchHomepageViaRpc } from "@/lib/homepage.shared";
 import { supabase } from "@/integrations/supabase/client";
 import { buildHomepageHead } from "@/serverFns/seo.head";
 import { htmlToPlainText, decodeHtmlEntities } from "@/lib/text";
-import fiveWBanner from "@/assets/5wpr-banner.jpg";
+import { InlineNewsletter } from "@/components/site/InlineNewsletter";
 
 const EMPTY_PAYLOAD: HomePayload = {
   ticker: [],
@@ -78,11 +78,13 @@ function HomePage() {
         <Hero hero={data.hero} topStories={data.topStories} />
       </div>
 
+      <div id="newsletter" className="mx-auto max-w-7xl px-6 mt-10">
+        <InlineNewsletter />
+      </div>
+
       {data.sections.slice(0, 2).map((s) => (
         <SectionRow key={s.key} title={s.title} categorySlug={s.slug} posts={s.posts} />
       ))}
-
-      <AIVisibilityResearch />
 
       <DarkFeatureSection
         title="Crisis"
