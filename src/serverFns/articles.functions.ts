@@ -52,6 +52,7 @@ export type ArticlePayload = {
   article: ArticleRecord;
   topStories: RelatedPost[];
   otherNews: RelatedPost[];
+  relatedPosts: RelatedPost[];
 };
 
 export const getArticleBySlug = createServerFn({ method: "GET" })
