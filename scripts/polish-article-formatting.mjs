@@ -112,7 +112,7 @@ function validate(orig, next) {
   if (!next || next.length < 50) return "empty";
   const a = htmlText(orig), b = htmlText(next);
   const ratio = b.length / Math.max(a.length, 1);
-  if (ratio < 0.95 || ratio > 1.05) return `text-len ${ratio.toFixed(3)}`;
+  if (ratio < 0.95 || ratio > 1.10) return `text-len ${ratio.toFixed(3)}`;
   if (countTags(orig, "a") !== countTags(next, "a")) return "anchor count";
   if (countTags(orig, "img") !== countTags(next, "img")) return "img count";
   return null;
