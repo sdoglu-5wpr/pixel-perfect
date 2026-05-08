@@ -184,7 +184,7 @@ function ArticlePage() {
     );
   }
 
-  const { article, topStories = [], otherNews = [] } = loaderData.data;
+  const { article, topStories = [], otherNews = [], relatedPosts = [] } = loaderData.data;
   const categories = article.categories ?? [];
   const primaryCategory = categories[0];
   const minutes = readingTime(article.content_html);
