@@ -27,8 +27,6 @@ export function SiteFooter({ menu }: { menu?: FooterMenuItem[] }) {
     <footer className="bg-ink text-ink-foreground mt-16">
       <div className="h-1 bg-ticker" />
 
-      </div>
-
       <div className="mx-auto max-w-7xl px-6 py-14 grid grid-cols-1 md:grid-cols-4 gap-10">
         <div className="md:col-span-1">
           <img src="/everything-pr-logo.png" alt="Everything PR News" className="h-12 w-auto bg-white rounded-md px-3 py-2 mb-3" />
