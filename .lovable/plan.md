@@ -1,91 +1,81 @@
-# Polish formatting on recent articles (add H2/H3)
+# Implementation Plan
 
-## Problem
+## Objective A — Surface `related` (internal_links) on article pages
 
-Many recently published articles render as walls of `<p>` tags. Section
-labels like `1. Audit and Clean Wikipedia and Wikidata`,
-`2. Land Tier-One Earned Media…`, or `90-Day Execution Plan` are wrapped
-in `<p>` (sometimes `<p><strong>…</strong></p>`) instead of `<h2>` /
-`<h3>`. This hurts readability, SEO, FAQ extraction, and the table of
-contents experience.
+**`src/serverFns/articles.functions.ts`**
+- Extend `ArticlePayload` type with `relatedPosts: RelatedPost[]`.
+- No handler logic change needed — payload is built in `articles.shared.ts`.
 
-Quick scan of the last 90 days of `posts` (status=publish, type=post):
+**`src/lib/articles.shared.ts`**
+- Read `rpc.related ?? []`, map through existing `relatedFromRow()` mapper.
+- Return as `relatedPosts` alongside `topStories` / `otherNews`.
 
-- 306 published posts
-- 72 have **zero** `<h2>`/`<h3>` headings
-- 6 use the `<p>1. Title</p>` numbered pattern (e.g. the article you linked)
-- 43 use the `<p><strong>Heading</strong></p>` pattern as fake headings
+**`src/routes/$slug.tsx`**
+- Destructure `relatedPosts` from article payload.
+- After the article body / before/around the existing related sections, render a "Related reading" block when `relatedPosts.length > 0`.
+- Use grid of cards mirroring the existing top-stories visual pattern (`<PostImage>` + title + category), each linking via `<Link to="/$slug" params={{ slug }} />`.
 
-## Approach
+## Objective B — Shared nav + internal-linking module
 
-A one-shot reformatting pass over all candidate articles, run as a
-script (no UI). Two-stage pipeline so we stay safe and reversible:
+**`src/lib/site-nav.shared.ts`** (new)
+- Export `LeafLink`, `NavItem` types.
+- Export `SITE_PRIMARY_NAV` containing the exact entries currently inlined in `SiteHeader.tsx` (News, Sectors, Disciplines, Research, AI & GEO, PR Firms, RFPs, About).
 
-1. **Deterministic pass** — covers the obvious patterns with regex, no
-   AI needed:
-   - `<p>N. Heading text</p>` (a paragraph that is just `N. Title`,
-     under ~120 chars, followed by another paragraph) → `<h2>Heading</h2>`
-   - `<p><strong>Heading text</strong></p>` where the paragraph is only
-     the bold span and ≤ 120 chars → `<h2>Heading</h2>`
-   - Common known section labels (`Methodology`, `Key Findings`,
-     `Conclusion`, `90-Day Execution Plan`, `The Headline Number`,
-     `What This Means`, `Recommendations`, etc.) wrapped in a short
-     standalone `<p>` → `<h2>`
-   - Inside numbered groups, sub-bullets that look like `<p>A. Sub</p>`
-     or `<p><em>Sub</em></p>` → `<h3>` (only when nested under an H2)
+**`src/components/site/SiteHeader.tsx`**
+- Remove inline `NAV` + types.
+- Import `SITE_PRIMARY_NAV`, `NavItem`, `LeafLink` from `@/lib/site-nav.shared`.
+- No UI/behavior change.
 
-2. **AI pass for the rest** — for the remaining ~70 articles that have
-   *no* headings at all and don't match the deterministic patterns,
-   call the Lovable AI gateway (`google/gemini-3-flash-preview`) with a
-   strict prompt:
-   - Input: current `content_html`
-   - Task: insert `<h2>` / `<h3>` where appropriate. Do **not** change
-     wording, do **not** add or remove paragraphs, do **not** touch
-     images, links, lists, or schema markup. Return HTML only.
-   - Output is validated: must still contain the same plain-text body
-     (length within ±2%), same number of `<a>` and `<img>` tags. If
-     validation fails, skip the article.
+**`src/lib/internal-linking.shared.ts`** (new)
+- Derive `EPR_SECTOR_CATEGORY_SLUGS` from the Sectors menu children.
+- Derive `EPR_DISCIPLINE_CATEGORY_SLUGS` from the Disciplines menu children.
+- Export `EPR_HUB_PATHS` = `["/research", "/generative-engine-optimization", "/about"]` plus top-level category paths (`/pr-news`, `/pr-firms`, `/rfp`).
+- Export `INTERNAL_LINKS_JSONL_RELATIVE = "data/internal-links.jsonl"`.
+- Export `InternalLinkJsonlRow` type: `{ source_slug; target_url; anchor_text; kind: "hub" | "sibling" | "manual" }`.
+- Export `INTERNAL_LINKING_RULES_SUMMARY` (string) describing the policy (≤3 hub links, ≤4 sibling links, no duplicates, prefer descriptive anchor, etc.).
 
-## Safety
+## Objective C — Ops scripts
 
-- Snapshot every modified article into `post_revisions` (kind =
-  `'autosave'`, with a note like `pre-format-polish-v1`) before the
-  update. The admin already uses this table, so revisions are
-  visible/restorable from the existing UI.
-- Dry-run mode first: write the proposed HTML to `/tmp/format-diffs/`
-  and print a summary (id, slug, what changed). I'll show you the diff
-  for ~5 sample articles for sign-off before any DB writes.
-- Then run the live pass in batches of 25 with a short delay.
+**`scripts/build-internal-links-jsonl.ts`** (new)
+- Read posts JSONL line by line, parse minimal fields (`slug`, `categories[]`, `content_html`).
+- For each post:
+  - Hub links: pick up to N hub paths matching post's categories/disciplines.
+  - Sibling links: pick up to `--max-siblings` other posts sharing a category, excluding the post itself.
+- Dedupe on `(source_slug, target_url)`.
+- Write JSONL rows of `InternalLinkJsonlRow`.
+- CLI: `--posts`, `--out`, `--max-siblings` (default 4). Print summary.
 
-## Scope
+**`scripts/audit-anchor-links.ts`** (new)
+- Read posts JSONL, iterate `<a href="...">`.
+- Use `rewriteWpContentUrls` + URL parsing to flag legacy `everything-pr.com` absolute links.
+- Report counts per file; with `--apply`, emit fixed JSONL using `rewriteLegacyHtml` from `src/lib/legacy-urls.ts`.
+- CLI: `--in`, `--out`, `--apply`.
 
-- Articles where `status='publish'` AND `type='post'` AND
-  `published_at > now() - interval '90 days'`.
-- Skip pages, drafts, and anything that already has ≥ 2 `<h2>` tags
-  unless it also matches the `<p>N. Title</p>` pattern (the linked
-  article does have proper structure elsewhere but still has the
-  numbered-paragraph bug).
+**`scripts/map-se-ranking-keywords.ts`** (new)
+- Read SE Ranking CSV (columns: keyword, volume, ...), tolerant header detection.
+- Match keyword tokens against sector/discipline/hub slugs to suggest `suggested_bucket` + `target_url`.
+- Score `priority` from volume tiers (e.g. >=1000 high, >=200 med, else low).
+- Output CSV: `keyword, volume, suggested_bucket, priority, target_url, notes`.
+- CLI: `--in`, `--out`.
 
-## Deliverables
+**`package.json`**
+- Add scripts:
+  - `internal-links:build`
+  - `internal-links:audit`
+  - `keywords:map`
 
-1. `scripts/polish-article-formatting.ts` — the reformatter (regex
-   stage + AI stage + validator + revision snapshot + batched update).
-2. A short admin migration is **not** needed — this is a data update,
-   done via the script using the service-role server client.
-3. A summary report written to `/mnt/documents/format-polish-report.md`
-   listing every article touched, before/after heading counts, and any
-   skipped items.
+## Objective D — Ron migration artifacts
 
-## Out of scope (ask if you want them later)
+**`ron-migration-checklist.txt`** (new) — sections: Export & Inventory, Lovable Project Setup, Content & Media Import, SEO-Safe Cutover, QA, Handoff.
 
-- Rewriting prose, fixing typos, or restructuring arguments.
-- Adding new images or changing existing ones.
-- Backfilling FAQ schema (the existing FAQ extractor will benefit
-  automatically from the new H2s).
-- Older articles (>90 days). Easy to extend the window after we
-  validate the first batch.
+**`ron-redirect-map.csv`** (new) — header `old_url,new_url,redirect_type,notes` + 1 example row.
 
-## Confirmation needed
+## Validation
+- Run `bunx tsc --noEmit` and `bunx eslint .` (or project's lint script) — report results.
+- Note: harness handles full builds; manual build not invoked.
 
-Before I start the live pass I'll show you 3–5 before/after diffs from
-the dry run so you can sanity-check tone and heading choices.
+## Assumptions
+- `rpc.related` shape matches `top_stories` (already mapped by `relatedFromRow`).
+- "Related reading" goes near top/other news block; styled minimally with existing tokens — no new shadcn components.
+- Scripts use Bun's CLI/file APIs already used by other `scripts/*.mjs|ts`.
+- Ron migration files live at repo root (no plan-markdown).
