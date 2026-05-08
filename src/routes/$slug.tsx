@@ -184,7 +184,7 @@ function ArticlePage() {
     );
   }
 
-  const { article, topStories = [], otherNews = [] } = loaderData.data;
+  const { article, topStories = [], otherNews = [], relatedPosts = [] } = loaderData.data;
   const categories = article.categories ?? [];
   const primaryCategory = categories[0];
   const minutes = readingTime(article.content_html);
@@ -355,6 +355,22 @@ function ArticlePage() {
           </div>
         </aside>
       </div>
+
+      {relatedPosts.length ? (
+        <section className="mx-auto max-w-7xl px-6 mt-16">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-serif text-2xl font-bold flex items-center gap-3">
+              <span className="inline-block w-3 h-3 bg-brand-blue" aria-hidden />
+              Related reading
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {relatedPosts.map((p) => (
+              <OtherCard key={p.id} post={p} />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {otherNews.length ? (
         <section className="mx-auto max-w-7xl px-6 mt-16">
