@@ -20,9 +20,8 @@ import { rewriteLegacyHtml } from "@/lib/legacy-urls";
 import { buildArticleHead } from "@/serverFns/seo.article";
 import { extractFaqPairs } from "@/lib/faq";
 import { FaqSection } from "@/components/site/FaqSection";
+import { Disclosure5W, shouldShow5WDisclosure } from "@/components/site/Disclosure5W";
 
-
-import fiveWBanner from "@/assets/5wpr-banner.jpg";
 
 async function loadArticle(slug: string): Promise<ArticlePayload | null> {
   // In the browser (e.g. Netlify static hosting where TanStack server functions
@@ -291,6 +290,12 @@ function ArticlePage() {
 
           <ShareBar title={article.title} slug={article.slug} />
 
+          {shouldShow5WDisclosure({
+            title: article.title,
+            contentHtml: article.content_html,
+            authorName: article.author?.display_name,
+          }) ? <Disclosure5W /> : null}
+
           <article
             className="prose-article mt-6"
             dangerouslySetInnerHTML={{ __html: article.content_html }}
@@ -320,14 +325,6 @@ function ArticlePage() {
 
         <aside className="lg:col-span-1">
           <div className="sticky top-6 space-y-8">
-            <a
-              href="https://www.5wpr.com/?utm_source=epr&utm_medium=sidebar_banner&utm_campaign=epr_article_sidebar"
-              target="_blank"
-              rel="noopener noreferrer sponsored"
-              className="block overflow-hidden rounded-lg border hover:opacity-90 transition-opacity"
-            >
-              <img src={fiveWBanner} alt="5W Public Relations — the AI Communications Firm" className="w-full h-auto" loading="lazy" />
-            </a>
             <div>
               <SidebarHeader title="Top Stories" />
               <ul className="mt-4 space-y-4">

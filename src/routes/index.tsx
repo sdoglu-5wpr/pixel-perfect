@@ -9,7 +9,7 @@ import { fetchHomepageViaRpc } from "@/lib/homepage.shared";
 import { supabase } from "@/integrations/supabase/client";
 import { buildHomepageHead } from "@/serverFns/seo.head";
 import { htmlToPlainText, decodeHtmlEntities } from "@/lib/text";
-import fiveWBanner from "@/assets/5wpr-banner.jpg";
+import { InlineNewsletter } from "@/components/site/InlineNewsletter";
 
 const EMPTY_PAYLOAD: HomePayload = {
   ticker: [],
@@ -78,11 +78,13 @@ function HomePage() {
         <Hero hero={data.hero} topStories={data.topStories} />
       </div>
 
+      <div id="newsletter" className="mx-auto max-w-7xl px-6 mt-10">
+        <InlineNewsletter />
+      </div>
+
       {data.sections.slice(0, 2).map((s) => (
         <SectionRow key={s.key} title={s.title} categorySlug={s.slug} posts={s.posts} />
       ))}
-
-      <AIVisibilityResearch />
 
       <DarkFeatureSection
         title="Crisis"
@@ -109,62 +111,6 @@ function HomePage() {
   );
 }
 
-function AIVisibilityResearch() {
-  const items = [
-    {
-      title: "AI Visibility Index",
-      desc: "How brands rank inside ChatGPT, Claude, Perplexity and Gemini answers.",
-      href: "https://www.5wpr.com/new/research/ai-visibility-index/?utm_source=epr&utm_medium=homepage&utm_campaign=ai_visibility_research",
-    },
-    {
-      title: "The GEO Reckoning",
-      desc: "Why generative engine optimization is rewriting the rules of earned media.",
-      href: "https://www.5wpr.com/new/research/geo-reckoning/?utm_source=epr&utm_medium=homepage&utm_campaign=ai_visibility_research",
-    },
-    {
-      title: "The Missing Rung Report",
-      desc: "Where today's brands disappear from the AI buyer journey — and how to recover.",
-      href: "https://www.5wpr.com/new/research/missing-rung-report/?utm_source=epr&utm_medium=homepage&utm_campaign=ai_visibility_research",
-    },
-  ];
-  return (
-    <section className="mx-auto max-w-7xl px-6 mt-14">
-      <div className="rounded-2xl border bg-ink text-ink-foreground p-8 md:p-10">
-        <div className="flex items-end justify-between gap-3 mb-6">
-          <div>
-            <p className="text-[11px] uppercase tracking-wider font-semibold text-brand-red">5W Research</p>
-            <h2 className="font-serif font-bold text-2xl md:text-3xl text-white mt-1">AI Visibility Research</h2>
-          </div>
-          <a
-            href="https://www.5wpr.com/new/research/?utm_source=epr&utm_medium=homepage&utm_campaign=ai_visibility_research"
-            target="_blank"
-            rel="noopener noreferrer sponsored"
-            className="text-sm font-medium text-white/85 hover:text-white inline-flex items-center gap-1"
-          >
-            View all <ChevronRight className="w-4 h-4" />
-          </a>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {items.map((it) => (
-            <a
-              key={it.title}
-              href={it.href}
-              target="_blank"
-              rel="noopener noreferrer sponsored"
-              className="block rounded-xl border border-white/10 bg-white/5 p-6 hover:bg-white/10 transition-colors"
-            >
-              <h3 className="font-serif font-bold text-lg text-white">{it.title}</h3>
-              <p className="mt-2 text-sm text-white/70 leading-relaxed">{it.desc}</p>
-              <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-brand-red">
-                Read the research <ArrowRight className="w-3.5 h-3.5" />
-              </span>
-            </a>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function AboutEverythingPR() {
   return (
@@ -282,14 +228,6 @@ function Hero({ hero, topStories }: { hero: HomePost | null; topStories: HomePos
       </div>
 
       <aside className="lg:col-span-4">
-        <a
-          href="https://www.5wpr.com/?utm_source=epr&utm_medium=sidebar_banner&utm_campaign=epr_homepage_sidebar"
-          target="_blank"
-          rel="noopener noreferrer sponsored"
-          className="block overflow-hidden rounded-lg border hover:opacity-90 transition-opacity mb-6"
-        >
-          <img src={fiveWBanner} alt="5W Public Relations — the AI Communications Firm" className="w-full h-auto" loading="lazy" />
-        </a>
         <SectionHeading>Top Stories</SectionHeading>
         <ul className="mt-4 divide-y divide-border">
           {topStories.map((p) => (
