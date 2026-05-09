@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
 
 const schema = z.object({
   email: z.string().trim().email().max(255),
@@ -29,7 +29,7 @@ export const Route = createFileRoute("/api/newsletter")({
         const { email, source } = parsed.data;
 
         try {
-          const { error } = await supabaseAdmin
+          const { error } = await supabaseAnon
             .from("newsletter_subscribers")
             .upsert(
               { email: email.toLowerCase(), source: source || null },
