@@ -70,3 +70,23 @@ export function stripFaqFromHtml(html: string | null | undefined): string {
   }
   return html.slice(0, start) + html.slice(end);
 }
+
+/**
+ * Removes the "About 5W" boilerplate block from article HTML.
+ * Matches an h2/h3/h4 OR <p><strong>About 5W</strong></p> heading and
+ * removes everything from that heading to the next heading or end of doc.
+ */
+export function stripAbout5WFromHtml(html: string | null | undefined): string {
+  if (!html) return html ?? "";
+  const headingRe = /<h([234])[^>]*>\s*(?:<[^>]*>\s*)*about\s+5w\s*(?:<\/[^>]*>\s*)*<\/h\1>/i;
+  const strongRe = /<p[^>]*>\s*<(?:strong|b)>\s*about\s+5w\s*<\/(?:strong|b)>\s*<\/p>/i;
+  let m = headingRe.exec(html);
+  if (!m) m = strongRe.exec(html);
+  if (!m) return html;
+  const start = m.index;
+  // Find next heading after this match.
+  const after = html.slice(start + m[0].length);
+  const nextHeading = /<h[234][^>]*>/i.exec(after);
+  const end = nextHeading ? start + m[0].length + nextHeading.index : html.length;
+  return html.slice(0, start) + html.slice(end);
+}
