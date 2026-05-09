@@ -189,6 +189,12 @@ function ArticlePage() {
   const primaryCategory = categories[0];
   const minutes = readingTime(article.content_html);
   const faqPairs = extractFaqPairs(article.content_html);
+  const contentHtml = faqPairs.length ? stripFaqFromHtml(article.content_html) : article.content_html;
+  const show5W = shouldShow5WDisclosure({
+    title: article.title,
+    contentHtml: article.content_html,
+    authorName: article.author?.display_name,
+  });
 
   if (article.type === "page" && article.slug === "contact") {
     return (
