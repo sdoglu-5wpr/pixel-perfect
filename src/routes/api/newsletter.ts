@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
 
 const schema = z.object({
   email: z.string().trim().email().max(255),
