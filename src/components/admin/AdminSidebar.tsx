@@ -19,6 +19,7 @@ const CONTENT: Item[] = [
 
 const TAXONOMY: Item[] = [
   { title: "Categories", url: "/admin/categories", icon: FolderTree },
+  { title: "Duplicate categories", url: "/admin/categories/duplicates", icon: Copy },
   { title: "Tags", url: "/admin/tags", icon: Tag },
   { title: "Authors", url: "/admin/authors", icon: Users },
 ];
