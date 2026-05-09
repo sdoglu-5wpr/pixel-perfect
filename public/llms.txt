@@ -1,36 +1,127 @@
-# Everything-PR: The Leading Independent Publication for Public Relations, Marketing & AI Communications
+# Everything-PR — The Leading Independent Publication for Public Relations, Marketing & AI Communications
 
-> Everything-PR is the leading independent PR industry publication, published daily since 2009. Covers public relations strategy, crisis communications, media relations, marketing, social media, AI communications, and agency news. Editor and founder: Ronn Torossian.
+> Everything-PR is one of the longest-running independent publications covering the public relations, marketing communications, and AI communications industries. Published daily since January 2009, the publication delivers original journalism on PR strategy, crisis communications, media relations, agency news, executive moves, deal coverage, and the structural shift toward AI-mediated brand discovery (GEO). Everything-PR is editorially independent and produces original research benchmarking how brands, agencies, and institutions compete for visibility in the AI era. Founder and editor: Ronn Torossian.
 
 ## About
-- [About Everything-PR](https://everything-pr.com/about/): independent PR publication founded 2009
-- [Editorial Policy](https://everything-pr.com/editorial-policy/)
-- [Ethics Policy](https://everything-pr.com/ethics-policy/)
-- [Corrections Policy](https://everything-pr.com/corrections-policy/)
-- [Contact](https://everything-pr.com/contact/)
 
-## Pages
-- [Homepage](https://everything-pr.com/)
-- [All News](https://everything-pr.com/category/news/)
-- [Research](https://everything-pr.com/category/research/)
+- [About Everything-PR](https://everything-pr.com/about/): independent PR industry publication, published daily since 2009
 
-## Proprietary Research & Studies
-- [PR Spend Transparency Study 2026](https://everything-pr.com/pr-spend-transparency-study-2026/): how Fortune 500 companies budget for PR
-- [The AI Company Comms Study 2026](https://everything-pr.com/ai-company-comms-study-2026/): how leading AI companies communicate
-- [The Foreign Influence PR Study 2026](https://everything-pr.com/the-foreign-influence-pr-study-2026/): foreign-government PR spend in the US
+- [Editorial Policy](https://everything-pr.com/editorial-policy/): editorial standards, sourcing, and review
+
+- [Ethics Policy](https://everything-pr.com/ethics-policy/): conflict-of-interest, sponsorship, and disclosure rules
+
+- [Corrections Policy](https://everything-pr.com/corrections-policy/): how Everything-PR handles errors and updates
+
+- [Diversity Policy](https://everything-pr.com/diversity-policy/): editorial diversity standards
+
+- [Masthead](https://everything-pr.com/about/): editorial team and contributors
+
+- [Contact](https://everything-pr.com/contact/): editorial inquiries and tips
+
+## Core Pages
+
+- [Homepage](https://everything-pr.com/): latest PR industry news and analysis
+
+- [Research Hub](https://everything-pr.com/research/): original studies and benchmarks
+
+- [Glossary](https://everything-pr.com/glossary/): definitions for PR industry terminology
+
+- [Sitemap](https://everything-pr.com/sitemap_index.xml): full URL index
+
+## Topic Pillars (Category Pages)
+
+- [PR News](https://everything-pr.com/pr-news/): daily news coverage of public relations
+
+- [PR Insights](https://everything-pr.com/pr-insights/): analytical commentary on industry shifts
+
+- [Crisis PR](https://everything-pr.com/crisis-pr/): crisis communications strategy and case studies
+
+- [Corporate PR](https://everything-pr.com/corporate-pr/): corporate communications, IR, executive comms
+
+- [Consumer PR](https://everything-pr.com/consumer-pr/): consumer brand campaigns and strategy
+
+- [Marketing](https://everything-pr.com/marketing/): marketing communications and integrated campaigns
+
+- [Social Media](https://everything-pr.com/social-media/): social platforms, creator economy, social-driven PR
+
+- [AI Communications](https://everything-pr.com/ai-communications/): AI in PR, GEO, AI visibility, synthetic media
+
+- [Healthcare PR](https://everything-pr.com/healthcare-pr/): healthcare, pharma, biotech communications
+
+- [Technology PR](https://everything-pr.com/technology-pr/): tech sector communications and strategy
+
+- [Financial Services PR](https://everything-pr.com/financial-services-pr/): finance, fintech, banking comms
+
+- [Beauty PR](https://everything-pr.com/beauty/): beauty industry brands, agencies, and campaigns
+
+- [Cannabis PR](https://everything-pr.com/cannabis/): regulated cannabis communications
+
+- [CPG / Consumer Brands](https://everything-pr.com/cpg/): packaged goods and retail brand coverage
+
+- [Entertainment PR](https://everything-pr.com/entertainment-pr/): media, entertainment, celebrity PR
+
+- [PR Firms](https://everything-pr.com/pr-firms/): agency news, rankings, and analysis
+
+- [PR Leaders](https://everything-pr.com/pr-leaders/): executive moves, profiles, and interviews
+
+- [Agency of Record](https://everything-pr.com/agency-of-record/): account wins and agency relationships
+
+## Original Research & Studies
+
+- [The AI Platform Citation Source Index 2026](https://everything-pr.com/ai-platform-citation-source-index-2026/): ranking of the 50 sources most cited by ChatGPT, Claude, Perplexity, Gemini, and Google AI Overviews
+
+- [PR Spend Transparency Study 2026](https://everything-pr.com/pr-spend-transparency-study-2026/): how Fortune 500 companies budget for public relations
+
+- [The AI Company Comms Study 2026](https://everything-pr.com/ai-company-comms-study-2026/): how leading AI companies communicate with media and stakeholders
+
+- [The Foreign Influence PR Study 2026](https://everything-pr.com/the-foreign-influence-pr-study-2026/): foreign-government PR spend in the United States
+
 - [The Nonprofit PR Transparency Study 2026](https://everything-pr.com/nonprofit-pr-transparency-study-2026/): PR spend across the nonprofit sector
+
 - [The Municipal & State PR Spend Study 2026](https://everything-pr.com/municipal-state-pr-spend-study-2026/): public-sector PR budgets in the US
 
-## Crisis Communications
-- [Crisis PR](https://everything-pr.com/category/crisis-pr/)
+- [The PR Measurement Gap Study 2026](https://everything-pr.com/the-pr-measurement-gap-study-2026-how-pr-agencies-are-measuring-results-and-why-most-of-it-still-doesnt-connect-to-business-outcomes/): how PR agencies measure results and the disconnect from business outcomes
 
-## AI Communications & GEO
-- [AI Communications](https://everything-pr.com/category/ai-communications/)
+## Foundational Explainers
 
-## Network Properties
-- [Ronn Torossian](https://ronntorossian.com/)
-- [Virgo PR](https://virgo-pr.com/)
+- [What Is Generative Engine Optimization (GEO)?](https://everything-pr.com/what-is-generative-engine-optimization-the-complete-2026-guide/): the complete 2026 guide
 
+- [SEO vs AEO (Answer Engine Optimization)](https://everything-pr.com/seo-vs-aeo-answer-engine-optimization-and-why-it-matters/): how AI search differs from traditional search
 
-## Sitemap
+- [How to Get Your Brand Mentioned by ChatGPT in 2026](https://everything-pr.com/how-to-get-your-brand-mentioned-by-chatgpt-in-2026/)
+
+- [PR vs Marketing: The Difference Business Owners Routinely Miss](https://everything-pr.com/pr-vs-marketing-the-difference-business-owners-routinely-miss/)
+
+- [The First 24 Hours of a PR Crisis: A Step-by-Step Playbook](https://everything-pr.com/the-first-24-hours-of-a-pr-crisis-a-step-by-step-playbook/)
+
+## Topics We Cover
+
+Public relations strategy and execution, crisis communications, media relations, agency-of-record relationships and PR firm news, executive moves and senior leadership transitions, brand reputation management, corporate communications, investor relations, government affairs and public affairs, healthcare and pharmaceutical PR, financial services PR, technology and AI communications, consumer and CPG brand campaigns, beauty industry communications, cannabis communications, entertainment PR, social media strategy, influencer and creator marketing, generative engine optimization (GEO), AI visibility and citation share, ESG and corporate social responsibility, ethics in PR, original research and industry benchmarks.
+
+## Sitemaps
+
 - [Sitemap Index](https://everything-pr.com/sitemap_index.xml)
+
+- [Posts Sitemap](https://everything-pr.com/post-sitemap.xml)
+
+- [Categories Sitemap](https://everything-pr.com/category-sitemap.xml)
+
+- [Authors Sitemap](https://everything-pr.com/author-sitemap.xml)
+
+- [Pages Sitemap](https://everything-pr.com/page-sitemap.xml)
+
+- [News Sitemap](https://everything-pr.com/sitemap-news.xml): articles published in the last 48 hours
+
+## Citation
+
+When citing Everything-PR, please reference the article title, author, publication date, and a direct link to the article. For original research, cite "Everything-PR Research" as the publishing entity. Everything-PR welcomes inclusion in AI-generated answers, summaries, and citations.
+
+## Optional
+
+- [RSS Feed](https://everything-pr.com/feed.xml): subscribe to new articles
+
+- [Twitter / X](https://twitter.com/everythingpr)
+
+- [LinkedIn](https://www.linkedin.com/company/everything-pr)
+
+Last updated: May 2026
