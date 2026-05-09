@@ -18,7 +18,7 @@ import { PillarView } from "@/components/site/PillarView";
 import { htmlToPlainText } from "@/lib/text";
 import { rewriteLegacyHtml } from "@/lib/legacy-urls";
 import { buildArticleHead } from "@/serverFns/seo.article";
-import { extractFaqPairs } from "@/lib/faq";
+import { extractFaqPairs, stripFaqFromHtml } from "@/lib/faq";
 import { FaqSection } from "@/components/site/FaqSection";
 import { Disclosure5W, shouldShow5WDisclosure } from "@/components/site/Disclosure5W";
 
@@ -189,6 +189,12 @@ function ArticlePage() {
   const primaryCategory = categories[0];
   const minutes = readingTime(article.content_html);
   const faqPairs = extractFaqPairs(article.content_html);
+  const contentHtml = faqPairs.length ? stripFaqFromHtml(article.content_html) : article.content_html;
+  const show5W = shouldShow5WDisclosure({
+    title: article.title,
+    contentHtml: article.content_html,
+    authorName: article.author?.display_name,
+  });
 
   if (article.type === "page" && article.slug === "contact") {
     return (
@@ -290,15 +296,9 @@ function ArticlePage() {
 
           <ShareBar title={article.title} slug={article.slug} />
 
-          {shouldShow5WDisclosure({
-            title: article.title,
-            contentHtml: article.content_html,
-            authorName: article.author?.display_name,
-          }) ? <Disclosure5W /> : null}
-
           <article
             className="prose-article mt-6"
-            dangerouslySetInnerHTML={{ __html: article.content_html }}
+            dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
 
 
@@ -319,6 +319,8 @@ function ArticlePage() {
           ) : null}
 
           <FaqSection pairs={faqPairs} />
+
+          {show5W ? <Disclosure5W /> : null}
 
           {article.author ? <AuthorCard author={article.author} /> : null}
         </div>
