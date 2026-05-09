@@ -56,6 +56,7 @@ import { Route as ApiPublicIngestCategoriesRouteImport } from './routes/api/publ
 import { Route as ApiPublicHooksPublishScheduledRouteImport } from './routes/api/public/hooks/publish-scheduled'
 import { Route as ApiPublicHooksGenerateMissingFeaturedImagesRouteImport } from './routes/api/public/hooks/generate-missing-featured-images'
 import { Route as AdminProtectedPostsIdRouteImport } from './routes/admin/_protected.posts.$id'
+import { Route as AdminProtectedCategoriesDuplicatesRouteImport } from './routes/admin/_protected.categories.duplicates'
 
 const Sitemap_indexDotxmlRoute = Sitemap_indexDotxmlRouteImport.update({
   id: '/sitemap_index.xml',
@@ -299,6 +300,12 @@ const AdminProtectedPostsIdRoute = AdminProtectedPostsIdRouteImport.update({
   path: '/posts/$id',
   getParentRoute: () => AdminProtectedRoute,
 } as any)
+const AdminProtectedCategoriesDuplicatesRoute =
+  AdminProtectedCategoriesDuplicatesRouteImport.update({
+    id: '/duplicates',
+    path: '/duplicates',
+    getParentRoute: () => AdminProtectedCategoriesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -326,7 +333,7 @@ export interface FileRoutesByFullPath {
   '/admin/activity': typeof AdminProtectedActivityRoute
   '/admin/authors': typeof AdminProtectedAuthorsRoute
   '/admin/automations': typeof AdminProtectedAutomationsRoute
-  '/admin/categories': typeof AdminProtectedCategoriesRoute
+  '/admin/categories': typeof AdminProtectedCategoriesRouteWithChildren
   '/admin/import': typeof AdminProtectedImportRoute
   '/admin/media': typeof AdminProtectedMediaRoute
   '/admin/media-backfill': typeof AdminProtectedMediaBackfillRoute
@@ -336,6 +343,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminProtectedSettingsRoute
   '/admin/tags': typeof AdminProtectedTagsRoute
   '/admin/': typeof AdminProtectedIndexRoute
+  '/admin/categories/duplicates': typeof AdminProtectedCategoriesDuplicatesRoute
   '/admin/posts/$id': typeof AdminProtectedPostsIdRoute
   '/api/public/hooks/generate-missing-featured-images': typeof ApiPublicHooksGenerateMissingFeaturedImagesRoute
   '/api/public/hooks/publish-scheduled': typeof ApiPublicHooksPublishScheduledRoute
@@ -374,7 +382,7 @@ export interface FileRoutesByTo {
   '/admin/activity': typeof AdminProtectedActivityRoute
   '/admin/authors': typeof AdminProtectedAuthorsRoute
   '/admin/automations': typeof AdminProtectedAutomationsRoute
-  '/admin/categories': typeof AdminProtectedCategoriesRoute
+  '/admin/categories': typeof AdminProtectedCategoriesRouteWithChildren
   '/admin/import': typeof AdminProtectedImportRoute
   '/admin/media': typeof AdminProtectedMediaRoute
   '/admin/media-backfill': typeof AdminProtectedMediaBackfillRoute
@@ -384,6 +392,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminProtectedSettingsRoute
   '/admin/tags': typeof AdminProtectedTagsRoute
   '/admin': typeof AdminProtectedIndexRoute
+  '/admin/categories/duplicates': typeof AdminProtectedCategoriesDuplicatesRoute
   '/admin/posts/$id': typeof AdminProtectedPostsIdRoute
   '/api/public/hooks/generate-missing-featured-images': typeof ApiPublicHooksGenerateMissingFeaturedImagesRoute
   '/api/public/hooks/publish-scheduled': typeof ApiPublicHooksPublishScheduledRoute
@@ -424,7 +433,7 @@ export interface FileRoutesById {
   '/admin/_protected/activity': typeof AdminProtectedActivityRoute
   '/admin/_protected/authors': typeof AdminProtectedAuthorsRoute
   '/admin/_protected/automations': typeof AdminProtectedAutomationsRoute
-  '/admin/_protected/categories': typeof AdminProtectedCategoriesRoute
+  '/admin/_protected/categories': typeof AdminProtectedCategoriesRouteWithChildren
   '/admin/_protected/import': typeof AdminProtectedImportRoute
   '/admin/_protected/media': typeof AdminProtectedMediaRoute
   '/admin/_protected/media-backfill': typeof AdminProtectedMediaBackfillRoute
@@ -434,6 +443,7 @@ export interface FileRoutesById {
   '/admin/_protected/settings': typeof AdminProtectedSettingsRoute
   '/admin/_protected/tags': typeof AdminProtectedTagsRoute
   '/admin/_protected/': typeof AdminProtectedIndexRoute
+  '/admin/_protected/categories/duplicates': typeof AdminProtectedCategoriesDuplicatesRoute
   '/admin/_protected/posts/$id': typeof AdminProtectedPostsIdRoute
   '/api/public/hooks/generate-missing-featured-images': typeof ApiPublicHooksGenerateMissingFeaturedImagesRoute
   '/api/public/hooks/publish-scheduled': typeof ApiPublicHooksPublishScheduledRoute
@@ -485,6 +495,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tags'
     | '/admin/'
+    | '/admin/categories/duplicates'
     | '/admin/posts/$id'
     | '/api/public/hooks/generate-missing-featured-images'
     | '/api/public/hooks/publish-scheduled'
@@ -533,6 +544,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tags'
     | '/admin'
+    | '/admin/categories/duplicates'
     | '/admin/posts/$id'
     | '/api/public/hooks/generate-missing-featured-images'
     | '/api/public/hooks/publish-scheduled'
@@ -582,6 +594,7 @@ export interface FileRouteTypes {
     | '/admin/_protected/settings'
     | '/admin/_protected/tags'
     | '/admin/_protected/'
+    | '/admin/_protected/categories/duplicates'
     | '/admin/_protected/posts/$id'
     | '/api/public/hooks/generate-missing-featured-images'
     | '/api/public/hooks/publish-scheduled'
@@ -959,14 +972,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProtectedPostsIdRouteImport
       parentRoute: typeof AdminProtectedRoute
     }
+    '/admin/_protected/categories/duplicates': {
+      id: '/admin/_protected/categories/duplicates'
+      path: '/duplicates'
+      fullPath: '/admin/categories/duplicates'
+      preLoaderRoute: typeof AdminProtectedCategoriesDuplicatesRouteImport
+      parentRoute: typeof AdminProtectedCategoriesRoute
+    }
   }
 }
+
+interface AdminProtectedCategoriesRouteChildren {
+  AdminProtectedCategoriesDuplicatesRoute: typeof AdminProtectedCategoriesDuplicatesRoute
+}
+
+const AdminProtectedCategoriesRouteChildren: AdminProtectedCategoriesRouteChildren =
+  {
+    AdminProtectedCategoriesDuplicatesRoute:
+      AdminProtectedCategoriesDuplicatesRoute,
+  }
+
+const AdminProtectedCategoriesRouteWithChildren =
+  AdminProtectedCategoriesRoute._addFileChildren(
+    AdminProtectedCategoriesRouteChildren,
+  )
 
 interface AdminProtectedRouteChildren {
   AdminProtectedActivityRoute: typeof AdminProtectedActivityRoute
   AdminProtectedAuthorsRoute: typeof AdminProtectedAuthorsRoute
   AdminProtectedAutomationsRoute: typeof AdminProtectedAutomationsRoute
-  AdminProtectedCategoriesRoute: typeof AdminProtectedCategoriesRoute
+  AdminProtectedCategoriesRoute: typeof AdminProtectedCategoriesRouteWithChildren
   AdminProtectedImportRoute: typeof AdminProtectedImportRoute
   AdminProtectedMediaRoute: typeof AdminProtectedMediaRoute
   AdminProtectedMediaBackfillRoute: typeof AdminProtectedMediaBackfillRoute
@@ -984,7 +1019,7 @@ const AdminProtectedRouteChildren: AdminProtectedRouteChildren = {
   AdminProtectedActivityRoute: AdminProtectedActivityRoute,
   AdminProtectedAuthorsRoute: AdminProtectedAuthorsRoute,
   AdminProtectedAutomationsRoute: AdminProtectedAutomationsRoute,
-  AdminProtectedCategoriesRoute: AdminProtectedCategoriesRoute,
+  AdminProtectedCategoriesRoute: AdminProtectedCategoriesRouteWithChildren,
   AdminProtectedImportRoute: AdminProtectedImportRoute,
   AdminProtectedMediaRoute: AdminProtectedMediaRoute,
   AdminProtectedMediaBackfillRoute: AdminProtectedMediaBackfillRoute,
