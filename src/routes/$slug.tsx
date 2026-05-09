@@ -263,7 +263,7 @@ function ArticlePage() {
           )}
           <span aria-hidden>·</span>
           <time dateTime={article.published_at ?? undefined}>
-            {formatDate(article.published_at)}
+            {formatDate(article.published_at, { year: "numeric", month: "long", day: "numeric" })}
           </time>
           <span aria-hidden>·</span>
           <span className="inline-flex items-center gap-1">
