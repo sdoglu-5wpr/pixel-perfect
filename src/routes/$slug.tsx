@@ -208,16 +208,16 @@ function ArticlePage() {
     <SiteLayout>
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="bg-surface-soft border-b">
-        <div className="mx-auto max-w-7xl px-6 py-3 flex items-center gap-2 text-xs text-muted-foreground">
-          <Link to="/" className="hover:text-foreground">Home</Link>
-          <ChevronRight className="w-3 h-3" />
+        <div className="mx-auto max-w-7xl px-6 py-3 flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap overflow-hidden">
+          <Link to="/" className="hover:text-foreground shrink-0">Home</Link>
+          <ChevronRight className="w-3 h-3 shrink-0" />
           {primaryCategory ? (
             <>
-              <Link to="/$slug" params={{ slug: primaryCategory.slug }} className="hover:text-foreground">{primaryCategory.name}</Link>
-              <ChevronRight className="w-3 h-3" />
+              <Link to="/$slug" params={{ slug: primaryCategory.slug }} className="hover:text-foreground shrink-0">{primaryCategory.name}</Link>
+              <ChevronRight className="w-3 h-3 shrink-0" />
             </>
           ) : null}
-          <span className="text-foreground line-clamp-1">{article.title}</span>
+          <span className="text-foreground truncate min-w-0">{article.title}</span>
         </div>
       </nav>
 
