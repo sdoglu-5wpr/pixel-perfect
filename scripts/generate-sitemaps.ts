@@ -68,16 +68,77 @@ async function main() {
   const rss = await buildRssFeed();
   write("feed.xml", rss);
 
-  // robots.txt — point all crawlers to sitemap_index
-  const robots = [
-    "User-agent: *",
-    "Allow: /",
-    "Disallow: /admin",
-    "Disallow: /admin/",
-    "",
-    `Sitemap: ${SITE_URL}/sitemap_index.xml`,
-    "",
-  ].join("\n");
+  // robots.txt — keep the static fallback aligned with src/routes/robots[.txt].ts
+  const robots = `User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/
+
+# Explicitly allow major AI crawlers — we WANT to be cited
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: DiffBot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+# Sitemaps
+Sitemap: ${SITE_URL}/sitemap_index.xml
+`;
   write("robots.txt", robots);
 
   console.log(`[sitemaps] done — index + ${pages} post sitemap(s) + 4 term sitemaps + feed + robots`);
