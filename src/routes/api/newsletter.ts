@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
+import {
+  PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  PUBLIC_SUPABASE_URL,
+} from "@/integrations/supabase/public-env";
 
 const schema = z.object({
   email: z.string().trim().email().max(255),
@@ -29,22 +32,39 @@ export const Route = createFileRoute("/api/newsletter")({
         const { email, source } = parsed.data;
 
         try {
-          const { error } = await supabaseAnon
-            .from("newsletter_subscribers")
-            .upsert(
-              { email: email.toLowerCase(), source: source || null },
-              { onConflict: "email", ignoreDuplicates: true }
-            );
+          // Direct PostgREST insert with hardcoded publishable key — works
+          // anywhere (Netlify, Lovable, etc.) without depending on env vars.
+          // RLS policy "anyone can subscribe" allows anon INSERT.
+          const res = await fetch(
+            `${PUBLIC_SUPABASE_URL}/rest/v1/newsletter_subscribers`,
+            {
+              method: "POST",
+              headers: {
+                apikey: PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+                Authorization: `Bearer ${PUBLIC_SUPABASE_PUBLISHABLE_KEY}`,
+                "Content-Type": "application/json",
+                Prefer: "resolution=ignore-duplicates,return=minimal",
+              },
+              body: JSON.stringify({
+                email: email.toLowerCase(),
+                source: source || null,
+              }),
+            }
+          );
 
-          if (error) {
-            console.error("newsletter: insert failed", JSON.stringify(error));
+          if (!res.ok && res.status !== 409) {
+            const text = await res.text().catch(() => "");
+            console.error("newsletter: PostgREST error", res.status, text);
             return Response.json(
               { error: "Could not subscribe. Please try again." },
               { status: 500 }
             );
           }
         } catch (err) {
-          console.error("newsletter: handler threw", err instanceof Error ? `${err.name}: ${err.message}` : String(err));
+          console.error(
+            "newsletter: handler threw",
+            err instanceof Error ? `${err.name}: ${err.message}` : String(err)
+          );
           return Response.json(
             { error: "Could not subscribe. Please try again." },
             { status: 500 }
