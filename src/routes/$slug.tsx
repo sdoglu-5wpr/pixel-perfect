@@ -296,15 +296,9 @@ function ArticlePage() {
 
           <ShareBar title={article.title} slug={article.slug} />
 
-          {shouldShow5WDisclosure({
-            title: article.title,
-            contentHtml: article.content_html,
-            authorName: article.author?.display_name,
-          }) ? <Disclosure5W /> : null}
-
           <article
             className="prose-article mt-6"
-            dangerouslySetInnerHTML={{ __html: article.content_html }}
+            dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
 
 
@@ -325,6 +319,8 @@ function ArticlePage() {
           ) : null}
 
           <FaqSection pairs={faqPairs} />
+
+          {show5W ? <Disclosure5W /> : null}
 
           {article.author ? <AuthorCard author={article.author} /> : null}
         </div>
