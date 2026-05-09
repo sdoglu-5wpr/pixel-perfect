@@ -18,7 +18,7 @@ import { PillarView } from "@/components/site/PillarView";
 import { htmlToPlainText } from "@/lib/text";
 import { rewriteLegacyHtml } from "@/lib/legacy-urls";
 import { buildArticleHead } from "@/serverFns/seo.article";
-import { extractFaqPairs, stripFaqFromHtml } from "@/lib/faq";
+import { extractFaqPairs, stripFaqFromHtml, stripAbout5WFromHtml } from "@/lib/faq";
 import { FaqSection } from "@/components/site/FaqSection";
 import { Disclosure5W, shouldShow5WDisclosure } from "@/components/site/Disclosure5W";
 
@@ -189,7 +189,7 @@ function ArticlePage() {
   const primaryCategory = categories[0];
   const minutes = readingTime(article.content_html);
   const faqPairs = extractFaqPairs(article.content_html);
-  const contentHtml = faqPairs.length ? stripFaqFromHtml(article.content_html) : article.content_html;
+  const contentHtml = stripAbout5WFromHtml(faqPairs.length ? stripFaqFromHtml(article.content_html) : article.content_html);
   const show5W = shouldShow5WDisclosure({
     title: article.title,
     contentHtml: article.content_html,
