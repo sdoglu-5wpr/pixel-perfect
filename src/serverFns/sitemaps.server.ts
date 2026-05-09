@@ -71,7 +71,7 @@ export async function buildPostSitemap(page: number): Promise<string | null> {
 
   const urls = posts.map((p: any) =>
     urlEntry(
-      `${SITE_URL}/${p.slug}/`,
+      `${SITE_URL}/${p.slug}`,
       p.modified_at ?? p.published_at,
       resolvePostImageUrl(
         p.featured_media_id && mediaMap.get(p.featured_media_id),
