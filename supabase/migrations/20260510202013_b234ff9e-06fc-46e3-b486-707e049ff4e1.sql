@@ -1,0 +1,1 @@
+SELECT cron.unschedule('generate-missing-featured-images');
