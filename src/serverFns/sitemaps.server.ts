@@ -6,6 +6,12 @@ const XML_HEADER = `<?xml version="1.0" encoding="UTF-8"?>`;
 const URLSET_OPEN = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">`;
 const URLSET_CLOSE = `</urlset>`;
 
+function isCleanSlug(slug: string | null | undefined): boolean {
+  if (!slug) return false;
+  // Reject slugs containing invisible/zero-width chars (BOM, ZWSP, etc.) or whitespace
+  return !/[\u0000-\u001f\u007f\u200b-\u200f\u2028-\u202f\u2060\ufeff\s]/.test(slug);
+}
+
 function esc(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -69,16 +75,18 @@ export async function buildPostSitemap(page: number): Promise<string | null> {
     : { data: [] as any[] };
   const mediaMap = new Map((media ?? []).map((m: any) => [m.id, m.url]));
 
-  const urls = posts.map((p: any) =>
-    urlEntry(
-      `${SITE_URL}/${p.slug}`,
-      p.modified_at ?? p.published_at,
-      resolvePostImageUrl(
-        p.featured_media_id && mediaMap.get(p.featured_media_id),
-        pickFirstImageSrc(p.content_html),
+  const urls = posts
+    .filter((p: any) => isCleanSlug(p.slug))
+    .map((p: any) =>
+      urlEntry(
+        `${SITE_URL}/${p.slug}/`,
+        p.modified_at ?? p.published_at,
+        resolvePostImageUrl(
+          p.featured_media_id && mediaMap.get(p.featured_media_id),
+          pickFirstImageSrc(p.content_html),
+        ),
       ),
-    ),
-  );
+    );
   return `${XML_HEADER}\n${URLSET_OPEN}\n${urls.join("\n")}\n${URLSET_CLOSE}\n`;
 }
 
@@ -89,7 +97,9 @@ export async function buildPageSitemap(): Promise<string> {
     .eq("status", "publish")
     .eq("type", "page")
     .order("modified_at", { ascending: false, nullsFirst: false });
-  const urls = (data ?? []).map((p: any) => urlEntry(`${SITE_URL}/${p.slug}`, p.modified_at ?? p.published_at));
+  const urls = (data ?? [])
+    .filter((p: any) => isCleanSlug(p.slug))
+    .map((p: any) => urlEntry(`${SITE_URL}/${p.slug}/`, p.modified_at ?? p.published_at));
   return `${XML_HEADER}\n${URLSET_OPEN}\n${urls.join("\n")}\n${URLSET_CLOSE}\n`;
 }
 
@@ -98,7 +108,9 @@ export async function buildTermSitemap(table: "categories" | "tags", prefix: "ca
     .from(table)
     .select("slug, updated_at")
     .order("updated_at", { ascending: false, nullsFirst: false });
-  const urls = (data ?? []).map((t: any) => urlEntry(`${SITE_URL}/${prefix}/${t.slug}`, t.updated_at));
+  const urls = (data ?? [])
+    .filter((t: any) => isCleanSlug(t.slug))
+    .map((t: any) => urlEntry(`${SITE_URL}/${prefix}/${t.slug}/`, t.updated_at));
   return `${XML_HEADER}\n${URLSET_OPEN}\n${urls.join("\n")}\n${URLSET_CLOSE}\n`;
 }
 
@@ -107,7 +119,9 @@ export async function buildAuthorSitemap(): Promise<string> {
     .from("authors")
     .select("slug, updated_at")
     .order("updated_at", { ascending: false, nullsFirst: false });
-  const urls = (data ?? []).map((a: any) => urlEntry(`${SITE_URL}/author/${a.slug}`, a.updated_at));
+  const urls = (data ?? [])
+    .filter((a: any) => isCleanSlug(a.slug))
+    .map((a: any) => urlEntry(`${SITE_URL}/author/${a.slug}/`, a.updated_at));
   return `${XML_HEADER}\n${URLSET_OPEN}\n${urls.join("\n")}\n${URLSET_CLOSE}\n`;
 }
 
