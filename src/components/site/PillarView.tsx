@@ -77,7 +77,7 @@ export function PillarView({ data }: { data: PillarPayload }) {
       <div className="mx-auto max-w-7xl px-6 py-14 grid grid-cols-1 lg:grid-cols-12 gap-12">
         <article id="guide" className="lg:col-span-8 prose-article prose-pillar">
           <div
-            dangerouslySetInnerHTML={{ __html: pillar.body_html }}
+            dangerouslySetInnerHTML={{ __html: bodyHtml }}
           />
 
           {pillar.faq && pillar.faq.length > 0 ? (
