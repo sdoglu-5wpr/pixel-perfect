@@ -1,5 +1,4 @@
 import { htmlToPlainText } from "@/lib/text";
-import { rewriteSupabaseHost } from "@/lib/legacy-urls";
 
 type PostImageProps = {
   src: string | null | undefined;
@@ -35,11 +34,10 @@ export function PostImage({
   loading = "lazy",
 }: PostImageProps) {
   if (src) {
-    const safeSrc = rewriteSupabaseHost(src);
     return (
       <div className={className}>
         <img
-          src={safeSrc}
+          src={src}
           alt={alt}
           className={imgClassName}
           loading={loading}

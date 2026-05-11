@@ -13,14 +13,6 @@ const LEGACY_HOSTS = [
   "http://www.everything-pr.com",
 ];
 
-// NOTE: Supabase custom domain (api.everything-pr.com) does NOT route Storage
-// requests — the Storage tenant is resolved from the *.supabase.co host. So we
-// keep image/asset URLs on the original host. Only the Supabase JS client
-// (auth/REST/realtime) uses the custom domain.
-export function rewriteSupabaseHost(url: string | null | undefined): string {
-  return url ?? "";
-}
-
 const HOST_PATTERN = /(https?:\/\/(?:www\.)?everything-pr\.com)(\/wp-content\/)/gi;
 const LEGACY_ATTR_PATTERN = /(src|href)=(['"])https:\/\/everything-pr\.com(\/wp-content\/[^'"]+)\2/gi;
 
