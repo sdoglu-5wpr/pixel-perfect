@@ -6,6 +6,7 @@ import { Pagination } from "./ArchiveView";
 import { decodeHtmlEntities, htmlToPlainText } from "@/lib/text";
 import type { PillarPayload } from "@/lib/pillars.shared";
 import { formatDate } from "@/lib/date";
+import { stripAbout5WFromHtml } from "@/lib/faq";
 
 
 
