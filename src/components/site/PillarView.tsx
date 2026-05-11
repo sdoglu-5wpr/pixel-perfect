@@ -6,12 +6,14 @@ import { Pagination } from "./ArchiveView";
 import { decodeHtmlEntities, htmlToPlainText } from "@/lib/text";
 import type { PillarPayload } from "@/lib/pillars.shared";
 import { formatDate } from "@/lib/date";
+import { stripAbout5WFromHtml } from "@/lib/faq";
 
 
 
 export function PillarView({ data }: { data: PillarPayload }) {
   const { pillar, items, total, page, pageSize } = data;
   const totalPages = Math.max(1, Math.ceil(total / (pageSize || 12)));
+  const bodyHtml = stripAbout5WFromHtml(pillar.body_html);
   return (
     <SiteLayout>
       {/* HERO */}
@@ -75,7 +77,7 @@ export function PillarView({ data }: { data: PillarPayload }) {
       <div className="mx-auto max-w-7xl px-6 py-14 grid grid-cols-1 lg:grid-cols-12 gap-12">
         <article id="guide" className="lg:col-span-8 prose-article prose-pillar">
           <div
-            dangerouslySetInnerHTML={{ __html: pillar.body_html }}
+            dangerouslySetInnerHTML={{ __html: bodyHtml }}
           />
 
           {pillar.faq && pillar.faq.length > 0 ? (
