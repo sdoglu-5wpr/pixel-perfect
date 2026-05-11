@@ -1,4 +1,4 @@
-export const PUBLIC_SUPABASE_URL = "https://unycfscvsckgxboherpk.supabase.co";
+export const PUBLIC_SUPABASE_URL = "https://api.everything-pr.com";
 
 // Supabase publishable/anon keys are safe to ship to browsers and static hosts.
 export const PUBLIC_SUPABASE_PUBLISHABLE_KEY =
