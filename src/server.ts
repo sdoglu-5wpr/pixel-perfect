@@ -163,7 +163,11 @@ export default {
     const path = url.pathname;
     const noindex = isIndexingDisabled(env ?? {});
 
-    // 1. Redirects (pre-empt both static + SSR)
+    // 0. Canonicalization (host, case, slashes, query params, feeds, WP block)
+    const canonicalRes = canonicalize(request);
+    if (canonicalRes) return canonicalRes;
+
+    // 1. Custom redirects map (legacy WP slugs etc.)
     const key = path.replace(/\/$/, "") || "/";
     const r = REDIRECT_MAP.get(key);
     if (r) {
