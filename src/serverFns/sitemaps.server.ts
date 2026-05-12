@@ -205,3 +205,37 @@ ${items}
 </rss>
 `;
 }
+
+export async function buildNewsSitemap(): Promise<string> {
+  // Google News sitemap: posts published in the last 48 hours.
+  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  const { data: posts } = await supabaseAnon
+    .from("posts")
+    .select("slug, title, published_at")
+    .eq("status", "publish")
+    .eq("type", "post")
+    .gte("published_at", cutoff)
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .limit(1000);
+
+  const urls = (posts ?? [])
+    .filter((p: any) => isCleanSlug(p.slug) && p.published_at)
+    .map((p: any) => {
+      const loc = `${SITE_URL}/${p.slug}/`;
+      return [
+        `  <url>`,
+        `    <loc>${esc(loc)}</loc>`,
+        `    <news:news>`,
+        `      <news:publication>`,
+        `        <news:name>Everything-PR</news:name>`,
+        `        <news:language>en</news:language>`,
+        `      </news:publication>`,
+        `      <news:publication_date>${esc(new Date(p.published_at).toISOString())}</news:publication_date>`,
+        `      <news:title>${esc(p.title ?? "")}</news:title>`,
+        `    </news:news>`,
+        `  </url>`,
+      ].join("\n");
+    });
+
+  return `${XML_HEADER}\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n${urls.join("\n")}\n</urlset>\n`;
+}
