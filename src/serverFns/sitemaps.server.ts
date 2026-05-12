@@ -108,9 +108,12 @@ export async function buildTermSitemap(table: "categories" | "tags", prefix: "ca
     .from(table)
     .select("slug, updated_at")
     .order("updated_at", { ascending: false, nullsFirst: false });
+  // Categories redirect /category/{slug} -> /{slug}; emit canonical bare-slug URLs.
+  const buildLoc = (slug: string) =>
+    prefix === "category" ? `${SITE_URL}/${slug}/` : `${SITE_URL}/${prefix}/${slug}/`;
   const urls = (data ?? [])
     .filter((t: any) => isCleanSlug(t.slug))
-    .map((t: any) => urlEntry(`${SITE_URL}/${prefix}/${t.slug}/`, t.updated_at));
+    .map((t: any) => urlEntry(buildLoc(t.slug), t.updated_at));
   return `${XML_HEADER}\n${URLSET_OPEN}\n${urls.join("\n")}\n${URLSET_CLOSE}\n`;
 }
 
