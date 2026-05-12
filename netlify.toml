@@ -49,19 +49,19 @@
 [[redirects]]
   from = "/*"
   query = {utm_medium = ":v"}
-  to = "/:splat"
+  to = "/:splat?"
   status = 301
   force = true
 [[redirects]]
   from = "/*"
   query = {utm_campaign = ":v"}
-  to = "/:splat"
+  to = "/:splat?"
   status = 301
   force = true
 [[redirects]]
   from = "/*"
   query = {utm_term = ":v"}
-  to = "/:splat"
+  to = "/:splat?"
   status = 301
   force = true
 [[redirects]]
