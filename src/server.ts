@@ -116,11 +116,13 @@ function canonicalize(request: Request): Response | null {
     }
   }
 
-  // 7. Trailing slash for content paths
-  if (shouldEnforceTrailingSlash(url.pathname) && !url.pathname.endsWith("/")) {
-    url.pathname = url.pathname + "/";
-    changed = true;
-  }
+  // 7. Trailing slash: intentionally NOT enforced here.
+  //    Netlify's static asset server 307-strips trailing slashes from
+  //    prerendered HTML files (e.g. /cannabis/ -> /cannabis). If we 301'd
+  //    in the opposite direction we'd create an infinite redirect loop on
+  //    every prerendered page. Whatever Netlify serves wins; sitemap and
+  //    canonical URLs are emitted to match (no trailing slash).
+  void shouldEnforceTrailingSlash;
 
   if (changed) {
     return permanentRedirect(url.pathname + url.search + url.hash);
