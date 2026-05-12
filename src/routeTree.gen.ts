@@ -9,8 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as Sitemap_newsDotxmlRouteImport } from './routes/sitemap_news[.xml]'
 import { Route as Sitemap_indexDotxmlRouteImport } from './routes/sitemap_index[.xml]'
-import { Route as SitemapNewsDotxmlRouteImport } from './routes/sitemap-news[.xml]'
 import { Route as SetupCoworkRouteImport } from './routes/setup-cowork'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResearchRouteImport } from './routes/research'
@@ -59,14 +59,14 @@ import { Route as ApiPublicHooksGenerateMissingFeaturedImagesRouteImport } from 
 import { Route as AdminProtectedPostsIdRouteImport } from './routes/admin/_protected.posts.$id'
 import { Route as AdminProtectedCategoriesDuplicatesRouteImport } from './routes/admin/_protected.categories.duplicates'
 
+const Sitemap_newsDotxmlRoute = Sitemap_newsDotxmlRouteImport.update({
+  id: '/sitemap_news.xml',
+  path: '/sitemap_news.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Sitemap_indexDotxmlRoute = Sitemap_indexDotxmlRouteImport.update({
   id: '/sitemap_index.xml',
   path: '/sitemap_index.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapNewsDotxmlRoute = SitemapNewsDotxmlRouteImport.update({
-  id: '/sitemap-news.xml',
-  path: '/sitemap-news.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SetupCoworkRoute = SetupCoworkRouteImport.update({
@@ -328,8 +328,8 @@ export interface FileRoutesByFullPath {
   '/research': typeof ResearchRoute
   '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
-  '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
+  '/sitemap_news.xml': typeof Sitemap_newsDotxmlRoute
   '/admin': typeof AdminProtectedRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/api/contact': typeof ApiContactRoute
@@ -379,8 +379,8 @@ export interface FileRoutesByTo {
   '/research': typeof ResearchRoute
   '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
-  '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
+  '/sitemap_news.xml': typeof Sitemap_newsDotxmlRoute
   '/admin/login': typeof AdminLoginRoute
   '/api/contact': typeof ApiContactRoute
   '/api/newsletter': typeof ApiNewsletterRoute
@@ -430,8 +430,8 @@ export interface FileRoutesById {
   '/research': typeof ResearchRoute
   '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
-  '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
+  '/sitemap_news.xml': typeof Sitemap_newsDotxmlRoute
   '/admin/_protected': typeof AdminProtectedRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/api/contact': typeof ApiContactRoute
@@ -483,8 +483,8 @@ export interface FileRouteTypes {
     | '/research'
     | '/search'
     | '/setup-cowork'
-    | '/sitemap-news.xml'
     | '/sitemap_index.xml'
+    | '/sitemap_news.xml'
     | '/admin'
     | '/admin/login'
     | '/api/contact'
@@ -534,8 +534,8 @@ export interface FileRouteTypes {
     | '/research'
     | '/search'
     | '/setup-cowork'
-    | '/sitemap-news.xml'
     | '/sitemap_index.xml'
+    | '/sitemap_news.xml'
     | '/admin/login'
     | '/api/contact'
     | '/api/newsletter'
@@ -584,8 +584,8 @@ export interface FileRouteTypes {
     | '/research'
     | '/search'
     | '/setup-cowork'
-    | '/sitemap-news.xml'
     | '/sitemap_index.xml'
+    | '/sitemap_news.xml'
     | '/admin/_protected'
     | '/admin/login'
     | '/api/contact'
@@ -636,8 +636,8 @@ export interface RootRouteChildren {
   ResearchRoute: typeof ResearchRoute
   SearchRoute: typeof SearchRoute
   SetupCoworkRoute: typeof SetupCoworkRoute
-  SitemapNewsDotxmlRoute: typeof SitemapNewsDotxmlRoute
   Sitemap_indexDotxmlRoute: typeof Sitemap_indexDotxmlRoute
+  Sitemap_newsDotxmlRoute: typeof Sitemap_newsDotxmlRoute
   AdminProtectedRoute: typeof AdminProtectedRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   ApiContactRoute: typeof ApiContactRoute
@@ -656,18 +656,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap_news.xml': {
+      id: '/sitemap_news.xml'
+      path: '/sitemap_news.xml'
+      fullPath: '/sitemap_news.xml'
+      preLoaderRoute: typeof Sitemap_newsDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap_index.xml': {
       id: '/sitemap_index.xml'
       path: '/sitemap_index.xml'
       fullPath: '/sitemap_index.xml'
       preLoaderRoute: typeof Sitemap_indexDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap-news.xml': {
-      id: '/sitemap-news.xml'
-      path: '/sitemap-news.xml'
-      fullPath: '/sitemap-news.xml'
-      preLoaderRoute: typeof SitemapNewsDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/setup-cowork': {
@@ -1107,8 +1107,8 @@ const rootRouteChildren: RootRouteChildren = {
   ResearchRoute: ResearchRoute,
   SearchRoute: SearchRoute,
   SetupCoworkRoute: SetupCoworkRoute,
-  SitemapNewsDotxmlRoute: SitemapNewsDotxmlRoute,
   Sitemap_indexDotxmlRoute: Sitemap_indexDotxmlRoute,
+  Sitemap_newsDotxmlRoute: Sitemap_newsDotxmlRoute,
   AdminProtectedRoute: AdminProtectedRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   ApiContactRoute: ApiContactRoute,
@@ -1128,3 +1128,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
