@@ -181,13 +181,23 @@ export function buildArchiveHead(opts: {
   const baseTitle = seoOverrides?.title || titleTemplate;
   const title = page > 1 ? `${baseTitle} — Page ${page}` : baseTitle;
   const description = truncate(seoOverrides?.description || descTemplate);
-  const url = page > 1 ? `${SITE_URL}${pathPrefix}/page/${page}/` : `${SITE_URL}${pathPrefix}/`;
+  // Canonical / og:url ALWAYS points to page 1 of the archive. Pagination pages
+  // get noindex,follow so Google doesn't index thin paginated variants but
+  // still crawls the article links on them.
+  const baseUrl = `${SITE_URL}${pathPrefix}/`;
+  const url = baseUrl;
   const ogType = kind === "author" ? "article" : "website";
   const ogImage = seoOverrides?.og_image
     || (kind === "author" && author?.avatar_url ? author.avatar_url : DEFAULT_OG_IMAGE);
   const meta = baseMeta(title, description, url, ogImage, ogType);
-  // Tag archives: always noindex,follow (heavy duplication with categories/search).
-  const robotsValue = seoOverrides?.robots || (kind === "tag" ? "noindex, follow" : null);
+  // Robots:
+  //  - Page 2+ of any archive: noindex, follow (Google's recommended pagination signal)
+  //  - Tag archives: always noindex, follow (heavy duplication with categories/search)
+  //  - seoOverrides.robots wins if explicitly set
+  const robotsValue =
+    seoOverrides?.robots
+    || (page > 1 ? "noindex, follow, max-image-preview:large" : null)
+    || (kind === "tag" ? "noindex, follow" : null);
   if (robotsValue) meta.push({ name: "robots", content: robotsValue });
   const canonicalHref = seoOverrides?.canonical_url || url;
   const links: Link = emitCanonical ? [{ rel: "canonical", href: canonicalHref }] : [];
