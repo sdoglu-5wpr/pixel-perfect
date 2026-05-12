@@ -155,7 +155,69 @@ async function main() {
       if (!original.includes("export const handler")) {
         const patched = original.replace(
           "export default serverEntrypoint.fetch;",
-          `const __fetch = serverEntrypoint.fetch;
+          `const __rawFetch = serverEntrypoint.fetch;
+
+// ---------------- SEO canonicalization (mirrors src/server.ts) -----------
+const __APEX_HOST = "everything-pr.com";
+const __STRIP_QUERY_PARAMS = new Set([
+  "noamp","amp",
+  "utm_source","utm_medium","utm_campaign","utm_term","utm_content","utm_id",
+  "gclid","gclsrc","dclid","fbclid","msclkid","yclid",
+  "_ga","mc_cid","mc_eid","ck_subscriber_id",
+  "ref","referrer","trk","trkInfo",
+  "__hstc","__hssc","hsCtaTracking",
+  "si","feature","share",
+]);
+const __WP_BLOCK = [
+  /^\\/wp-admin(\\/|$)/i,
+  /^\\/wp-login\\.php/i,
+  /^\\/xmlrpc\\.php/i,
+  /^\\/wp-json(\\/|$)/i,
+  /^\\/wp-content\\/plugins(\\/|$)/i,
+  /^\\/wp-content\\/themes(\\/|$)/i,
+];
+function __canonicalize(request) {
+  const url = new URL(request.url);
+  let changed = false;
+  if (url.hostname.toLowerCase() === \`www.\${__APEX_HOST}\`) { url.hostname = __APEX_HOST; changed = true; }
+  for (const rx of __WP_BLOCK) {
+    if (rx.test(url.pathname)) {
+      return new Response("Gone", { status: 410, headers: { "Cache-Control": "public, max-age=86400" } });
+    }
+  }
+  if (/[A-Z]/.test(url.pathname)) { url.pathname = url.pathname.toLowerCase(); changed = true; }
+  if (/\\/{2,}/.test(url.pathname)) { url.pathname = url.pathname.replace(/\\/{2,}/g, "/"); changed = true; }
+  if (url.pathname === "/comments/feed" || url.pathname === "/comments/feed/") {
+    url.pathname = "/feed"; changed = true;
+  } else {
+    const m = url.pathname.match(/^(\\/.+?)\\/feed\\/?$/);
+    if (m && m[1] !== "/feed") { url.pathname = m[1].endsWith("/") ? m[1] : m[1] + "/"; changed = true; }
+  }
+  if (url.search) {
+    const toDelete = [];
+    for (const k of url.searchParams.keys()) {
+      if (__STRIP_QUERY_PARAMS.has(k.toLowerCase())) toDelete.push(k);
+    }
+    if (toDelete.length) { for (const k of toDelete) url.searchParams.delete(k); changed = true; }
+  }
+  if (changed) {
+    return new Response(null, {
+      status: 301,
+      headers: {
+        Location: url.pathname + (url.search || "") + (url.hash || ""),
+        "Cache-Control": "public, max-age=3600, s-maxage=86400",
+      },
+    });
+  }
+  return null;
+}
+const __fetch = async (req) => {
+  const r = __canonicalize(req);
+  if (r) return r;
+  return __rawFetch(req);
+};
+// -------------------------------------------------------------------------
+
 export default __fetch;
 // AWS-Lambda-style adapter for Netlify's classic Functions runtime
 export const handler = async (event) => {
@@ -176,7 +238,7 @@ export const handler = async (event) => {
 };`,
         );
         await writeFile(fnPath, patched, "utf8");
-        console.log("[build] Patched .netlify/v1/functions/server.mjs with handler() export");
+        console.log("[build] Patched .netlify/v1/functions/server.mjs with handler() + canonicalize()");
       }
     }
   }
