@@ -6,6 +6,8 @@ type PostImageProps = {
   className: string;
   imgClassName?: string;
   loading?: "lazy" | "eager";
+  width?: number;
+  height?: number;
 };
 
 // Deterministic gradient based on title so cards look varied but stable.
@@ -32,6 +34,8 @@ export function PostImage({
   className,
   imgClassName = "h-full w-full object-cover",
   loading = "lazy",
+  width = 1600,
+  height = 900,
 }: PostImageProps) {
   if (src) {
     return (
@@ -43,6 +47,8 @@ export function PostImage({
           loading={loading}
           decoding="async"
           fetchPriority={loading === "eager" ? "high" : "low"}
+          width={width}
+          height={height}
         />
       </div>
     );
