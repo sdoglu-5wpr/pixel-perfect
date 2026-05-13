@@ -22,6 +22,7 @@ function CategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Partial<Cat> | null>(null);
   const [saving, setSaving] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [q, setQ] = useState("");
 
   const refresh = async () => {
