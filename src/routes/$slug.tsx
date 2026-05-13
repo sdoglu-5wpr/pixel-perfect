@@ -351,18 +351,7 @@ function ArticlePage() {
                 ))}
               </ul>
             </div>
-            <div className="rounded-lg border bg-surface-soft p-5">
-              <h3 className="font-serif text-lg font-bold mb-2">Get the PR Brief</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                The week's biggest stories in PR, comms and media — straight to your inbox.
-              </p>
-              <Link
-                to="/"
-                className="inline-flex items-center gap-1 text-sm font-semibold text-brand-blue hover:underline"
-              >
-                Subscribe <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
+            <TrendingSidebar posts={extras?.trending ?? []} />
           </div>
         </aside>
       </div>
