@@ -13,7 +13,8 @@ export function extractFaqPairs(html: string | null | undefined): FaqPair[] {
   const seen = new Set<string>();
 
   // Strip nested tags from heading content for the question text.
-  const stripTags = (s: string) => s.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const stripTags = (s: string) =>
+    decodeHtmlEntities(s.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
 
   // Pattern A: <h2>/<h3>/<h4> ending in "?" followed by content until next heading.
   const reHeading = /<h([234])[^>]*>([\s\S]*?)<\/h\1>([\s\S]*?)(?=<h[234][^>]*>|$)/gi;
