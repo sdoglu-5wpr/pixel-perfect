@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2, Pencil, X, Loader2 } from "lucide-react";
 import { listCategories, saveCategory, deleteCategory } from "@/serverFns/admin-taxonomy.functions";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 
 export const Route = createFileRoute("/admin-everything/_protected/categories")({
   component: CategoriesPage,
