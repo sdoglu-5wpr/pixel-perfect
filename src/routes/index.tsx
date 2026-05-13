@@ -207,7 +207,7 @@ function AboutEverythingPR() {
 
 /* ---------------- Hero ---------------- */
 
-function Hero({ hero, topStories }: { hero: HomePost | null; topStories: HomePost[] }) {
+function Hero({ hero, topStories, trending = [] }: { hero: HomePost | null; topStories: HomePost[]; trending?: import("@/lib/extra-sections").ExtraPost[] }) {
   if (!hero) {
     return (
       <div className="py-20 text-center text-muted-foreground">
@@ -243,15 +243,18 @@ function Hero({ hero, topStories }: { hero: HomePost | null; topStories: HomePos
         </article>
       </div>
 
-      <aside className="lg:col-span-4">
-        <SectionHeading>Top Stories</SectionHeading>
-        <ul className="mt-4 divide-y divide-border">
-          {topStories.map((p) => (
-            <li key={p.id} className="py-4 first:pt-0">
-              <TopStoryItem post={p} />
-            </li>
-          ))}
-        </ul>
+      <aside className="lg:col-span-4 space-y-8">
+        <div>
+          <SectionHeading>Top Stories</SectionHeading>
+          <ul className="mt-4 divide-y divide-border">
+            {topStories.map((p) => (
+              <li key={p.id} className="py-4 first:pt-0">
+                <TopStoryItem post={p} />
+              </li>
+            ))}
+          </ul>
+        </div>
+        <TrendingSidebar posts={trending} />
       </aside>
     </section>
   );
