@@ -8,7 +8,7 @@ import {
   mergeCategoryPair,
 } from "@/serverFns/admin-taxonomy.functions";
 
-export const Route = createFileRoute("/admin/_protected/categories/duplicates")({
+export const Route = createFileRoute("/admin-everything/_protected/categories/duplicates")({
   component: DuplicatesPage,
 });
 

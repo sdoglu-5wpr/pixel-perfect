@@ -11,7 +11,7 @@ import {
 } from "@/serverFns/wp-import.functions";
 import { backfillMissingImages } from "@/serverFns/backfill-images.functions";
 
-export const Route = createFileRoute("/admin/_protected/import")({
+export const Route = createFileRoute("/admin-everything/_protected/import")({
   component: ImportPage,
 });
 

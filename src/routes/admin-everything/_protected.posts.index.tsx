@@ -20,7 +20,7 @@ const search = z.object({
   dir: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
-export const Route = createFileRoute("/admin/_protected/posts/")({
+export const Route = createFileRoute("/admin-everything/_protected/posts/")({
   validateSearch: (s) => search.parse(s),
   component: PostsListPage,
 });
@@ -70,7 +70,7 @@ function relTime(iso: string | null) {
 
 function PostsListPage() {
   const params = Route.useSearch();
-  const navigate = useNavigate({ from: "/admin/posts" });
+  const navigate = useNavigate({ from: "/admin-everything/posts" });
 
   const [items, setItems] = useState<AdminPost[]>([]);
   const [total, setTotal] = useState(0);
@@ -185,7 +185,7 @@ function PostsListPage() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Posts</h1>
         <Link
-          to="/admin/posts/new"
+          to="/admin-everything/posts/new"
           className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
           + New post
@@ -286,7 +286,7 @@ function PostsListPage() {
                   )}
                 </td>
                 <td className="px-3 py-3">
-                  <Link to="/admin/posts/$id" params={{ id: String(p.id) }} className="font-medium text-foreground hover:underline">{p.title}</Link>
+                  <Link to="/admin-everything/posts/$id" params={{ id: String(p.id) }} className="font-medium text-foreground hover:underline">{p.title}</Link>
                   <div className="text-xs text-muted-foreground truncate max-w-md">/{p.slug}</div>
                 </td>
                 <td className="px-3 py-3"><StatusBadge status={p.status} /></td>
@@ -306,7 +306,7 @@ function PostsListPage() {
                   </button>
                   {openMenu === p.id && (
                     <div className="absolute right-3 top-10 z-20 w-40 rounded-md border bg-white shadow-lg text-sm">
-                      <Link to="/admin/posts/$id" params={{ id: String(p.id) }} className="block px-3 py-2 hover:bg-admin-hover" onClick={() => setOpenMenu(null)}>Edit</Link>
+                      <Link to="/admin-everything/posts/$id" params={{ id: String(p.id) }} className="block px-3 py-2 hover:bg-admin-hover" onClick={() => setOpenMenu(null)}>Edit</Link>
                       <button onClick={() => rowAction(p.id, "duplicate")} className="block w-full text-left px-3 py-2 hover:bg-admin-hover">Duplicate</button>
                       <a href={`/${p.slug}/`} target="_blank" rel="noopener noreferrer" className="block px-3 py-2 hover:bg-admin-hover" onClick={() => setOpenMenu(null)}>View on site</a>
                       <button onClick={() => rowAction(p.id, "trash")} className="block w-full text-left px-3 py-2 hover:bg-red-50 text-red-700">Trash</button>

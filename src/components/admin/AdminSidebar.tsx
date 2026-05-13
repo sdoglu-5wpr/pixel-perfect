@@ -11,31 +11,31 @@ import {
 type Item = { title: string; url: string; icon: any };
 
 const CONTENT: Item[] = [
-  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-  { title: "Posts", url: "/admin/posts", icon: FileText },
-  { title: "New post", url: "/admin/posts/new", icon: FilePlus2 },
-  { title: "Media", url: "/admin/media", icon: Image },
+  { title: "Dashboard", url: "/admin-everything", icon: LayoutDashboard },
+  { title: "Posts", url: "/admin-everything/posts", icon: FileText },
+  { title: "New post", url: "/admin-everything/posts/new", icon: FilePlus2 },
+  { title: "Media", url: "/admin-everything/media", icon: Image },
 ];
 
 const TAXONOMY: Item[] = [
-  { title: "Categories", url: "/admin/categories", icon: FolderTree },
-  { title: "Duplicate categories", url: "/admin/categories/duplicates", icon: Copy },
-  { title: "Tags", url: "/admin/tags", icon: Tag },
-  { title: "Authors", url: "/admin/authors", icon: Users },
+  { title: "Categories", url: "/admin-everything/categories", icon: FolderTree },
+  { title: "Duplicate categories", url: "/admin-everything/categories/duplicates", icon: Copy },
+  { title: "Tags", url: "/admin-everything/tags", icon: Tag },
+  { title: "Authors", url: "/admin-everything/authors", icon: Users },
 ];
 
 const STRUCTURE: Item[] = [
-  { title: "Menus", url: "/admin/menus", icon: MenuIcon },
-  { title: "Redirects", url: "/admin/redirects", icon: ArrowRightLeft },
-  { title: "SEO defaults", url: "/admin/seo", icon: Search },
+  { title: "Menus", url: "/admin-everything/menus", icon: MenuIcon },
+  { title: "Redirects", url: "/admin-everything/redirects", icon: ArrowRightLeft },
+  { title: "SEO defaults", url: "/admin-everything/seo", icon: Search },
 ];
 
 const SYSTEM: Item[] = [
-  { title: "Automations", url: "/admin/automations", icon: Zap },
-  { title: "Import (WP)", url: "/admin/import", icon: Download },
-  { title: "Media backfill", url: "/admin/media-backfill", icon: CloudDownload },
-  { title: "Settings", url: "/admin/settings", icon: Settings },
-  { title: "Activity", url: "/admin/activity", icon: History },
+  { title: "Automations", url: "/admin-everything/automations", icon: Zap },
+  { title: "Import (WP)", url: "/admin-everything/import", icon: Download },
+  { title: "Media backfill", url: "/admin-everything/media-backfill", icon: CloudDownload },
+  { title: "Settings", url: "/admin-everything/settings", icon: Settings },
+  { title: "Activity", url: "/admin-everything/activity", icon: History },
 ];
 
 function Group({ label, items, currentPath }: { label: string; items: Item[]; currentPath: string }) {
@@ -47,8 +47,8 @@ function Group({ label, items, currentPath }: { label: string; items: Item[]; cu
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((it) => {
-            const active = it.url === "/admin"
-              ? currentPath === "/admin"
+            const active = it.url === "/admin-everything"
+              ? currentPath === "/admin-everything"
               : currentPath === it.url || currentPath.startsWith(it.url + "/");
             return (
               <SidebarMenuItem key={it.url}>
@@ -75,7 +75,7 @@ export function AdminSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b">
-        <Link to="/admin" className="flex items-center gap-2 px-2 py-1.5">
+        <Link to="/admin-everything" className="flex items-center gap-2 px-2 py-1.5">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground font-serif text-sm font-bold">
             E
           </div>

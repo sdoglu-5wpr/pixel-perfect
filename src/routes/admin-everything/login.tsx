@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 const STAFF_ROLES = ["admin", "editor", "author"] as const;
 
-export const Route = createFileRoute("/admin/login")({
+export const Route = createFileRoute("/admin-everything/login")({
   component: AdminLogin,
 });
 
@@ -57,7 +57,7 @@ function AdminLogin() {
         return;
       }
       toast.success("Signed in.");
-      navigate({ to: "/admin" });
+      navigate({ to: "/admin-everything" });
     } catch (err: any) {
       const msg = `Unexpected error: ${err?.message ?? String(err)}`;
       console.error("[admin/login]", err);

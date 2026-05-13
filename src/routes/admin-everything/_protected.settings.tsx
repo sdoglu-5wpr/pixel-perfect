@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Save, Loader2, Plus, Trash2, X } from "lucide-react";
 import { listSettings, saveSetting, deleteSetting } from "@/serverFns/admin-site.functions";
 
-export const Route = createFileRoute("/admin/_protected/settings")({
+export const Route = createFileRoute("/admin-everything/_protected/settings")({
   component: SettingsPage,
 });
 

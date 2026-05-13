@@ -66,7 +66,7 @@ const responseHeadersMiddleware = createMiddleware().server(async ({ request, ne
   // headers — loaders/routes emit `no-cache, must-revalidate` by default
   // which would block edge caching. /admin and /api routes opt out below.
   const path = url.pathname;
-  const isAdmin = path.startsWith("/admin") || path.startsWith("/api/");
+  const isAdmin = path.startsWith("/admin-everything") || path.startsWith("/api/");
   if (!isAdmin) {
     if (ct.includes("text/html")) {
       headers.set("Cache-Control", HTML_CACHE);

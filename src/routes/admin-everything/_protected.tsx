@@ -15,11 +15,11 @@ const STAFF_ROLES = ["admin", "editor", "author"] as const;
 
 type Me = { userId: string; email: string | null; roles: string[]; isStaff: boolean };
 
-export const Route = createFileRoute("/admin/_protected")({
+export const Route = createFileRoute("/admin-everything/_protected")({
   beforeLoad: async () => {
     if (typeof window === "undefined") return;
     const { data } = await supabase.auth.getSession();
-    if (!data.session) throw redirect({ to: "/admin/login" });
+    if (!data.session) throw redirect({ to: "/admin-everything/login" });
   },
   component: AdminLayout,
 });
@@ -35,7 +35,7 @@ function AdminLayout() {
     (async () => {
       try {
         const { data: sess } = await supabase.auth.getSession();
-        if (!sess.session) { navigate({ to: "/admin/login" }); return; }
+        if (!sess.session) { navigate({ to: "/admin-everything/login" }); return; }
         const userId = sess.session.user.id;
         const email = sess.session.user.email ?? null;
         const { data: rows, error } = await supabase
@@ -57,7 +57,7 @@ function AdminLayout() {
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) toast.error(`Logout failed: ${error.message}`);
-    navigate({ to: "/admin/login" });
+    navigate({ to: "/admin-everything/login" });
   };
 
   if (loading) {

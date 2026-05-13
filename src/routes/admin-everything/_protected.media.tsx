@@ -5,7 +5,7 @@ import { Upload, Search, Trash2, X, Image as ImageIcon, Loader2, Copy } from "lu
 import { listMediaAdmin, updateMedia, deleteMedia } from "@/serverFns/admin-taxonomy.functions";
 import { uploadMediaFromBase64 } from "@/serverFns/admin-editor.functions";
 
-export const Route = createFileRoute("/admin/_protected/media")({
+export const Route = createFileRoute("/admin-everything/_protected/media")({
   component: MediaLibrary,
 });
 

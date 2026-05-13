@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Pencil, X, Loader2 } from "lucide-react";
 import { listTags, saveTag, deleteTag } from "@/serverFns/admin-taxonomy.functions";
 
-export const Route = createFileRoute("/admin/_protected/tags")({
+export const Route = createFileRoute("/admin-everything/_protected/tags")({
   component: TagsPage,
 });
 

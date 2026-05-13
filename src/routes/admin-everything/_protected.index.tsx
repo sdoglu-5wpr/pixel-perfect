@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
-export const Route = createFileRoute("/admin/_protected/")({
+export const Route = createFileRoute("/admin-everything/_protected/")({
   component: AdminDashboard,
 });
 
@@ -136,15 +136,15 @@ function AdminDashboard() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link to="/admin/posts/new"
+          <Link to="/admin-everything/posts/new"
             className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
             <Plus className="h-4 w-4" /> New post
           </Link>
-          <Link to="/admin/media"
+          <Link to="/admin-everything/media"
             className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-2 text-sm font-medium hover:bg-muted">
             <Upload className="h-4 w-4" /> Upload media
           </Link>
-          <Link to="/admin/import"
+          <Link to="/admin-everything/import"
             className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-2 text-sm font-medium hover:bg-muted">
             <Sparkles className="h-4 w-4" /> Import (WP)
           </Link>
@@ -153,10 +153,10 @@ function AdminDashboard() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Posts" value={counts?.posts ?? null} icon={FileText} to="/admin/posts" accent="bg-blue-50 text-blue-600" />
-        <StatCard label="Pages" value={counts?.pages ?? null} icon={FileType2} to="/admin/posts" accent="bg-emerald-50 text-emerald-600" />
-        <StatCard label="Media" value={counts?.media ?? null} icon={ImageIcon} to="/admin/media" accent="bg-purple-50 text-purple-600" />
-        <StatCard label="Redirects" value={counts?.redirects ?? null} icon={ArrowRightLeft} to="/admin/redirects" accent="bg-amber-50 text-amber-600" />
+        <StatCard label="Posts" value={counts?.posts ?? null} icon={FileText} to="/admin-everything/posts" accent="bg-blue-50 text-blue-600" />
+        <StatCard label="Pages" value={counts?.pages ?? null} icon={FileType2} to="/admin-everything/posts" accent="bg-emerald-50 text-emerald-600" />
+        <StatCard label="Media" value={counts?.media ?? null} icon={ImageIcon} to="/admin-everything/media" accent="bg-purple-50 text-purple-600" />
+        <StatCard label="Redirects" value={counts?.redirects ?? null} icon={ArrowRightLeft} to="/admin-everything/redirects" accent="bg-amber-50 text-amber-600" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -167,7 +167,7 @@ function AdminDashboard() {
               <Clock className="h-4 w-4 text-muted-foreground" />
               <h2 className="font-semibold">Recently edited</h2>
             </div>
-            <Link to="/admin/posts" className="text-xs text-muted-foreground hover:text-foreground">
+            <Link to="/admin-everything/posts" className="text-xs text-muted-foreground hover:text-foreground">
               View all →
             </Link>
           </header>
@@ -180,11 +180,11 @@ function AdminDashboard() {
               ))
             ) : recent.length === 0 ? (
               <div className="px-4 py-10 text-center text-sm text-muted-foreground">
-                No posts yet. <Link to="/admin/posts/new" className="text-primary hover:underline">Write your first one →</Link>
+                No posts yet. <Link to="/admin-everything/posts/new" className="text-primary hover:underline">Write your first one →</Link>
               </div>
             ) : (
               recent.map((p) => (
-                <Link key={p.id} to="/admin/posts/$id" params={{ id: String(p.id) }}
+                <Link key={p.id} to="/admin-everything/posts/$id" params={{ id: String(p.id) }}
                   className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-admin-hover transition-colors">
                   <div className="min-w-0 flex-1">
                     <div className="font-medium truncate">{p.title || "(no title)"}</div>
@@ -218,7 +218,7 @@ function AdminDashboard() {
                 <div className="px-4 py-6 text-center text-sm text-muted-foreground">No scheduled posts.</div>
               ) : (
                 scheduled.map((p) => (
-                  <Link key={p.id} to="/admin/posts/$id" params={{ id: String(p.id) }}
+                  <Link key={p.id} to="/admin-everything/posts/$id" params={{ id: String(p.id) }}
                     className="block px-4 py-3 hover:bg-admin-hover">
                     <div className="font-medium text-sm truncate">{p.title}</div>
                     <div className="text-xs text-muted-foreground mt-0.5">
@@ -258,7 +258,7 @@ function AdminDashboard() {
             <Activity className="h-4 w-4 text-muted-foreground" />
             <h2 className="font-semibold">Recent activity</h2>
           </div>
-          <Link to="/admin/activity" className="text-xs text-muted-foreground hover:text-foreground">
+          <Link to="/admin-everything/activity" className="text-xs text-muted-foreground hover:text-foreground">
             View all →
           </Link>
         </header>

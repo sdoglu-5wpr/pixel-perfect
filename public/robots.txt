@@ -14,8 +14,8 @@
 
 User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /admin/
+Disallow: /admin-everything
+Disallow: /admin-everything/
 Disallow: /api/
 Disallow: /_serverFn/
 Disallow: /?s=
