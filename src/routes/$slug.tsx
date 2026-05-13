@@ -203,6 +203,13 @@ function ArticlePage() {
     authorName: article.author?.display_name,
   });
 
+  const [extras, setExtras] = useState<ExtraSectionsPayload | null>(null);
+  useEffect(() => {
+    const exclude = categories.map((c) => c.slug);
+    fetchExtraSections({ excludeSlugs: exclude }).then(setExtras).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [article.id]);
+
   if (article.type === "page" && article.slug === "contact") {
     return (
       <SiteLayout>
