@@ -1,0 +1,1 @@
+DELETE FROM public.redirects WHERE source_path = '/rfp/' AND target_path = '/category/rfp';
