@@ -236,7 +236,7 @@ export function buildArchiveHead(opts: {
       url: `${SITE_URL}${pathPrefix}`,
       description: author.bio ? author.bio.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 500) : undefined,
       image: author.avatar_url
-        ? { "@type": "ImageObject", url: author.avatar_url, contentUrl: author.avatar_url, caption: author.display_name }
+        ? { "@type": "ImageObject", url: rewriteLegacyUrl(author.avatar_url), contentUrl: rewriteLegacyUrl(author.avatar_url), caption: author.display_name }
         : undefined,
       jobTitle: "Contributor at Everything-PR",
       worksFor: { "@id": `${SITE_URL}/#organization` },
