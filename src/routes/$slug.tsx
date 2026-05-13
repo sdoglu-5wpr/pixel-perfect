@@ -23,7 +23,9 @@ import { extractFaqPairs, stripFaqFromHtml, stripAbout5WFromHtml } from "@/lib/f
 import { FaqSection } from "@/components/site/FaqSection";
 import { Disclosure5W, shouldShow5WDisclosure } from "@/components/site/Disclosure5W";
 import { formatDate } from "@/lib/date";
-
+import { fetchExtraSections, type ExtraSectionsPayload } from "@/lib/extra-sections";
+import { TrendingSidebar, CategorySectionRow } from "@/components/site/ExtraSections";
+import { useEffect, useState } from "react";
 
 async function loadArticle(slug: string): Promise<ArticlePayload | null> {
   // In the browser (e.g. Netlify static hosting where TanStack server functions
@@ -201,6 +203,13 @@ function ArticlePage() {
     authorName: article.author?.display_name,
   });
 
+  const [extras, setExtras] = useState<ExtraSectionsPayload | null>(null);
+  useEffect(() => {
+    const exclude = categories.map((c) => c.slug);
+    fetchExtraSections({ excludeSlugs: exclude }).then(setExtras).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [article.id]);
+
   if (article.type === "page" && article.slug === "contact") {
     return (
       <SiteLayout>
@@ -342,18 +351,7 @@ function ArticlePage() {
                 ))}
               </ul>
             </div>
-            <div className="rounded-lg border bg-surface-soft p-5">
-              <h3 className="font-serif text-lg font-bold mb-2">Get the PR Brief</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                The week's biggest stories in PR, comms and media — straight to your inbox.
-              </p>
-              <Link
-                to="/"
-                className="inline-flex items-center gap-1 text-sm font-semibold text-brand-blue hover:underline"
-              >
-                Subscribe <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
+            <TrendingSidebar posts={extras?.trending ?? []} />
           </div>
         </aside>
       </div>
@@ -391,6 +389,24 @@ function ArticlePage() {
             ))}
           </div>
         </section>
+      ) : null}
+
+      {extras?.sections[0] ? (
+        <CategorySectionRow
+          title={extras.sections[0].title}
+          categorySlug={extras.sections[0].categorySlug}
+          categoryName={extras.sections[0].categoryName}
+          posts={extras.sections[0].posts}
+        />
+      ) : null}
+
+      {extras?.sections[1] ? (
+        <CategorySectionRow
+          title={extras.sections[1].title}
+          categorySlug={extras.sections[1].categorySlug}
+          categoryName={extras.sections[1].categoryName}
+          posts={extras.sections[1].posts}
+        />
       ) : null}
 
       <div className="mx-auto max-w-7xl px-6">

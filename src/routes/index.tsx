@@ -7,6 +7,8 @@ import { PostImage } from "@/components/site/PostImage";
 import { getHomepage, type HomePost, type HomeAuthor, type HomePayload } from "@/serverFns/homepage.functions";
 import { fetchHomepageViaRpc } from "@/lib/homepage.shared";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchExtraSections, type ExtraSectionsPayload } from "@/lib/extra-sections";
+import { TrendingSidebar, CategorySectionRow } from "@/components/site/ExtraSections";
 import { buildHomepageHead } from "@/serverFns/seo.head";
 import { htmlToPlainText, decodeHtmlEntities } from "@/lib/text";
 import { formatDate } from "@/lib/date";
@@ -52,12 +54,17 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   const initial = Route.useLoaderData() as HomePayload;
   const [data, setData] = useState<HomePayload>(initial);
+  const [extras, setExtras] = useState<ExtraSectionsPayload | null>(null);
 
   useEffect(() => {
     if (!initial.hero && initial.topStories.length === 0) {
       fetchHomepageViaRpc(supabase).then(setData).catch(() => {});
     }
   }, [initial]);
+
+  useEffect(() => {
+    fetchExtraSections().then(setExtras).catch(() => {});
+  }, []);
 
   return (
     <SiteLayout tickerItems={data.ticker} footerMenu={data.footerMenu}>
@@ -67,13 +74,22 @@ function HomePage() {
         </p>
       </div>
       <div className="mx-auto max-w-7xl px-6 pt-6">
-        <Hero hero={data.hero} topStories={data.topStories} />
+        <Hero hero={data.hero} topStories={data.topStories} trending={extras?.trending ?? []} />
       </div>
 
 
       {data.sections.slice(0, 2).map((s) => (
         <SectionRow key={s.key} title={s.title} categorySlug={s.slug} posts={s.posts} />
       ))}
+
+      {extras?.sections[0] ? (
+        <CategorySectionRow
+          title={extras.sections[0].title}
+          categorySlug={extras.sections[0].categorySlug}
+          categoryName={extras.sections[0].categoryName}
+          posts={extras.sections[0].posts}
+        />
+      ) : null}
 
       <DarkFeatureSection
         title="Crisis"
@@ -86,6 +102,15 @@ function HomePage() {
       {data.sections.slice(2).map((s) => (
         <SectionRow key={s.key} title={s.title} categorySlug={s.slug} posts={s.posts} />
       ))}
+
+      {extras?.sections[1] ? (
+        <CategorySectionRow
+          title={extras.sections[1].title}
+          categorySlug={extras.sections[1].categorySlug}
+          categoryName={extras.sections[1].categoryName}
+          posts={extras.sections[1].posts}
+        />
+      ) : null}
 
       {data.economy ? <EconomyFeature post={data.economy} /> : null}
 
@@ -182,7 +207,7 @@ function AboutEverythingPR() {
 
 /* ---------------- Hero ---------------- */
 
-function Hero({ hero, topStories }: { hero: HomePost | null; topStories: HomePost[] }) {
+function Hero({ hero, topStories, trending = [] }: { hero: HomePost | null; topStories: HomePost[]; trending?: import("@/lib/extra-sections").ExtraPost[] }) {
   if (!hero) {
     return (
       <div className="py-20 text-center text-muted-foreground">
@@ -218,15 +243,18 @@ function Hero({ hero, topStories }: { hero: HomePost | null; topStories: HomePos
         </article>
       </div>
 
-      <aside className="lg:col-span-4">
-        <SectionHeading>Top Stories</SectionHeading>
-        <ul className="mt-4 divide-y divide-border">
-          {topStories.map((p) => (
-            <li key={p.id} className="py-4 first:pt-0">
-              <TopStoryItem post={p} />
-            </li>
-          ))}
-        </ul>
+      <aside className="lg:col-span-4 space-y-8">
+        <div>
+          <SectionHeading>Top Stories</SectionHeading>
+          <ul className="mt-4 divide-y divide-border">
+            {topStories.map((p) => (
+              <li key={p.id} className="py-4 first:pt-0">
+                <TopStoryItem post={p} />
+              </li>
+            ))}
+          </ul>
+        </div>
+        <TrendingSidebar posts={trending} />
       </aside>
     </section>
   );
