@@ -391,6 +391,24 @@ function ArticlePage() {
         </section>
       ) : null}
 
+      {extras?.sections[0] ? (
+        <CategorySectionRow
+          title={extras.sections[0].title}
+          categorySlug={extras.sections[0].categorySlug}
+          categoryName={extras.sections[0].categoryName}
+          posts={extras.sections[0].posts}
+        />
+      ) : null}
+
+      {extras?.sections[1] ? (
+        <CategorySectionRow
+          title={extras.sections[1].title}
+          categorySlug={extras.sections[1].categorySlug}
+          categoryName={extras.sections[1].categoryName}
+          posts={extras.sections[1].posts}
+        />
+      ) : null}
+
       <div className="mx-auto max-w-7xl px-6">
         <NewsletterBanner />
       </div>
