@@ -80,6 +80,10 @@ function AdminLayout() {
     );
   }
 
+  if (!me) {
+    return <main className="p-8 text-sm text-muted-foreground">Redirecting…</main>;
+  }
+
   if (!me.isStaff) {
     return (
       <main className="mx-auto max-w-lg p-8">
