@@ -2,9 +2,15 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { persistReturnedSession, waitForAdminSession } from "@/lib/admin-auth";
 const STAFF_ROLES = ["admin", "editor", "author"] as const;
 
 export const Route = createFileRoute("/admin-everything/login")({
+  beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+    const session = await waitForAdminSession();
+    if (session) throw redirect({ to: "/admin-everything" });
+  },
   component: AdminLogin,
 });
 
@@ -36,11 +42,19 @@ function AdminLogin() {
         return;
       }
 
+      const session = await persistReturnedSession(data.session);
+      if (!session) {
+        const msg = "Login succeeded, but your browser did not finish saving the session. Please try again.";
+        toast.error(msg);
+        setInlineError(msg);
+        return;
+      }
+
       // Role gate — RLS lets the user read their own user_roles rows.
       const { data: roleRows, error: roleErr } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", data.session.user.id);
+        .eq("user_id", session.user.id);
       if (roleErr) {
         const msg = `Could not verify your role: ${roleErr.message}`;
         toast.error(msg);
@@ -57,7 +71,7 @@ function AdminLogin() {
         return;
       }
       toast.success("Signed in.");
-      navigate({ to: "/admin-everything" });
+      await navigate({ to: "/admin-everything" });
     } catch (err: any) {
       const msg = `Unexpected error: ${err?.message ?? String(err)}`;
       console.error("[admin/login]", err);
