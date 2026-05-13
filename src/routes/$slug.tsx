@@ -23,7 +23,9 @@ import { extractFaqPairs, stripFaqFromHtml, stripAbout5WFromHtml } from "@/lib/f
 import { FaqSection } from "@/components/site/FaqSection";
 import { Disclosure5W, shouldShow5WDisclosure } from "@/components/site/Disclosure5W";
 import { formatDate } from "@/lib/date";
-
+import { fetchExtraSections, type ExtraSectionsPayload } from "@/lib/extra-sections";
+import { TrendingSidebar, CategorySectionRow } from "@/components/site/ExtraSections";
+import { useEffect, useState } from "react";
 
 async function loadArticle(slug: string): Promise<ArticlePayload | null> {
   // In the browser (e.g. Netlify static hosting where TanStack server functions
