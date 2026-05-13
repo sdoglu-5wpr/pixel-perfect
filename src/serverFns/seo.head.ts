@@ -156,27 +156,22 @@ export function buildArchiveHead(opts: {
 
   let titleTemplate: string;
   let descTemplate: string;
-  let breadcrumbLabel: string;
   switch (kind) {
     case "category":
       titleTemplate = `${termTitle} | ${SITE_NAME}`;
       descTemplate = termDescription || `Latest ${termTitle} articles, news, and analysis from ${SITE_NAME}.`;
-      breadcrumbLabel = "Categories";
       break;
     case "tag":
       titleTemplate = `${termTitle} | ${SITE_NAME}`;
       descTemplate = termDescription || `Latest ${termTitle} articles, news, and analysis from ${SITE_NAME}.`;
-      breadcrumbLabel = "Tags";
       break;
     case "author":
       titleTemplate = `${termTitle} - ${SITE_NAME}`;
       descTemplate = termDescription || `Articles by ${termTitle} on ${SITE_NAME}.`;
-      breadcrumbLabel = "Contributors";
       break;
     case "search":
       titleTemplate = `You searched for ${searchPhrase ?? termTitle} | ${SITE_NAME}`;
       descTemplate = `${totalItems} result${totalItems === 1 ? "" : "s"} for "${searchPhrase ?? termTitle}" on ${SITE_NAME}.`;
-      breadcrumbLabel = "Search";
       break;
   }
   const baseTitle = seoOverrides?.title || titleTemplate;
@@ -219,8 +214,7 @@ export function buildArchiveHead(opts: {
     "@id": breadcrumbId,
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
-      { "@type": "ListItem", position: 2, name: breadcrumbLabel },
-      { "@type": "ListItem", position: 3, name: termTitle, item: `${SITE_URL}${pathPrefix}` },
+      { "@type": "ListItem", position: 2, name: termTitle, item: `${SITE_URL}${pathPrefix}` },
     ],
   };
 
