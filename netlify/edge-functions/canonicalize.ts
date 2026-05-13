@@ -74,19 +74,14 @@ export default async (request: Request, _context: Context) => {
     changed = true;
   }
 
-  // Trailing-slash canonicalization. The site's canonical form is WITHOUT a
-  // trailing slash, EXCEPT for the root and /author/{slug}/ archives which
-  // canonicalize WITH a trailing slash (matches their <link rel=canonical>).
-  // Netlify's default behavior is a 307 strip — we override with a 301 so
-  // Google consolidates signals on the canonical form.
-  if (
-    url.pathname.length > 1 &&
-    url.pathname.endsWith("/") &&
-    !/^\/author\/[^/]+\/$/.test(url.pathname)
-  ) {
-    url.pathname = url.pathname.replace(/\/+$/, "");
-    changed = true;
-  }
+  // Trailing-slash policy: DO NOT strip trailing slashes at the edge.
+  // Netlify serves prerendered HTML from directories (e.g.
+  // dist/client/about/index.html) and 301s the no-slash form to the slash
+  // form. If we strip slashes here we create an infinite redirect loop
+  // (/about → /about/ → /about → …) which broke EVERY prerendered page,
+  // including all blog posts. Let Netlify's pretty-URL behavior win.
+  // Dynamic SSR-only routes (e.g. /cannabis) serve at both /cannabis and
+  // /cannabis/ — rel=canonical in <head> tells Google which to index.
 
   // Strip tracking / AMP query params
   if (url.search) {
