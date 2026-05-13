@@ -219,8 +219,7 @@ export function buildArchiveHead(opts: {
     "@id": breadcrumbId,
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
-      { "@type": "ListItem", position: 2, name: breadcrumbLabel },
-      { "@type": "ListItem", position: 3, name: termTitle, item: `${SITE_URL}${pathPrefix}` },
+      { "@type": "ListItem", position: 2, name: termTitle, item: `${SITE_URL}${pathPrefix}` },
     ],
   };
 
