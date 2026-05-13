@@ -200,6 +200,12 @@ function CategoriesPage() {
           </div>
         </div>
       )}
+
+      <MediaPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onPick={(m) => editing && setEditing({ ...editing, og_image: m.url })}
+      />
     </div>
   );
 }
