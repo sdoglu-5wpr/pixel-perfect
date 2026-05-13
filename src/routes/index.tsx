@@ -54,12 +54,17 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   const initial = Route.useLoaderData() as HomePayload;
   const [data, setData] = useState<HomePayload>(initial);
+  const [extras, setExtras] = useState<ExtraSectionsPayload | null>(null);
 
   useEffect(() => {
     if (!initial.hero && initial.topStories.length === 0) {
       fetchHomepageViaRpc(supabase).then(setData).catch(() => {});
     }
   }, [initial]);
+
+  useEffect(() => {
+    fetchExtraSections().then(setExtras).catch(() => {});
+  }, []);
 
   return (
     <SiteLayout tickerItems={data.ticker} footerMenu={data.footerMenu}>
@@ -69,13 +74,22 @@ function HomePage() {
         </p>
       </div>
       <div className="mx-auto max-w-7xl px-6 pt-6">
-        <Hero hero={data.hero} topStories={data.topStories} />
+        <Hero hero={data.hero} topStories={data.topStories} trending={extras?.trending ?? []} />
       </div>
 
 
       {data.sections.slice(0, 2).map((s) => (
         <SectionRow key={s.key} title={s.title} categorySlug={s.slug} posts={s.posts} />
       ))}
+
+      {extras?.sections[0] ? (
+        <CategorySectionRow
+          title={extras.sections[0].title}
+          categorySlug={extras.sections[0].categorySlug}
+          categoryName={extras.sections[0].categoryName}
+          posts={extras.sections[0].posts}
+        />
+      ) : null}
 
       <DarkFeatureSection
         title="Crisis"
@@ -88,6 +102,15 @@ function HomePage() {
       {data.sections.slice(2).map((s) => (
         <SectionRow key={s.key} title={s.title} categorySlug={s.slug} posts={s.posts} />
       ))}
+
+      {extras?.sections[1] ? (
+        <CategorySectionRow
+          title={extras.sections[1].title}
+          categorySlug={extras.sections[1].categorySlug}
+          categoryName={extras.sections[1].categoryName}
+          posts={extras.sections[1].posts}
+        />
+      ) : null}
 
       {data.economy ? <EconomyFeature post={data.economy} /> : null}
 
