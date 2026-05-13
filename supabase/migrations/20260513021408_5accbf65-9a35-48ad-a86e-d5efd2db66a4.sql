@@ -1,0 +1,1 @@
+UPDATE public.posts SET author_id = 1052, modified_at = now() WHERE id = 112661;
