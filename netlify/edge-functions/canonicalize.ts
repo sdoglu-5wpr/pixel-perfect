@@ -60,6 +60,34 @@ export default async (request: Request, _context: Context) => {
     changed = true;
   }
 
+  // Strip BOM / zero-width / invisible characters from the path. Legacy
+  // WordPress imports left BOM (U+FEFF) and zero-width chars in slugs;
+  // Google has thousands of those URLs queued and they redirect to broken
+  // percent-encoded variants. Drop them with a 301 to the clean slug.
+  if (/[\u200b-\u200f\u2028-\u202f\u2060\ufeff]/.test(url.pathname) ||
+      /%e2%80[89ab][0-9a-f]/i.test(url.pathname) ||
+      /%ef%bb%bf/i.test(url.pathname)) {
+    url.pathname = url.pathname
+      .replace(/[\u200b-\u200f\u2028-\u202f\u2060\ufeff]/g, "")
+      .replace(/%e2%80[89ab][0-9a-f]/gi, "")
+      .replace(/%ef%bb%bf/gi, "");
+    changed = true;
+  }
+
+  // Trailing-slash canonicalization. The site's canonical form is WITHOUT a
+  // trailing slash, EXCEPT for the root and /author/{slug}/ archives which
+  // canonicalize WITH a trailing slash (matches their <link rel=canonical>).
+  // Netlify's default behavior is a 307 strip — we override with a 301 so
+  // Google consolidates signals on the canonical form.
+  if (
+    url.pathname.length > 1 &&
+    url.pathname.endsWith("/") &&
+    !/^\/author\/[^/]+\/$/.test(url.pathname)
+  ) {
+    url.pathname = url.pathname.replace(/\/+$/, "");
+    changed = true;
+  }
+
   // Strip tracking / AMP query params
   if (url.search) {
     const toDelete: string[] = [];
