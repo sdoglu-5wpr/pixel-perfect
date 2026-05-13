@@ -216,3 +216,38 @@
 .prose-article figure { margin: 1.25rem 0; }
 .prose-article figcaption { font-size: .875rem; color: var(--color-muted-foreground); margin-top: .5rem; }
 
+/* Article tables — beautiful, readable */
+.prose-article figure.wp-block-table,
+.prose-article .wp-block-table { margin: 1.75rem 0; overflow-x: auto; }
+.prose-article table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: .9375rem;
+  line-height: 1.5;
+  border: 1px solid var(--color-border);
+  border-radius: .625rem;
+  overflow: hidden;
+  background: var(--color-card);
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.prose-article thead { background: color-mix(in oklab, var(--color-brand-blue) 8%, transparent); }
+.prose-article thead th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-foreground);
+  padding: .85rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  letter-spacing: .01em;
+}
+.prose-article tbody td {
+  padding: .8rem 1rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
+  vertical-align: top;
+  color: var(--color-foreground);
+}
+.prose-article tbody tr:last-child td { border-bottom: 0; }
+.prose-article tbody tr:nth-child(even) { background: color-mix(in oklab, var(--color-muted) 35%, transparent); }
+.prose-article tbody tr:hover { background: color-mix(in oklab, var(--color-brand-blue) 5%, transparent); }
+.prose-article tbody td:first-child strong { color: var(--color-foreground); font-weight: 600; }
+
