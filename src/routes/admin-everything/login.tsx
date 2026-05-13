@@ -2,10 +2,15 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { persistReturnedSession } from "@/lib/admin-auth";
+import { persistReturnedSession, waitForAdminSession } from "@/lib/admin-auth";
 const STAFF_ROLES = ["admin", "editor", "author"] as const;
 
 export const Route = createFileRoute("/admin-everything/login")({
+  beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+    const session = await waitForAdminSession();
+    if (session) throw redirect({ to: "/admin-everything" });
+  },
   component: AdminLogin,
 });
 
