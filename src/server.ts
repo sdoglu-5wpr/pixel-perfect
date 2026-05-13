@@ -50,7 +50,7 @@ function shouldEnforceTrailingSlash(path: string): boolean {
   if (path === "/") return false;
   if (path.startsWith("/api/")) return false;
   if (path.startsWith("/_serverFn") || path.startsWith("/_server")) return false;
-  if (path.startsWith("/admin")) return false;
+  if (path.startsWith("/admin-everything")) return false;
   if (path.startsWith("/wp-content/uploads/")) return false;
   // Anything that looks like a file (has a dot in the last segment): skip
   const last = path.split("/").pop() ?? "";
@@ -134,7 +134,7 @@ function canonicalize(request: Request): Response | null {
 // Routes that must always go through SSR (auth, admin, search, APIs, server fns)
 function isDynamicPath(path: string): boolean {
   return (
-    path.startsWith("/admin") ||
+    path.startsWith("/admin-everything") ||
     path.startsWith("/search") ||
     path.startsWith("/api/") ||
     path.startsWith("/_serverFn") ||

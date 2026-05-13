@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Pencil, X, Loader2 } from "lucide-react";
 import { listRedirects, saveRedirect, deleteRedirect, toggleRedirect } from "@/serverFns/admin-taxonomy.functions";
 
-export const Route = createFileRoute("/admin/_protected/redirects")({
+export const Route = createFileRoute("/admin-everything/_protected/redirects")({
   component: RedirectsPage,
 });
 

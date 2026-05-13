@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { listActivity } from "@/serverFns/admin-site.functions";
 
-export const Route = createFileRoute("/admin/_protected/activity")({
+export const Route = createFileRoute("/admin-everything/_protected/activity")({
   component: ActivityPage,
 });
 

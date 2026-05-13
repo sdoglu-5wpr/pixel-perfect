@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Pencil, X, Loader2, ExternalLink } from "lucide-react";
 import { listAuthors, saveAuthor, deleteAuthor } from "@/serverFns/admin-taxonomy.functions";
 
-export const Route = createFileRoute("/admin/_protected/authors")({
+export const Route = createFileRoute("/admin-everything/_protected/authors")({
   component: AuthorsPage,
 });
 

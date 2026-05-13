@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Save, Loader2 } from "lucide-react";
 import { listSettings, saveSetting } from "@/serverFns/admin-site.functions";
 
-export const Route = createFileRoute("/admin/_protected/seo")({
+export const Route = createFileRoute("/admin-everything/_protected/seo")({
   component: SeoDefaultsPage,
 });
 

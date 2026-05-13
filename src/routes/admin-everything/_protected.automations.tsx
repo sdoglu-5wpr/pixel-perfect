@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Pencil, X, Loader2, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { listAutomations, saveAutomation, deleteAutomation, toggleAutomation } from "@/serverFns/admin-site.functions";
 
-export const Route = createFileRoute("/admin/_protected/automations")({
+export const Route = createFileRoute("/admin-everything/_protected/automations")({
   component: AutomationsPage,
 });
 

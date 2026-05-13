@@ -6,7 +6,7 @@ import {
   listMenus, saveMenu, deleteMenu, saveMenuItem, deleteMenuItem,
 } from "@/serverFns/admin-site.functions";
 
-export const Route = createFileRoute("/admin/_protected/menus")({
+export const Route = createFileRoute("/admin-everything/_protected/menus")({
   component: MenusPage,
 });
 

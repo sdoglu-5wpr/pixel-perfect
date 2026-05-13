@@ -11,7 +11,7 @@ import {
 } from "@/serverFns/admin-editor.functions";
 import { htmlToPlainText } from "@/lib/text";
 
-export const Route = createFileRoute("/admin/_protected/posts/$id")({
+export const Route = createFileRoute("/admin-everything/_protected/posts/$id")({
   component: PostEditor,
 });
 
@@ -140,7 +140,7 @@ function PostEditor() {
       });
       toast.success(isNew ? "Created" : "Saved");
       if (overrideStatus) setStatus(overrideStatus);
-      if (isNew) navigate({ to: "/admin/posts/$id", params: { id: String((r as any).id) } });
+      if (isNew) navigate({ to: "/admin-everything/posts/$id", params: { id: String((r as any).id) } });
     } catch (e: any) {
       toast.error(e?.message ?? "Save failed");
     } finally {
@@ -154,7 +154,7 @@ function PostEditor() {
     try {
       await deleteAdminPost({ data: { id: numericId } });
       toast.success("Deleted");
-      navigate({ to: "/admin/posts" });
+      navigate({ to: "/admin-everything/posts" });
     } catch (e: any) { toast.error(e?.message ?? "Delete failed"); }
   };
 
@@ -195,7 +195,7 @@ function PostEditor() {
       {/* Sticky toolbar */}
       <div className="sticky top-0 z-20 flex items-center justify-between border-b bg-background/95 px-6 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
-          <Link to="/admin/posts" className="rounded p-1.5 hover:bg-muted text-muted-foreground" title="Back">
+          <Link to="/admin-everything/posts" className="rounded p-1.5 hover:bg-muted text-muted-foreground" title="Back">
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
