@@ -1,6 +1,30 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { purgePaths } from "@/serverFns/cache-purge.server";
+
+async function purgeForPost(supabase: any, postId: number, extraPaths: string[] = []): Promise<void> {
+  try {
+    const { data: post } = await supabase
+      .from("posts")
+      .select("slug")
+      .eq("id", postId)
+      .maybeSingle();
+    const { data: cats } = await supabase
+      .from("post_categories")
+      .select("categories(slug)")
+      .eq("post_id", postId);
+    const paths: string[] = ["/", "/feed", "/sitemap_index.xml", ...extraPaths];
+    if (post?.slug) paths.push(`/${post.slug}`);
+    for (const row of cats ?? []) {
+      const slug = (row as any)?.categories?.slug;
+      if (slug) paths.push(`/category/${slug}`);
+    }
+    await purgePaths(paths);
+  } catch (e) {
+    console.warn("[admin-editor] purgeForPost failed", e);
+  }
+}
 
 const STAFF_ROLES = ["admin", "editor", "author"] as const;
 
