@@ -34,6 +34,22 @@ function AuthorsPage() {
   const [editing, setEditing] = useState<Partial<Author> | null>(null);
   const [saving, setSaving] = useState(false);
   const [q, setQ] = useState("");
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarFileRef = useRef<HTMLInputElement>(null);
+
+  const uploadAvatar = async (file: File) => {
+    if (file.size > 10 * 1024 * 1024) { toast.error("Max 10MB"); return; }
+    setUploadingAvatar(true);
+    try {
+      const data_base64 = await fileToBase64(file);
+      const m = await uploadMediaFromBase64({
+        data: { filename: file.name, mime_type: file.type || "image/jpeg", data_base64 },
+      });
+      setEditing((prev) => prev ? { ...prev, avatar_url: (m as any).url } : prev);
+      toast.success("Uploaded");
+    } catch (e: any) { toast.error(e?.message ?? "Upload failed"); }
+    finally { setUploadingAvatar(false); }
+  };
 
   const refresh = async () => {
     setLoading(true);
