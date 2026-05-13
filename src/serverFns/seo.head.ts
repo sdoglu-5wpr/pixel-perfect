@@ -187,8 +187,8 @@ export function buildArchiveHead(opts: {
   const baseUrl = `${SITE_URL}${pathPrefix}`;
   const url = baseUrl;
   const ogType = kind === "author" ? "article" : "website";
-  const ogImage = seoOverrides?.og_image
-    || (kind === "author" && author?.avatar_url ? author.avatar_url : DEFAULT_OG_IMAGE);
+  const ogImage = rewriteLegacyUrl(seoOverrides?.og_image
+    || (kind === "author" && author?.avatar_url ? author.avatar_url : DEFAULT_OG_IMAGE)) || DEFAULT_OG_IMAGE;
   const meta = baseMeta(title, description, url, ogImage, ogType);
   // Robots:
   //  - Page 2+ of any archive: noindex, follow (Google's recommended pagination signal)
