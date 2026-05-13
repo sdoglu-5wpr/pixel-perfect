@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { waitForAdminSession } from "@/lib/admin-auth";
 
 const STAFF_ROLES = ["admin", "editor", "author"] as const;
 
@@ -18,8 +19,8 @@ type Me = { userId: string; email: string | null; roles: string[]; isStaff: bool
 export const Route = createFileRoute("/admin-everything/_protected")({
   beforeLoad: async () => {
     if (typeof window === "undefined") return;
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) throw redirect({ to: "/admin-everything/login" });
+    const session = await waitForAdminSession();
+    if (!session) throw redirect({ to: "/admin-everything/login" });
   },
   component: AdminLayout,
 });
@@ -34,10 +35,10 @@ function AdminLayout() {
     let cancelled = false;
     (async () => {
       try {
-        const { data: sess } = await supabase.auth.getSession();
-        if (!sess.session) { navigate({ to: "/admin-everything/login" }); return; }
-        const userId = sess.session.user.id;
-        const email = sess.session.user.email ?? null;
+        const session = await waitForAdminSession();
+        if (!session) { navigate({ to: "/admin-everything/login" }); return; }
+        const userId = session.user.id;
+        const email = session.user.email ?? null;
         const { data: rows, error } = await supabase
           .from("user_roles").select("role").eq("user_id", userId);
         if (cancelled) return;
