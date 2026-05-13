@@ -1,8 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, X, Loader2, ExternalLink } from "lucide-react";
+import { Plus, Trash2, Pencil, X, Loader2, ExternalLink, Upload } from "lucide-react";
 import { listAuthors, saveAuthor, deleteAuthor } from "@/serverFns/admin-taxonomy.functions";
+import { uploadMediaFromBase64 } from "@/serverFns/admin-editor.functions";
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => {
+      const s = String(r.result ?? "");
+      const i = s.indexOf("base64,");
+      resolve(i >= 0 ? s.slice(i + 7) : s);
+    };
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
 
 export const Route = createFileRoute("/admin-everything/_protected/authors")({
   component: AuthorsPage,
