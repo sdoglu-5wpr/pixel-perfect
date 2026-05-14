@@ -149,17 +149,25 @@ function blocksToHtml(blocks) {
       const level = hMatch[1].length;
       const text = hMatch[2].trim();
       const id = slugifyHeading(text);
-      if (level === 2 && /^faq\b/i.test(text)) {
+      if (level === 2 && /^(faq|frequently asked|common questions)/i.test(text)) {
         inFaqSection = true; inSourcesSection = false;
+        pendingFaqQuestion = null;
         out.push(`<h2 id="${id}">${renderInline(text)}</h2>`);
         h2Anchors.push({ id, text }); continue;
       }
       if (level === 2 && /^sources\b/i.test(text)) {
         inSourcesSection = true; inFaqSection = false;
+        pendingFaqQuestion = null;
         out.push(`<h2 id="${id}">${renderInline(text)}</h2>`);
         h2Anchors.push({ id, text }); continue;
       }
-      inFaqSection = false; inSourcesSection = false;
+      if (inFaqSection && level === 3) {
+        pendingFaqQuestion = text;
+        out.push(`<h3 id="${id}">${renderInline(text)}</h3>`);
+        continue;
+      }
+      if (level === 2) { inFaqSection = false; pendingFaqQuestion = null; }
+      inSourcesSection = false;
       const tag = `h${level}`;
       out.push(`<${tag} id="${id}">${renderInline(text)}</${tag}>`);
       if (level === 2) h2Anchors.push({ id, text });
