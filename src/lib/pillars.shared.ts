@@ -13,6 +13,7 @@ export type PillarRecord = {
   schema_jsonld: any | null;
   faq: PillarFAQ[];
   hero_image_url: string | null;
+  robots: string | null;
 };
 
 export type PillarArticleItem = {
