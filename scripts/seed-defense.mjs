@@ -231,13 +231,33 @@ function blocksToHtml(blocks) {
     }
 
     if (inFaqSection) {
+      // ### Question form (with or without inline answer)
+      const h3m = lines[0].match(/^###\s+(.+?)\s*$/);
+      if (h3m) {
+        const q = h3m[1].trim();
+        const aText = lines.slice(1).join(" ").trim();
+        const id = slugifyHeading(q);
+        out.push(`<h3 id="${id}">${renderInline(q)}</h3>`);
+        if (aText) {
+          faqPairs.push({ q, a: aText });
+          out.push(`<p>${renderInline(aText)}</p>`);
+        } else {
+          pendingFaqQuestion = q;
+        }
+        continue;
+      }
+      // **Question?** form — answer may be on same block or next block
       const qm = lines[0].match(/^\*\*([\s\S]+?\?)\*\*\s*$/);
       if (qm) {
         const q = qm[1].trim();
         const aText = lines.slice(1).join(" ").trim();
-        faqPairs.push({ q, a: aText });
         out.push(`<p><strong>${renderInline(q)}</strong></p>`);
-        if (aText) out.push(`<p>${renderInline(aText)}</p>`);
+        if (aText) {
+          faqPairs.push({ q, a: aText });
+          out.push(`<p>${renderInline(aText)}</p>`);
+        } else {
+          pendingFaqQuestion = q;
+        }
         continue;
       }
     }
