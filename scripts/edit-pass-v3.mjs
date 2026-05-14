@@ -205,10 +205,22 @@ async function processPillars() {
 
 async function processPosts() {
   // Pull posts that contain any candidate string
-  const { data, error } = await supa.from("posts")
-    .select("id, slug, title, content_html, excerpt")
-    .eq("status","publish");
-  if (error) throw error;
+  // Paginate (Supabase default cap is 1000 rows)
+  const PAGE = 1000;
+  let from = 0;
+  let data = [];
+  while (true) {
+    const { data: chunk, error } = await supa.from("posts")
+      .select("id, slug, title, content_html, excerpt")
+      .eq("status","publish")
+      .order("id", { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    if (!chunk || chunk.length === 0) break;
+    data = data.concat(chunk);
+    if (chunk.length < PAGE) break;
+    from += PAGE;
+  }
   for (const p of data) {
     const html = p.content_html || "";
     const ex = p.excerpt || "";
