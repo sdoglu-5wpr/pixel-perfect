@@ -1,0 +1,1 @@
+UPDATE posts SET title = REPLACE(REPLACE(title, 'Answer engines', 'Answer Engines'), 'Answer engine ', 'Answer Engine '), modified_at = now() WHERE title LIKE '%Answer engine%';
