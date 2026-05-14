@@ -274,7 +274,8 @@ async function main() {
       if (error) { console.error(`[update ${a.slug}]`, error); continue; }
       updated++;
     } else {
-      const { error } = await sb.from("posts").insert(row);
+      const insertRow = { ...row, id: nextId++ };
+      const { error } = await sb.from("posts").insert(insertRow);
       if (error) { console.error(`[insert ${a.slug}]`, error); continue; }
       inserted++;
     }
