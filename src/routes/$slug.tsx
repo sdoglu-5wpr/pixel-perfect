@@ -25,6 +25,7 @@ import { Disclosure5W, shouldShow5WDisclosure } from "@/components/site/Disclosu
 import { formatDate } from "@/lib/date";
 import { fetchExtraSections, type ExtraSectionsPayload } from "@/lib/extra-sections";
 import { TrendingSidebar, CategorySectionRow } from "@/components/site/ExtraSections";
+import { withHero } from "@/lib/has-hero";
 import { useEffect, useState } from "react";
 
 async function loadArticle(slug: string): Promise<ArticlePayload | null> {
@@ -209,7 +210,10 @@ function ArticlePage() {
     );
   }
 
-  const { article, topStories = [], otherNews = [], relatedPosts = [] } = loaderData.data;
+  const { article, topStories: rawTopStories = [], otherNews: rawOtherNews = [], relatedPosts: rawRelatedPosts = [] } = loaderData.data;
+  const topStories = withHero(rawTopStories);
+  const otherNews = withHero(rawOtherNews);
+  const relatedPosts = withHero(rawRelatedPosts);
   const categories = article.categories ?? [];
   const primaryCategory = categories[0];
   const minutes = readingTime(article.content_html);

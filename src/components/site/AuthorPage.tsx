@@ -6,6 +6,7 @@ import { SiteLayout } from "./SiteLayout";
 import { PostImage } from "./PostImage";
 import { htmlToPlainText, decodeHtmlEntities } from "@/lib/text";
 import { formatDate } from "@/lib/date";
+import { withHero } from "@/lib/has-hero";
 
 function readingTime(text: string | null | undefined): number {
   if (!text) return 4;
@@ -124,7 +125,8 @@ function ProfileLink({
 }
 
 export function AuthorPage({ data }: { data: ArchivePayload }) {
-  const { header, items, totalItems } = data;
+  const { header, items: rawItems, totalItems } = data;
+  const items = withHero(rawItems);
   const author = header.author!;
   const display = header.title;
   const bio = author.bio;

@@ -4,6 +4,7 @@ import { SiteLayout } from "./SiteLayout";
 import { PostImage } from "./PostImage";
 import { htmlToPlainText, decodeHtmlEntities } from "@/lib/text";
 import { formatDate } from "@/lib/date";
+import { withHero } from "@/lib/has-hero";
 
 export function ArticleListItem({ post }: { post: ArchiveItem }) {
   return (
@@ -162,7 +163,8 @@ type ArchiveViewProps = {
 };
 
 export function ArchiveView({ data, buildHref, eyebrow }: ArchiveViewProps) {
-  const { header, items, page, totalPages } = data;
+  const { header, items: rawItems, page, totalPages } = data;
+  const items = withHero(rawItems);
   return (
     <SiteLayout>
       <div className="mx-auto max-w-7xl px-6 py-10">
