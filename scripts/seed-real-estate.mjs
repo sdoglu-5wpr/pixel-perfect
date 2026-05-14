@@ -26,11 +26,11 @@ import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 
 const ROOT = process.cwd();
-const SOURCE = path.join(ROOT, "data/verticals/b2b-source.md");
-const PILLAR_SLUG = "b2b";
-const PILLAR_LABEL = "B2B Tech & SaaS";
-const ARTICLE_SECTION = "B2B Tech & SaaS";
-const CATEGORY_ID = 27955;
+const SOURCE = path.join(ROOT, "data/verticals/real-estate-source.md");
+const PILLAR_SLUG = "real-estate";
+const PILLAR_LABEL = "Real Estate & PropTech";
+const ARTICLE_SECTION = "Real Estate & PropTech";
+const CATEGORY_ID = 27958;
 const SITE_ORIGIN = "https://everything-pr.com";
 const DRY = process.argv.includes("--dry");
 const NO_PURGE = process.argv.includes("--no-purge");
