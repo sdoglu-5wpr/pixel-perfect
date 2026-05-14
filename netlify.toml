@@ -80,4 +80,4 @@
   for = "/*.html"
   [headers.values]
     Cache-Control = "public, max-age=60, stale-while-revalidate=86400"
-    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet, noimageindex"
+    X-Robots-Tag = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
