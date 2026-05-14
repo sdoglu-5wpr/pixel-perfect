@@ -61,7 +61,8 @@ export function CategorySectionRow({
   categoryName?: string;
   posts: ExtraPost[];
 }) {
-  if (!posts.length) return null;
+  const visible = posts.filter((p) => Boolean(p.featured_image_url));
+  if (!visible.length) return null;
   return (
     <section className="mx-auto max-w-7xl px-6 mt-14">
       <div className="flex items-end justify-between gap-3 mb-6">
@@ -85,7 +86,7 @@ export function CategorySectionRow({
         </Link>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
-        {posts.map((p) => (
+        {visible.map((p) => (
           <article key={p.id} className="group block">
             <Link to="/$slug" params={{ slug: p.slug }} className="block">
               <PostImage
