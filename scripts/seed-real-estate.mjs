@@ -1,25 +1,27 @@
-// Phase 2d — Seed/upsert the 9 long-form B2B Tech & SaaS pillar articles from
-// data/verticals/b2b-source.md. Idempotent on slug.
+// Phase 2e — Seed/upsert the 6 long-form Real Estate & PropTech pillar
+// articles from data/verticals/real-estate-source.md. Idempotent on slug.
 //
-// Cloned from scripts/seed-defense.mjs with these b2b-specific changes:
-//   - REMOVED: **Tags:** line parsing (b2b source has no tags line).
-//   - REMOVED: defense Organization entity lookup (no analogous b2b list).
-//   - FIXED: FAQ heading regex now /^(faq|frequently asked)/i so Ronn's
-//     `## Frequently Asked Questions` heading triggers FAQPage schema +
-//     JSONB. (Same fix should be retro-applied to defense on next re-run.)
-//   - ADDED: Pillars 7–9 carry a pre-drafted Article schema block under an
-//     `**Article Schema**` heading. The parser extracts headline +
-//     description verbatim and uses them as canonical seo title/description.
-//     The raw JSON block is stripped from rendered HTML to avoid
-//     double-emission. Pillars 1–6 fall back to auto-generation
-//     (title + first paragraph excerpt) as in defense.
-//   - articleSection: "B2B Tech & SaaS", isPartOf → /b2b/.
-//   - DOES NOT flip status to publish — leaves rows as draft.
+// Cloned from scripts/seed-b2b.mjs. Real-estate-specific changes:
+//   - Source path, PILLAR_SLUG, PILLAR_LABEL, ARTICLE_SECTION, CATEGORY_ID
+//     all swapped for /real-estate vertical.
+//   - Slug rewrite now matches /real-estate/[slug]/ → /[slug]/ (preserves
+//     /real-estate/ itself).
+//   - ADDED: preCleanSource() runs before parseSource() and removes docx /
+//     pandoc artifacts (`[[url]{.underline}](url)` wrappers, stray
+//     `{.underline}` decoration, `file:///` link prefixes, and escaped
+//     punctuation `\@ \# \$ \"`). Real-estate source comes from a docx
+//     export and carries the same artifacts as b2b pillars 7–9.
+//   - Article Schema override path is preserved but unused — real-estate
+//     pillars do NOT include `**Article Schema**` blocks. Excerpt + headline
+//     fall back to first-paragraph + H1 (same as defense pillars 1–6).
+//   - FAQ regex /^(faq|frequently asked)/i carried over from b2b.
+//   - DOES NOT flip status to publish — leaves rows as draft for the image
+//     batch (Phase 3) to flip.
 //
 // Usage:
-//   bun run scripts/seed-b2b.mjs           # full run, drafts stay drafts
-//   bun run scripts/seed-b2b.mjs --dry     # parse only, no writes
-//   bun run scripts/seed-b2b.mjs --no-purge
+//   bun run scripts/seed-real-estate.mjs           # full run, drafts stay drafts
+//   bun run scripts/seed-real-estate.mjs --dry     # parse only, no writes
+//   bun run scripts/seed-real-estate.mjs --no-purge
 
 import { readFileSync } from "node:fs";
 import path from "node:path";
