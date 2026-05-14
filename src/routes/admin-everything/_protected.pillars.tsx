@@ -97,16 +97,20 @@ function PillarsAdminPage() {
                   />
                 </td>
                 <td className="px-3 py-2">
-                  <select
-                    className="border rounded px-2 py-1 text-sm"
-                    value={p.robots ?? ""}
-                    disabled={savingId === p.id}
-                    onChange={(e) => patch(p.id, { robots: e.target.value || null })}
-                  >
-                    {ROBOTS_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={!p.robots}
+                      disabled={savingId === p.id}
+                      onChange={(e) =>
+                        patch(p.id, { robots: e.target.checked ? null : "noindex, follow" })
+                      }
+                    />
+                    <span className="text-xs">{p.robots ? "Noindexed" : "Indexable"}</span>
+                  </label>
+                  <p className="mt-1 text-[11px] text-muted-foreground max-w-[260px]">
+                    On Lovable preview URLs, all pages are noindexed regardless of this setting. This toggle only affects everything-pr.com.
+                  </p>
                 </td>
                 <td className="px-3 py-2">
                   <a
