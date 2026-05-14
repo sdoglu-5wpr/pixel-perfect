@@ -430,8 +430,8 @@ function preCleanSource(md) {
 async function main() {
   const md = preCleanSource(readFileSync(SOURCE, "utf8"));
   const articles = parseSource(md);
-  if (articles.length !== 22) {
-    console.warn(`[parse] expected 22 articles, got ${articles.length}`);
+  if (articles.length !== EXPECTED_COUNT) {
+    console.warn(`[parse] expected ${EXPECTED_COUNT} articles, got ${articles.length}`);
   }
 
   const glossary = await fetchGlossary();
