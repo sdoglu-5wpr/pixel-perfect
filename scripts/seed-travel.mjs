@@ -1,27 +1,25 @@
-// Phase 2e — Seed/upsert the 6 long-form Real Estate & PropTech pillar
-// articles from data/verticals/real-estate-source.md. Idempotent on slug.
+// Phase 2f — Seed/upsert the 22 long-form Travel & Hospitality (Airlines)
+// pillar articles from data/verticals/travel-airlines-source.md. Idempotent
+// on slug.
 //
-// Cloned from scripts/seed-b2b.mjs. Real-estate-specific changes:
+// Cloned from scripts/seed-real-estate.mjs. Travel-specific changes:
 //   - Source path, PILLAR_SLUG, PILLAR_LABEL, ARTICLE_SECTION, CATEGORY_ID
-//     all swapped for /real-estate vertical.
-//   - Slug rewrite now matches /real-estate/[slug]/ → /[slug]/ (preserves
-//     /real-estate/ itself).
-//   - ADDED: preCleanSource() runs before parseSource() and removes docx /
-//     pandoc artifacts (`[[url]{.underline}](url)` wrappers, stray
-//     `{.underline}` decoration, `file:///` link prefixes, and escaped
-//     punctuation `\@ \# \$ \"`). Real-estate source comes from a docx
-//     export and carries the same artifacts as b2b pillars 7–9.
-//   - Article Schema override path is preserved but unused — real-estate
-//     pillars do NOT include `**Article Schema**` blocks. Excerpt + headline
-//     fall back to first-paragraph + H1 (same as defense pillars 1–6).
-//   - FAQ regex /^(faq|frequently asked)/i carried over from b2b.
-//   - DOES NOT flip status to publish — leaves rows as draft for the image
-//     batch (Phase 3) to flip.
+//     swapped for /travel vertical (Travel & Hospitality, category 27961).
+//   - Slug rewrite now collapses BOTH /travel/airlines/[slug]/ AND
+//     /travel/[slug]/ → /[slug]/. Preserves /travel/ itself (the vertical
+//     index). Article slug guard prevents stripping /travel/ from being
+//     rewritten when the slug segment is empty.
+//   - Article Schema override path preserved but unused — travel articles do
+//     NOT include `**Article Schema**` blocks. Excerpt + headline fall back
+//     to first-paragraph + H1 (same as defense / real-estate pillars 1–6).
+//   - Expected article count = 22 (4 content drops, all appended to one
+//     source file before this script runs once).
+//   - DOES NOT flip status to publish — drafts stay drafts for image batch.
 //
 // Usage:
-//   bun run scripts/seed-real-estate.mjs           # full run, drafts stay drafts
-//   bun run scripts/seed-real-estate.mjs --dry     # parse only, no writes
-//   bun run scripts/seed-real-estate.mjs --no-purge
+//   bun run scripts/seed-travel.mjs           # full run, drafts stay drafts
+//   bun run scripts/seed-travel.mjs --dry     # parse only, no writes
+//   bun run scripts/seed-travel.mjs --no-purge
 
 import { readFileSync } from "node:fs";
 import path from "node:path";
