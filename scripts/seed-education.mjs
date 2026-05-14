@@ -1,36 +1,36 @@
-// Phase 2f — Seed/upsert the 22 long-form Travel & Hospitality (Airlines)
-// pillar articles from data/verticals/travel-airlines-source.md. Idempotent
-// on slug.
+// Phase 2g — Seed/upsert the 26 long-form Education pillar + cluster
+// articles from data/verticals/education-source.md. Idempotent on slug.
 //
-// Cloned from scripts/seed-real-estate.mjs. Travel-specific changes:
-//   - Source path, PILLAR_SLUG, PILLAR_LABEL, ARTICLE_SECTION, CATEGORY_ID
-//     swapped for /travel vertical (Travel & Hospitality, category 27961).
-//   - Slug rewrite now collapses BOTH /travel/airlines/[slug]/ AND
-//     /travel/[slug]/ → /[slug]/. Preserves /travel/ itself (the vertical
-//     index). Article slug guard prevents stripping /travel/ from being
-//     rewritten when the slug segment is empty.
-//   - Article Schema override path preserved but unused — travel articles do
-//     NOT include `**Article Schema**` blocks. Excerpt + headline fall back
-//     to first-paragraph + H1 (same as defense / real-estate pillars 1–6).
-//   - Expected article count = 22 (4 content drops, all appended to one
-//     source file before this script runs once).
+// Cloned from scripts/seed-travel.mjs. Education-specific changes:
+//   - Source path + CATEGORY_ID swapped for /education (cat 27963).
+//   - Multi-pillar: each article's pillar_slug comes from the source's
+//     `# Pillar N — slug: <pillar-slug>` block header (parser already
+//     extracts this). The constant PILLAR_SLUG is unused for row writes;
+//     we set posts.pillar_slug from the parsed block header. We KEEP a
+//     PILLAR_SLUG_VERTICAL = "education" for the breadcrumb / isPartOf
+//     URL only (so all articles point to /education/ as the section).
+//   - Slug rewrite is defensive only: strip any accidental /education/
+//     prefix in body links. Source articles use flat slugs already.
+//   - Expected article count = 26 (2 pillar landings + 24 clusters across
+//     2 pillars in Wave 1).
 //   - DOES NOT flip status to publish — drafts stay drafts for image batch.
 //
 // Usage:
-//   bun run scripts/seed-travel.mjs           # full run, drafts stay drafts
-//   bun run scripts/seed-travel.mjs --dry     # parse only, no writes
-//   bun run scripts/seed-travel.mjs --no-purge
+//   bun run scripts/seed-education.mjs           # full run, drafts stay drafts
+//   bun run scripts/seed-education.mjs --dry     # parse only, no writes
+//   bun run scripts/seed-education.mjs --no-purge
 
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 
 const ROOT = process.cwd();
-const SOURCE = path.join(ROOT, "data/verticals/travel-airlines-source.md");
-const PILLAR_SLUG = "travel";
-const PILLAR_LABEL = "Travel & Hospitality";
-const ARTICLE_SECTION = "Travel & Hospitality";
-const CATEGORY_ID = 27961;
+const SOURCE = path.join(ROOT, "data/verticals/education-source.md");
+const PILLAR_SLUG_VERTICAL = "education";
+const PILLAR_LABEL = "Education";
+const ARTICLE_SECTION = "Education";
+const CATEGORY_ID = 27963;
+const EXPECTED_COUNT = 26;
 const SITE_ORIGIN = "https://everything-pr.com";
 const DRY = process.argv.includes("--dry");
 const NO_PURGE = process.argv.includes("--no-purge");
