@@ -115,6 +115,7 @@ function blocksToHtml(blocks) {
   let inSourcesSection = false;
   let inFaqSection = false;
   let inArticleSchemaSection = false;
+  let pendingFaqQuestion = null;
   let firstParaText = null;
   let articleSchemaOverride = null; // { headline, description } from pillars 7–9
 
@@ -128,17 +129,26 @@ function blocksToHtml(blocks) {
       const level = hMatch[1].length;
       const text = hMatch[2].trim();
       const id = slugifyHeading(text);
-      if (level === 2 && /^(faq|frequently asked)/i.test(text)) {
+      if (level === 2 && /^(faq|frequently asked|common questions)/i.test(text)) {
         inFaqSection = true; inSourcesSection = false; inArticleSchemaSection = false;
+        pendingFaqQuestion = null;
         out.push(`<h2 id="${id}">${renderInline(text)}</h2>`);
         h2Anchors.push({ id, text }); continue;
       }
       if (level === 2 && /^sources\b/i.test(text)) {
         inSourcesSection = true; inFaqSection = false; inArticleSchemaSection = false;
+        pendingFaqQuestion = null;
         out.push(`<h2 id="${id}">${renderInline(text)}</h2>`);
         h2Anchors.push({ id, text }); continue;
       }
-      inFaqSection = false; inSourcesSection = false; inArticleSchemaSection = false;
+      // Inside FAQ section, ### headings are questions; capture next paragraph as answer.
+      if (inFaqSection && level === 3) {
+        pendingFaqQuestion = text;
+        out.push(`<h3 id="${id}">${renderInline(text)}</h3>`);
+        continue;
+      }
+      if (level === 2) { inFaqSection = false; pendingFaqQuestion = null; }
+      inSourcesSection = false; inArticleSchemaSection = false;
       const tag = `h${level}`;
       out.push(`<${tag} id="${id}">${renderInline(text)}</${tag}>`);
       if (level === 2) h2Anchors.push({ id, text });
@@ -248,6 +258,19 @@ function blocksToHtml(blocks) {
     }
 
     if (inFaqSection) {
+      // ### Question + answer in same block (no blank line between).
+      const h3m = lines[0].match(/^###\s+(.+?)\s*$/);
+      if (h3m && lines.length > 1) {
+        const q = h3m[1].trim();
+        const aText = lines.slice(1).join(" ").trim();
+        const id = slugifyHeading(q);
+        out.push(`<h3 id="${id}">${renderInline(q)}</h3>`);
+        if (aText) {
+          faqPairs.push({ q, a: aText });
+          out.push(`<p>${renderInline(aText)}</p>`);
+        }
+        continue;
+      }
       const qm = lines[0].match(/^\*\*([\s\S]+?\?)\*\*\s*$/);
       if (qm) {
         const q = qm[1].trim();
@@ -261,6 +284,10 @@ function blocksToHtml(blocks) {
 
     const paraText = lines.join(" ");
     if (!firstParaText) firstParaText = paraText;
+    if (pendingFaqQuestion) {
+      faqPairs.push({ q: pendingFaqQuestion, a: paraText });
+      pendingFaqQuestion = null;
+    }
     out.push(`<p>${renderInline(paraText)}</p>`);
   }
 

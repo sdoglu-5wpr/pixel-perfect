@@ -123,6 +123,7 @@ function blocksToHtml(blocks) {
   let inSourcesSection = false;
   let inFaqSection = false;
   let tagsRaw = null;
+  let pendingFaqQuestion = null;
   let firstParaText = null;
 
   for (const blockRaw of blocks) {
@@ -148,17 +149,25 @@ function blocksToHtml(blocks) {
       const level = hMatch[1].length;
       const text = hMatch[2].trim();
       const id = slugifyHeading(text);
-      if (level === 2 && /^faq\b/i.test(text)) {
+      if (level === 2 && /^(faq|frequently asked|common questions)/i.test(text)) {
         inFaqSection = true; inSourcesSection = false;
+        pendingFaqQuestion = null;
         out.push(`<h2 id="${id}">${renderInline(text)}</h2>`);
         h2Anchors.push({ id, text }); continue;
       }
       if (level === 2 && /^sources\b/i.test(text)) {
         inSourcesSection = true; inFaqSection = false;
+        pendingFaqQuestion = null;
         out.push(`<h2 id="${id}">${renderInline(text)}</h2>`);
         h2Anchors.push({ id, text }); continue;
       }
-      inFaqSection = false; inSourcesSection = false;
+      if (inFaqSection && level === 3) {
+        pendingFaqQuestion = text;
+        out.push(`<h3 id="${id}">${renderInline(text)}</h3>`);
+        continue;
+      }
+      if (level === 2) { inFaqSection = false; pendingFaqQuestion = null; }
+      inSourcesSection = false;
       const tag = `h${level}`;
       out.push(`<${tag} id="${id}">${renderInline(text)}</${tag}>`);
       if (level === 2) h2Anchors.push({ id, text });
@@ -222,13 +231,33 @@ function blocksToHtml(blocks) {
     }
 
     if (inFaqSection) {
+      // ### Question form (with or without inline answer)
+      const h3m = lines[0].match(/^###\s+(.+?)\s*$/);
+      if (h3m) {
+        const q = h3m[1].trim();
+        const aText = lines.slice(1).join(" ").trim();
+        const id = slugifyHeading(q);
+        out.push(`<h3 id="${id}">${renderInline(q)}</h3>`);
+        if (aText) {
+          faqPairs.push({ q, a: aText });
+          out.push(`<p>${renderInline(aText)}</p>`);
+        } else {
+          pendingFaqQuestion = q;
+        }
+        continue;
+      }
+      // **Question?** form — answer may be on same block or next block
       const qm = lines[0].match(/^\*\*([\s\S]+?\?)\*\*\s*$/);
       if (qm) {
         const q = qm[1].trim();
         const aText = lines.slice(1).join(" ").trim();
-        faqPairs.push({ q, a: aText });
         out.push(`<p><strong>${renderInline(q)}</strong></p>`);
-        if (aText) out.push(`<p>${renderInline(aText)}</p>`);
+        if (aText) {
+          faqPairs.push({ q, a: aText });
+          out.push(`<p>${renderInline(aText)}</p>`);
+        } else {
+          pendingFaqQuestion = q;
+        }
         continue;
       }
     }
@@ -236,6 +265,10 @@ function blocksToHtml(blocks) {
     // Default paragraph — capture first one for SpeakableSpecification + excerpt.
     const paraText = lines.join(" ");
     if (!firstParaText) firstParaText = paraText;
+    if (pendingFaqQuestion) {
+      faqPairs.push({ q: pendingFaqQuestion, a: paraText });
+      pendingFaqQuestion = null;
+    }
     out.push(`<p>${renderInline(paraText)}</p>`);
   }
 
