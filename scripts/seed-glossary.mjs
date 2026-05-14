@@ -94,6 +94,19 @@ const CATEGORY_BY_SLUG = {
   "internal-communications": "reputation",
   // Luxury
   "wealth-migration": "luxury",
+  // AI Education Dictionary
+  "ai-tutor": "education",
+  "adaptive-learning": "education",
+  "ai-assessment": "education",
+  "ai-proctoring": "education",
+  "retrieval-augmented-learning": "education",
+  "ai-curriculum-generation": "education",
+  "learning-record-store": "education",
+  "multimodal-learning-ai": "education",
+  "competency-mapping": "education",
+  "ai-classroom-assistant": "education",
+  "geo-for-education": "education",
+  "agentic-learning-environment": "education",
 };
 
 const LINK_REWRITES = [
