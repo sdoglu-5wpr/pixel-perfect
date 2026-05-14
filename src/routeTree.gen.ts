@@ -32,6 +32,7 @@ import { Route as ApiNewsletterRouteImport } from './routes/api/newsletter'
 import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as AdminEverythingLoginRouteImport } from './routes/admin-everything/login'
 import { Route as AdminEverythingProtectedRouteImport } from './routes/admin-everything/_protected'
+import { Route as AboutTeamRouteImport } from './routes/about.team'
 import { Route as AdminEverythingProtectedIndexRouteImport } from './routes/admin-everything/_protected.index'
 import { Route as AdminEverythingProtectedTagsRouteImport } from './routes/admin-everything/_protected.tags'
 import { Route as AdminEverythingProtectedSettingsRouteImport } from './routes/admin-everything/_protected.settings'
@@ -176,6 +177,11 @@ const AdminEverythingProtectedRoute =
     path: '/admin-everything',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AboutTeamRoute = AboutTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AboutRoute,
+} as any)
 const AdminEverythingProtectedIndexRoute =
   AdminEverythingProtectedIndexRouteImport.update({
     id: '/',
@@ -335,7 +341,7 @@ const AdminEverythingProtectedCategoriesDuplicatesRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
-  '/about': typeof AboutRoute
+  '/about': typeof AboutRouteWithChildren
   '/author-sitemap.xml': typeof AuthorSitemapDotxmlRoute
   '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
   '/editorial-policy': typeof EditorialPolicyRoute
@@ -349,6 +355,7 @@ export interface FileRoutesByFullPath {
   '/setup-cowork': typeof SetupCoworkRoute
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/sitemap_news.xml': typeof Sitemap_newsDotxmlRoute
+  '/about/team': typeof AboutTeamRoute
   '/admin-everything': typeof AdminEverythingProtectedRouteWithChildren
   '/admin-everything/login': typeof AdminEverythingLoginRoute
   '/api/contact': typeof ApiContactRoute
@@ -387,7 +394,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
-  '/about': typeof AboutRoute
+  '/about': typeof AboutRouteWithChildren
   '/author-sitemap.xml': typeof AuthorSitemapDotxmlRoute
   '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
   '/editorial-policy': typeof EditorialPolicyRoute
@@ -401,6 +408,7 @@ export interface FileRoutesByTo {
   '/setup-cowork': typeof SetupCoworkRoute
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/sitemap_news.xml': typeof Sitemap_newsDotxmlRoute
+  '/about/team': typeof AboutTeamRoute
   '/admin-everything/login': typeof AdminEverythingLoginRoute
   '/api/contact': typeof ApiContactRoute
   '/api/newsletter': typeof ApiNewsletterRoute
@@ -439,7 +447,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
-  '/about': typeof AboutRoute
+  '/about': typeof AboutRouteWithChildren
   '/author-sitemap.xml': typeof AuthorSitemapDotxmlRoute
   '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
   '/editorial-policy': typeof EditorialPolicyRoute
@@ -453,6 +461,7 @@ export interface FileRoutesById {
   '/setup-cowork': typeof SetupCoworkRoute
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/sitemap_news.xml': typeof Sitemap_newsDotxmlRoute
+  '/about/team': typeof AboutTeamRoute
   '/admin-everything/_protected': typeof AdminEverythingProtectedRouteWithChildren
   '/admin-everything/login': typeof AdminEverythingLoginRoute
   '/api/contact': typeof ApiContactRoute
@@ -507,6 +516,7 @@ export interface FileRouteTypes {
     | '/setup-cowork'
     | '/sitemap_index.xml'
     | '/sitemap_news.xml'
+    | '/about/team'
     | '/admin-everything'
     | '/admin-everything/login'
     | '/api/contact'
@@ -559,6 +569,7 @@ export interface FileRouteTypes {
     | '/setup-cowork'
     | '/sitemap_index.xml'
     | '/sitemap_news.xml'
+    | '/about/team'
     | '/admin-everything/login'
     | '/api/contact'
     | '/api/newsletter'
@@ -610,6 +621,7 @@ export interface FileRouteTypes {
     | '/setup-cowork'
     | '/sitemap_index.xml'
     | '/sitemap_news.xml'
+    | '/about/team'
     | '/admin-everything/_protected'
     | '/admin-everything/login'
     | '/api/contact'
@@ -649,7 +661,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SlugRoute: typeof SlugRoute
-  AboutRoute: typeof AboutRoute
+  AboutRoute: typeof AboutRouteWithChildren
   AuthorSitemapDotxmlRoute: typeof AuthorSitemapDotxmlRoute
   CategorySitemapDotxmlRoute: typeof CategorySitemapDotxmlRoute
   EditorialPolicyRoute: typeof EditorialPolicyRoute
@@ -841,6 +853,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin-everything'
       preLoaderRoute: typeof AdminEverythingProtectedRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/about/team': {
+      id: '/about/team'
+      path: '/team'
+      fullPath: '/about/team'
+      preLoaderRoute: typeof AboutTeamRouteImport
+      parentRoute: typeof AboutRoute
     }
     '/admin-everything/_protected/': {
       id: '/admin-everything/_protected/'
@@ -1034,6 +1053,16 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AboutRouteChildren {
+  AboutTeamRoute: typeof AboutTeamRoute
+}
+
+const AboutRouteChildren: AboutRouteChildren = {
+  AboutTeamRoute: AboutTeamRoute,
+}
+
+const AboutRouteWithChildren = AboutRoute._addFileChildren(AboutRouteChildren)
+
 interface AdminEverythingProtectedCategoriesRouteChildren {
   AdminEverythingProtectedCategoriesDuplicatesRoute: typeof AdminEverythingProtectedCategoriesDuplicatesRoute
 }
@@ -1138,7 +1167,7 @@ const TagSlugRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SlugRoute: SlugRoute,
-  AboutRoute: AboutRoute,
+  AboutRoute: AboutRouteWithChildren,
   AuthorSitemapDotxmlRoute: AuthorSitemapDotxmlRoute,
   CategorySitemapDotxmlRoute: CategorySitemapDotxmlRoute,
   EditorialPolicyRoute: EditorialPolicyRoute,

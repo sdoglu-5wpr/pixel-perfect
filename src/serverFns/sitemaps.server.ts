@@ -102,6 +102,11 @@ export async function buildPostSitemap(page: number): Promise<string | null> {
   return `${XML_HEADER}\n${URLSET_OPEN}\n${urls.join("\n")}\n${URLSET_CLOSE}\n`;
 }
 
+const STATIC_PAGES: Array<{ path: string; priority?: string; changefreq?: string }> = [
+  { path: "/about", priority: "0.7", changefreq: "monthly" },
+  { path: "/about/team", priority: "0.7", changefreq: "monthly" },
+];
+
 export async function buildPageSitemap(): Promise<string> {
   const { data } = await supabaseAnon
     .from("posts")
@@ -109,9 +114,14 @@ export async function buildPageSitemap(): Promise<string> {
     .eq("status", "publish")
     .eq("type", "page")
     .order("modified_at", { ascending: false, nullsFirst: false });
-  const urls = (data ?? [])
+  const dbUrls = (data ?? [])
     .filter((p: any) => isCleanSlug(p.slug))
     .map((p: any) => urlEntry(`${SITE_URL}/${p.slug}`, p.modified_at ?? p.published_at));
+  const staticUrls = STATIC_PAGES.map(
+    (s) =>
+      `  <url>\n    <loc>${SITE_URL}${s.path}</loc>\n    <changefreq>${s.changefreq}</changefreq>\n    <priority>${s.priority}</priority>\n  </url>`,
+  );
+  const urls = [...staticUrls, ...dbUrls];
   return `${XML_HEADER}\n${URLSET_OPEN}\n${urls.join("\n")}\n${URLSET_CLOSE}\n`;
 }
 
