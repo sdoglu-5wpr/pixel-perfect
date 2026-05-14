@@ -174,7 +174,7 @@ function blocksToHtml(blocks) {
 
     // Skip stray Meta Tags / Title / Description editorial blocks at the
     // top of pillars 7–9. These are author-facing notes, not body copy.
-    if (/^\*\*(Meta Tags?|Title|Description|Meta Title|Meta Description)\*\*/i.test(block)) {
+    if (/^\*\*(Meta Tags?|Title|Description|Meta Title|Meta Description|URL|Vertical|Author)\*\*/i.test(block)) {
       continue;
     }
 
