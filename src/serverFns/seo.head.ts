@@ -294,6 +294,24 @@ export function buildArchiveHead(opts: {
  * Pillar (industry hub) head with full @graph: CollectionPage + ItemList +
  * BreadcrumbList + Org + WebSite, plus optional FAQPage and DefinedTerm.
  */
+/**
+ * True for any Lovable preview/sandbox host. Production domains
+ * (everything-pr.com, www.everything-pr.com) return false.
+ */
+export function isPreviewHost(host: string | null | undefined): boolean {
+  if (!host) return false;
+  const h = host.toLowerCase();
+  return (
+    h.endsWith(".lovable.app") ||
+    h.includes("lovable.app") ||
+    h.includes("id-preview-") ||
+    h.startsWith("preview--")
+  );
+}
+
+const PROD_INDEXABLE = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
+const PREVIEW_NOINDEX = "noindex, follow, max-image-preview:large";
+
 export function buildPillarHead(opts: {
   slug: string;
   title: string;
@@ -306,8 +324,9 @@ export function buildPillarHead(opts: {
   definedTerm?: { name: string; description: string } | null;
   extraSchema?: unknown;
   robots?: string | null;
+  host?: string | null;
 }): HeadOutput {
-  const { slug, title: pillarTitle, subtitle, heroImage, page, totalItems, items, faq, definedTerm, extraSchema, robots } = opts;
+  const { slug, title: pillarTitle, subtitle, heroImage, page, totalItems, items, faq, definedTerm, extraSchema, robots, host } = opts;
   const baseUrl = `${SITE_URL}/${slug}/`;
   const url = baseUrl;
   const baseTitle = `${pillarTitle} · ${SITE_NAME}`;
@@ -315,11 +334,20 @@ export function buildPillarHead(opts: {
   const description = truncate(subtitle || `${pillarTitle} — long-form guide and the latest coverage on ${SITE_NAME}.`);
   const ogImage = rewriteLegacyUrl(heroImage || "") || DEFAULT_OG_IMAGE;
   const meta = baseMeta(title, description, url, ogImage, "article");
-  // Robots precedence:
-  //   1. Per-pillar override from DB (`pillars.robots`) — wins on every page.
-  //   2. Page > 1: noindex pagination signal.
-  const robotsValue = robots || (page > 1 ? "noindex, follow, max-image-preview:large" : null);
-  if (robotsValue) meta.push({ name: "robots", content: robotsValue });
+  // Robots decision tree:
+  //   1. Page > 1: noindex pagination signal (regardless of host).
+  //   2. Preview host (lovable.app / id-preview-* / preview--*): always noindex, follow.
+  //   3. DB override (pillars.robots) set + non-empty: use verbatim (production only).
+  //   4. Otherwise: production indexable default.
+  const preview = isPreviewHost(host);
+  const dbOverride = robots && robots.trim() ? robots.trim() : null;
+  const robotsValue =
+    page > 1
+      ? "noindex, follow, max-image-preview:large"
+      : preview
+        ? PREVIEW_NOINDEX
+        : dbOverride ?? PROD_INDEXABLE;
+  meta.push({ name: "robots", content: robotsValue });
   const links: Link = [{ rel: "canonical", href: url }];
 
   const itemListId = `${url}#itemlist`;
