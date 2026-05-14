@@ -33,7 +33,7 @@ const STOP_WORDS = new Set([
 function titleCaseWord(word: string, isFirst: boolean): string {
   if (!word) return word;
   // Preserve punctuation around the word
-  const m = word.match(/^([^A-Za-z0-9]*)([A-Za-z0-9][A-Za-z0-9'’.\\-&]*)([^A-Za-z0-9]*)$/);
+  const m = word.match(/^([^A-Za-z0-9]*)([A-Za-z0-9][A-Za-z0-9'’\-.&]*)([^A-Za-z0-9]*)$/);
   if (!m) return word;
   const [, lead, core, trail] = m;
 
