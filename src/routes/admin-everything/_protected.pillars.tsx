@@ -73,7 +73,7 @@ function PillarsAdminPage() {
               <th className="px-3 py-2">Title</th>
               <th className="px-3 py-2">Slug</th>
               <th className="px-3 py-2">Published</th>
-              <th className="px-3 py-2">Robots</th>
+              <th className="px-3 py-2">Indexing (production)</th>
               <th className="px-3 py-2"></th>
             </tr>
           </thead>
