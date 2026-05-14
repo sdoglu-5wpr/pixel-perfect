@@ -304,7 +304,7 @@ function buildSchemaJsonLd({ slug, title, excerpt, faqPairs }) {
       description: excerpt,
       articleSection: ARTICLE_SECTION,
       mainEntityOfPage: { "@type": "WebPage", "@id": url },
-      isPartOf: { "@type": "WebPage", "@id": `${SITE_ORIGIN}/${PILLAR_SLUG}/` },
+      isPartOf: { "@type": "WebPage", "@id": `${SITE_ORIGIN}/${PILLAR_SLUG_VERTICAL}/` },
       author: { "@type": "Organization", name: "EPR Editorial Team", url: `${SITE_ORIGIN}/author/everything-pr-staff/` },
       publisher: { "@type": "Organization", name: "Everything PR" },
       speakable: {
@@ -316,7 +316,7 @@ function buildSchemaJsonLd({ slug, title, excerpt, faqPairs }) {
       "@type": "BreadcrumbList",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_ORIGIN}/` },
-        { "@type": "ListItem", position: 2, name: PILLAR_LABEL, item: `${SITE_ORIGIN}/${PILLAR_SLUG}/` },
+        { "@type": "ListItem", position: 2, name: PILLAR_LABEL, item: `${SITE_ORIGIN}/${PILLAR_SLUG_VERTICAL}/` },
         { "@type": "ListItem", position: 3, name: title, item: url },
       ],
     },
