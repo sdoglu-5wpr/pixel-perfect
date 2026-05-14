@@ -12,6 +12,7 @@ import { TrendingSidebar, CategorySectionRow } from "@/components/site/ExtraSect
 import { buildHomepageHead } from "@/serverFns/seo.head";
 import { htmlToPlainText, decodeHtmlEntities } from "@/lib/text";
 import { formatDate } from "@/lib/date";
+import { hasHero, withHero } from "@/lib/has-hero";
 
 
 const EMPTY_PAYLOAD: HomePayload = {
@@ -112,7 +113,7 @@ function HomePage() {
         />
       ) : null}
 
-      {data.economy ? <EconomyFeature post={data.economy} /> : null}
+      {hasHero(data.economy) ? <EconomyFeature post={data.economy} /> : null}
 
       <SectionRow title="Other news" categorySlug={null} posts={data.otherNews} />
 
@@ -208,7 +209,15 @@ function AboutEverythingPR() {
 /* ---------------- Hero ---------------- */
 
 function Hero({ hero, topStories, trending = [] }: { hero: HomePost | null; topStories: HomePost[]; trending?: import("@/lib/extra-sections").ExtraPost[] }) {
-  if (!hero) {
+  // Promote first top-story with a real image to hero if the loader's hero lacks one.
+  const filteredTop = withHero(topStories);
+  let resolvedHero: HomePost | null = hasHero(hero) ? hero : null;
+  let visibleTop = filteredTop;
+  if (!resolvedHero && filteredTop.length) {
+    resolvedHero = filteredTop[0];
+    visibleTop = filteredTop.slice(1);
+  }
+  if (!resolvedHero) {
     return (
       <div className="py-20 text-center text-muted-foreground">
         No published content yet.
@@ -219,41 +228,43 @@ function Hero({ hero, topStories, trending = [] }: { hero: HomePost | null; topS
     <section className="grid grid-cols-1 lg:grid-cols-12 gap-10">
       <div className="lg:col-span-8">
         <article className="group">
-          <Link to="/$slug" params={{ slug: hero.slug }} className="block">
+          <Link to="/$slug" params={{ slug: resolvedHero.slug }} className="block">
           <PostImage
-            src={hero.featured_image_url}
-            alt={decodeHtmlEntities(hero.title)}
+            src={resolvedHero.featured_image_url}
+            alt={decodeHtmlEntities(resolvedHero.title)}
             className="aspect-[16/9] w-full overflow-hidden rounded-lg bg-muted"
             imgClassName="h-full w-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
             loading="eager"
           />
-          {hero.category ? (
+          {resolvedHero.category ? (
             <span className="inline-flex mt-5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider bg-brand-red text-white rounded-sm">
-              {hero.category.name}
+              {resolvedHero.category.name}
             </span>
           ) : null}
           <h1 className="mt-3 font-serif font-extrabold text-3xl md:text-4xl leading-[1.1] group-hover:text-brand-red transition-colors">
-            {decodeHtmlEntities(hero.title)}
+            {decodeHtmlEntities(resolvedHero.title)}
           </h1>
-          {hero.excerpt ? (
-            <p className="mt-3 text-base text-muted-foreground line-clamp-3">{htmlToPlainText(hero.excerpt)}</p>
+          {resolvedHero.excerpt ? (
+            <p className="mt-3 text-base text-muted-foreground line-clamp-3">{htmlToPlainText(resolvedHero.excerpt)}</p>
           ) : null}
           </Link>
-          <ByLine post={hero} className="mt-4" />
+          <ByLine post={resolvedHero} className="mt-4" />
         </article>
       </div>
 
       <aside className="lg:col-span-4 space-y-8">
-        <div>
-          <SectionHeading>Top Stories</SectionHeading>
-          <ul className="mt-4 divide-y divide-border">
-            {topStories.map((p) => (
-              <li key={p.id} className="py-4 first:pt-0">
-                <TopStoryItem post={p} />
-              </li>
-            ))}
-          </ul>
-        </div>
+        {visibleTop.length ? (
+          <div>
+            <SectionHeading>Top Stories</SectionHeading>
+            <ul className="mt-4 divide-y divide-border">
+              {visibleTop.map((p) => (
+                <li key={p.id} className="py-4 first:pt-0">
+                  <TopStoryItem post={p} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
         <TrendingSidebar posts={trending} />
       </aside>
     </section>
@@ -358,7 +369,8 @@ function SectionRow({
   categorySlug: string | null;
   posts: HomePost[];
 }) {
-  if (!posts.length) return null;
+  const visible = withHero(posts);
+  if (!visible.length) return null;
   return (
     <section className="mx-auto max-w-7xl px-6 mt-14">
       <div className="flex items-end justify-between gap-3 mb-6">
@@ -371,7 +383,7 @@ function SectionRow({
         ) : null}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
-        {posts.map((p) => (
+        {visible.map((p) => (
           <ArticleCard key={p.id} post={p} />
         ))}
       </div>
@@ -466,8 +478,9 @@ function DarkFeatureSection({
   categorySlug: string;
   posts: HomePost[];
 }) {
-  if (!posts.length) return null;
-  const [main, ...rest] = posts;
+  const visible = withHero(posts);
+  if (!visible.length) return null;
+  const [main, ...rest] = visible;
   return (
     <section className="bg-ink text-ink-foreground mt-16 py-14">
       <div className="mx-auto max-w-7xl px-6">
