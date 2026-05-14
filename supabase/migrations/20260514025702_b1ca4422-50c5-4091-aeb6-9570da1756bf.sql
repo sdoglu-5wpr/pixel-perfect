@@ -1,0 +1,1 @@
+UPDATE public.pillars SET robots = NULL WHERE slug IN ('b2b','defense','luxury','real-estate','web3','sports','travel','public-affairs','legal','education');

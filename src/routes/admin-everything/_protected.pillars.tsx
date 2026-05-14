@@ -19,12 +19,10 @@ type Row = {
   updated_at: string;
 };
 
-const ROBOTS_OPTIONS = [
-  { value: "", label: "Default (index, follow)" },
-  { value: "noindex, follow", label: "Noindex, follow" },
-  { value: "noindex, nofollow", label: "Noindex, nofollow" },
-  { value: "index, nofollow", label: "Index, nofollow" },
-];
+// Robots semantics:
+//   robots = NULL          → page is indexable on production (everything-pr.com)
+//   robots = "noindex, …"  → page is forced noindex on production
+// Lovable preview hosts always emit noindex regardless of this column.
 
 function PillarsAdminPage() {
   const [items, setItems] = useState<Row[]>([]);
@@ -75,7 +73,7 @@ function PillarsAdminPage() {
               <th className="px-3 py-2">Title</th>
               <th className="px-3 py-2">Slug</th>
               <th className="px-3 py-2">Published</th>
-              <th className="px-3 py-2">Robots</th>
+              <th className="px-3 py-2">Indexing (production)</th>
               <th className="px-3 py-2"></th>
             </tr>
           </thead>
@@ -99,16 +97,20 @@ function PillarsAdminPage() {
                   />
                 </td>
                 <td className="px-3 py-2">
-                  <select
-                    className="border rounded px-2 py-1 text-sm"
-                    value={p.robots ?? ""}
-                    disabled={savingId === p.id}
-                    onChange={(e) => patch(p.id, { robots: e.target.value || null })}
-                  >
-                    {ROBOTS_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={!p.robots}
+                      disabled={savingId === p.id}
+                      onChange={(e) =>
+                        patch(p.id, { robots: e.target.checked ? null : "noindex, follow" })
+                      }
+                    />
+                    <span className="text-xs">{p.robots ? "Noindexed" : "Indexable"}</span>
+                  </label>
+                  <p className="mt-1 text-[11px] text-muted-foreground max-w-[260px]">
+                    On Lovable preview URLs, all pages are noindexed regardless of this setting. This toggle only affects everything-pr.com.
+                  </p>
                 </td>
                 <td className="px-3 py-2">
                   <a
