@@ -1,39 +1,50 @@
-// Phase 2g — Seed/upsert the 26 long-form Education pillar + cluster
-// articles from data/verticals/education-source.md. Idempotent on slug.
+// Phase 2h — Seed/upsert the 10 long-form Entertainment & Media pillar
+// articles from data/verticals/entertainment-source.md. Idempotent on slug.
 //
-// Cloned from scripts/seed-travel.mjs. Education-specific changes:
-//   - Source path + CATEGORY_ID swapped for /education (cat 27963).
-//   - Multi-pillar: each article's pillar_slug comes from the source's
-//     `# Pillar N — slug: <pillar-slug>` block header (parser already
-//     extracts this). The constant PILLAR_SLUG is unused for row writes;
-//     we set posts.pillar_slug from the parsed block header. We KEEP a
-//     PILLAR_SLUG_VERTICAL = "education" for the breadcrumb / isPartOf
-//     URL only (so all articles point to /education/ as the section).
-//   - Slug rewrite is defensive only: strip any accidental /education/
-//     prefix in body links. Source articles use flat slugs already.
-//   - Expected article count = 26 (2 pillar landings + 24 clusters across
-//     2 pillars in Wave 1).
+// Cloned from scripts/seed-education.mjs. Entertainment-specific changes:
+//   - Single-pillar vertical (like Travel). All 10 articles share
+//     pillar_slug='entertainment-media'; pillar_index 1..10 from PILLAR_SLUGS order.
+//   - Source format: 10 sequential `# Title` blocks (one per pillar), each
+//     with a leading `**Tags:**` annotation line stripped, body separated
+//     by a `---` rule. No `# Pillar N — slug:` block headers — slug is
+//     resolved by sequential pillar_index against PILLAR_SLUGS.
+//   - Slug rewrite: defensive strip of `/entertainment-media/` and
+//     `/entertainment/pillars/` prefixes from body links.
 //   - DOES NOT flip status to publish — drafts stay drafts for image batch.
 //
 // Usage:
-//   bun run scripts/seed-education.mjs           # full run, drafts stay drafts
-//   bun run scripts/seed-education.mjs --dry     # parse only, no writes
-//   bun run scripts/seed-education.mjs --no-purge
+//   bun run scripts/seed-entertainment.mjs           # full run
+//   bun run scripts/seed-entertainment.mjs --dry     # parse only
+//   bun run scripts/seed-entertainment.mjs --no-purge
 
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 
 const ROOT = process.cwd();
-const SOURCE = path.join(ROOT, "data/verticals/education-source.md");
-const PILLAR_SLUG_VERTICAL = "education";
-const PILLAR_LABEL = "Education";
-const ARTICLE_SECTION = "Education";
-const CATEGORY_ID = 27963;
-const EXPECTED_COUNT = 91;
+const SOURCE = path.join(ROOT, "data/verticals/entertainment-source.md");
+const PILLAR_SLUG_VERTICAL = "entertainment-media";
+const PILLAR_LABEL = "Entertainment & Media";
+const ARTICLE_SECTION = "Entertainment & Media";
+const CATEGORY_ID = 22744;
+const EXPECTED_COUNT = 10;
 const SITE_ORIGIN = "https://everything-pr.com";
 const DRY = process.argv.includes("--dry");
 const NO_PURGE = process.argv.includes("--no-purge");
+
+// Sequential slug map — must match Phase 2h pre-stage rows (pillar_index 1..10).
+const PILLAR_SLUGS = [
+  "state-of-entertainment-2026",
+  "ai-entertainment-communications-playbook",
+  "sports-league-team-communications",
+  "streaming-media-company-communications",
+  "music-industry-communications",
+  "awards-season-campaign-communications",
+  "crisis-communications-entertainment",
+  "creator-economy-influencer-communications",
+  "gaming-esports-communications",
+  "live-events-touring-communications",
+];
 
 const SUPABASE_URL =
   process.env.EPR_SUPABASE_URL ||
