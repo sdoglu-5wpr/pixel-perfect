@@ -33,6 +33,7 @@ export const GLOSSARY_CATEGORIES: GlossaryCategory[] = [
   { key: "web3", label: "Web3" },
   { key: "reputation", label: "Reputation" },
   { key: "luxury", label: "Luxury" },
+  { key: "education", label: "AI Education Dictionary" },
 ];
 
 export const GLOSSARY_LETTERS = "ABCDEFGHIKLMNOPRSTWZ".split("");
