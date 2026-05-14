@@ -258,6 +258,19 @@ function blocksToHtml(blocks) {
     }
 
     if (inFaqSection) {
+      // ### Question + answer in same block (no blank line between).
+      const h3m = lines[0].match(/^###\s+(.+?)\s*$/);
+      if (h3m && lines.length > 1) {
+        const q = h3m[1].trim();
+        const aText = lines.slice(1).join(" ").trim();
+        const id = slugifyHeading(q);
+        out.push(`<h3 id="${id}">${renderInline(q)}</h3>`);
+        if (aText) {
+          faqPairs.push({ q, a: aText });
+          out.push(`<p>${renderInline(aText)}</p>`);
+        }
+        continue;
+      }
       const qm = lines[0].match(/^\*\*([\s\S]+?\?)\*\*\s*$/);
       if (qm) {
         const q = qm[1].trim();
