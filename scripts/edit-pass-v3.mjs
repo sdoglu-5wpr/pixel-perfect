@@ -214,7 +214,7 @@ async function processPosts() {
     const ex = p.excerpt || "";
     const title = p.title || "";
     // quick skip if nothing relevant
-    if (!/AI engine|A\.I\. engine/.test(html + " " + ex + " " + title) &&
+    if (!/A\.?I\.?\s+engine/i.test(html + " " + ex + " " + title) &&
         !REPORT_NAMES.some(n => (html + " " + ex + " " + title).includes(n))) continue;
 
     const patch = {};
