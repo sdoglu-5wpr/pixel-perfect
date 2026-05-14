@@ -271,6 +271,10 @@ function blocksToHtml(blocks) {
 
     const paraText = lines.join(" ");
     if (!firstParaText) firstParaText = paraText;
+    if (pendingFaqQuestion) {
+      faqPairs.push({ q: pendingFaqQuestion, a: paraText });
+      pendingFaqQuestion = null;
+    }
     out.push(`<p>${renderInline(paraText)}</p>`);
   }
 
