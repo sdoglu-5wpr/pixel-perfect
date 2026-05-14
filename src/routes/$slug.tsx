@@ -106,6 +106,9 @@ export const Route = createFileRoute("/$slug")({
     if (loaderData.kind === "pillar") {
       const p = loaderData.data.pillar;
       const page = loaderData.data.page ?? 1;
+      const host =
+        loaderData.data.host ??
+        (typeof window !== "undefined" ? window.location.host : null);
       return buildPillarHead({
         slug: p.slug,
         title: p.title,
@@ -117,6 +120,7 @@ export const Route = createFileRoute("/$slug")({
         faq: p.faq,
         extraSchema: p.schema_jsonld ?? null,
         robots: p.robots ?? null,
+        host,
       });
     }
     if (loaderData.kind === "archive") {
