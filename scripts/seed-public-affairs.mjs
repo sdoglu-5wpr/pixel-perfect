@@ -221,6 +221,18 @@ async function main() {
   let inserted = 0;
   let updated = 0;
 
+  // posts.id has no default — compute next id from current max.
+  let nextId = null;
+  if (!DRY) {
+    const { data: maxRow } = await sb
+      .from("posts")
+      .select("id")
+      .order("id", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    nextId = (maxRow?.id ?? 0) + 1;
+  }
+
   for (const a of articles) {
     if (!a.slug) {
       console.warn(`[skip] PILLAR ${a.index} ${a.title} missing slug`);
