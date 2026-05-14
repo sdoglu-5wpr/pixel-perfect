@@ -123,6 +123,7 @@ function blocksToHtml(blocks) {
   let inSourcesSection = false;
   let inFaqSection = false;
   let tagsRaw = null;
+  let pendingFaqQuestion = null;
   let firstParaText = null;
 
   for (const blockRaw of blocks) {
