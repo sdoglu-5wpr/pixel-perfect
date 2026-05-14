@@ -347,19 +347,23 @@ function buildSchemaJsonLd({ slug, title, excerpt, faqPairs }) {
 }
 
 function parseSource(md) {
-  const headers = [
-    ...md.matchAll(/^#\s+Pillar\s+(\d+)\s+[—-]\s+slug:\s*([a-z0-9-]+)\s*$/gim),
-  ];
+  // Split on top-level `# Title` headers (not `##`). Assign slugs by sequential
+  // pillar_index against PILLAR_SLUGS. Strip leading `**Tags:**` annotation
+  // line and an optional `---` rule between the tags line and the body.
+  const headers = [...md.matchAll(/^#\s+(?!#)(.+)$/gm)];
   const out = [];
   for (let i = 0; i < headers.length; i++) {
-    const idx = Number(headers[i][1]);
-    const slug = headers[i][2];
+    const idx = i + 1;
+    const slug = PILLAR_SLUGS[i];
+    const title = headers[i][1].trim();
     const start = headers[i].index + headers[i][0].length;
     const end = i + 1 < headers.length ? headers[i + 1].index : md.length;
     let body = md.slice(start, end).trim();
-    const titleMatch = body.match(/^#\s+(.+)$/m);
-    const title = titleMatch ? titleMatch[1].trim() : `Pillar ${idx}`;
-    if (titleMatch) body = body.replace(titleMatch[0], "").trim();
+    // Strip leading `**Tags:** ...` annotation line if present.
+    body = body.replace(/^\s*\*\*Tags:\*\*[^\n]*\n+/i, "").trim();
+    // Strip leading `---` separator after tags.
+    body = body.replace(/^---\s*\n+/, "").trim();
+    // Strip trailing `---` rule.
     body = body.replace(/\n-{3,}\s*$/, "").trim();
     const blocks = body.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
     out.push({ index: idx, title, slug, blocks });
