@@ -86,7 +86,10 @@ function addTrademarks(html) {
 }
 
 // Rule 3: AI engines → answer engines, with preserve heuristic
-const MODEL_NAMES = /\b(GPT-?\d|GPT|Claude|Gemini|Llama|Perplexity|Mistral|DeepSeek|Anthropic|OpenAI)\b/i;
+// Only true model architectures/families — NOT consumer answer-engine products
+// (ChatGPT, Claude, Perplexity, Gemini, Copilot, Bing Chat, Grok, You.com are
+// answer engines themselves and should NOT trigger preservation).
+const MODEL_NAMES = /\b(GPT-?3(?:\.5)?|GPT-?4o?|GPT-?5|Llama(?:-?[234])?|Mistral|Mixtral|DeepSeek|PaLM|Gemini-(?:Pro|Ultra)|Falcon|Claude-?[345](?:\.\d)?|Phi(?:-?3)?|Command(?:-?R)?|Cohere)\b/i;
 const TECH_WORDS = /\b(model|underlying|API|weights|training|fine-?tuning)\b/i;
 
 function replaceAiEngines(html) {
