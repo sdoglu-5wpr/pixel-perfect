@@ -115,6 +115,7 @@ function blocksToHtml(blocks) {
   let inSourcesSection = false;
   let inFaqSection = false;
   let inArticleSchemaSection = false;
+  let pendingFaqQuestion = null;
   let firstParaText = null;
   let articleSchemaOverride = null; // { headline, description } from pillars 7–9
 
