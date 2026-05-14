@@ -437,23 +437,20 @@ async function main() {
   const glossary = await fetchGlossary();
   console.log(`[glossary] loaded ${glossary.length} terms`);
 
-  const writtenPaths = [`/${PILLAR_SLUG}`, `/${PILLAR_SLUG}/`];
+  const writtenPaths = [`/${PILLAR_SLUG_VERTICAL}`, `/${PILLAR_SLUG_VERTICAL}/`];
   let inserted = 0;
   let updated = 0;
 
   for (const a of articles) {
     if (!a.slug) { console.warn(`[skip] PILLAR ${a.index} missing slug`); continue; }
     const parsed = blocksToHtml(a.blocks);
-    // Slug rewrite: collapse /travel/airlines/[slug]/ AND /travel/[slug]/ →
-    // /[slug]/. Preserve bare /travel/ (vertical index page URL).
+    // Defensive slug rewrite: strip any accidental /education/ prefix in
+    // body links. Source articles use flat slugs already.
     parsed.html = parsed.html
-      .replace(/\/travel\/airlines\/([a-z0-9-]+)\/?(?=["')\s])/gi, "/$1/")
-      .replace(/\/travel\/([a-z0-9-]+)\/?(?=["')\s])/gi, "/$1/");
+      .replace(/\/education\/([a-z0-9-]+)\/?(?=["')\s])/gi, "/$1/");
 
     const linked = autoLinkGlossary(parsed.html, glossary, a.slug);
 
-    // Excerpt / description: prefer Ronn's pre-drafted Article schema
-    // description for pillars 7–9; fall back to first-paragraph extract.
     const autoExcerpt = (parsed.firstParaText || "")
       .replace(/[*_`>]/g, "").replace(/\s+/g, " ").trim().slice(0, 280);
     const excerpt = parsed.articleSchemaOverride?.description
@@ -475,10 +472,15 @@ async function main() {
 
     if (DRY) continue;
 
+    // Multi-pillar: prefer the pre-staged row's pillar_slug + pillar_index
+    // (set during Phase 2g.1 pre-stage). Fall back to vertical slug + source
+    // index only if no pre-staged row exists.
     const { data: existing } = await sb
-      .from("posts").select("id, status").eq("slug", a.slug).maybeSingle();
+      .from("posts").select("id, status, pillar_slug, pillar_index").eq("slug", a.slug).maybeSingle();
 
-    // CRITICAL: drafts stay drafts. Image batch (Phase 3) flips to publish.
+    const effectivePillarSlug = existing?.pillar_slug || PILLAR_SLUG_VERTICAL;
+    const effectivePillarIndex = existing?.pillar_index ?? a.index;
+
     const row = {
       slug: a.slug,
       title: a.title,
@@ -486,8 +488,8 @@ async function main() {
       content_html: finalHtml,
       type: "post",
       article_type: "pillar",
-      pillar_slug: PILLAR_SLUG,
-      pillar_index: a.index,
+      pillar_slug: effectivePillarSlug,
+      pillar_index: effectivePillarIndex,
       author_id: 1052,
       modified_at: new Date().toISOString(),
     };
@@ -514,10 +516,13 @@ async function main() {
     writtenPaths.push(`/${a.slug}`);
   }
 
+  if (articles.length !== EXPECTED_COUNT) {
+    console.warn(`[parse] expected ${EXPECTED_COUNT} articles, got ${articles.length}`);
+  }
   console.log(`\n[done] inserted=${inserted} updated=${updated} (status unchanged — drafts stay drafts until image batch)`);
 
   if (!DRY && writtenPaths.length > 2) {
-    await purgePaths([`/${PILLAR_SLUG}`, `/${PILLAR_SLUG}/`]);
+    await purgePaths([`/${PILLAR_SLUG_VERTICAL}`, `/${PILLAR_SLUG_VERTICAL}/`]);
   }
 }
 
