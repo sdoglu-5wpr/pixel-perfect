@@ -255,5 +255,7 @@ console.log(JSON.stringify({
   preserved_count: allPreserved.length,
   pillars_sample: report.pillars.slice(0, 30),
   posts_sample: report.posts.slice(0, 20),
+  titles_changed: (report.titles || []).length,
+  titles_sample: (report.titles || []).slice(0, 20),
   preserved_samples: allPreserved.slice(0, 10),
 }, null, 2));
