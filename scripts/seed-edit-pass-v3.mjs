@@ -266,6 +266,8 @@ for (const e of entries) {
     console.log(`UPDATED ${e.dbSlug}`);
   } else {
     patch.hero_image_url = DISCIPLINE_HERO[e.dbSlug] || "/pillars/marketing.png";
+    const { data: maxRow } = await sb.from("pillars").select("id").order("id", { ascending: false }).limit(1).maybeSingle();
+    patch.id = (maxRow?.id ?? 0) + 1;
     const { error } = await sb.from("pillars").insert(patch);
     if (error) { console.error(`Insert ${e.dbSlug} failed:`, error); continue; }
     inserted++;
