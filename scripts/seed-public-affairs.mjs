@@ -53,17 +53,28 @@ function paragraphsToHtml(paras) {
     .map((p) => {
       const t = p.trim();
       if (!t) return "";
-      // simple bullet list detection
-      if (/^[-•]\s+/m.test(t) && t.split("\n").every((l) => /^[-•]\s+/.test(l.trim()) || !l.trim())) {
-        const items = t
-          .split("\n")
-          .map((l) => l.replace(/^[-•]\s+/, "").trim())
-          .filter(Boolean)
-          .map((l) => `<li>${escapeHtml(l)}</li>`)
+      const lines = t.split("\n").map((l) => l.trim()).filter(Boolean);
+
+      // Pattern A: explicit bullets — every line starts with - or •
+      if (lines.length > 1 && lines.every((l) => /^[-•]\s+/.test(l))) {
+        const items = lines
+          .map((l) => `<li>${escapeHtml(l.replace(/^[-•]\s+/, ""))}</li>`)
           .join("");
         return `<ul>${items}</ul>`;
       }
-      return `<p>${escapeHtml(t).replace(/\n/g, "<br>")}</p>`;
+
+      // Pattern B: colon-led inline list — first line ends with `:` and there
+      // are 2+ following lines. Ronn's convention: "Five operational principles:"
+      // followed by line-broken items.
+      if (lines.length >= 3 && /:\s*$/.test(lines[0])) {
+        const intro = lines[0];
+        const items = lines.slice(1)
+          .map((l) => `<li>${escapeHtml(l)}</li>`)
+          .join("");
+        return `<p>${escapeHtml(intro)}</p>\n<ul>${items}</ul>`;
+      }
+
+      return `<p>${escapeHtml(t).replace(/\n/g, " ")}</p>`;
     })
     .filter(Boolean)
     .join("\n");
