@@ -251,3 +251,65 @@
 .prose-article tbody tr:hover { background: color-mix(in oklab, var(--color-brand-blue) 5%, transparent); }
 .prose-article tbody td:first-child strong { color: var(--color-foreground); font-weight: 600; }
 
+/* Long-form pillar article extras (Phase 2b /legal and onward) */
+
+/* Definition callout box */
+.prose-article .definition-box {
+  margin: 1.75rem 0;
+  padding: 1.25rem 1.5rem;
+  background: color-mix(in oklab, var(--color-brand-blue) 6%, var(--color-card));
+  border: 1px solid color-mix(in oklab, var(--color-brand-blue) 25%, transparent);
+  border-left: 4px solid var(--color-brand-blue);
+  border-radius: .625rem;
+}
+.prose-article .definition-box .definition-label {
+  display: inline-block;
+  font-size: .6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  color: var(--color-brand-blue);
+  margin-right: .5rem;
+}
+.prose-article .definition-box .definition-term {
+  font-weight: 700;
+  color: var(--color-foreground);
+}
+.prose-article .definition-box .definition-body {
+  margin: .5rem 0 0;
+  color: var(--color-foreground);
+}
+
+/* Pull quote */
+.prose-article .pull-quote {
+  margin: 2rem 0;
+  padding: 1rem 0 1rem 1.5rem;
+  border-left: 4px solid var(--color-brand-red);
+  font-size: 1.5rem;
+  line-height: 1.4;
+  font-weight: 600;
+  font-style: normal;
+  color: var(--color-foreground);
+  font-family: var(--font-serif, Georgia, serif);
+}
+
+/* Responsive table wrap */
+.prose-article .table-wrap {
+  overflow-x: auto;
+  margin: 1.75rem 0;
+  -webkit-overflow-scrolling: touch;
+}
+.prose-article .table-wrap > table { margin: 0; }
+
+/* Sources & Further Reading list */
+.prose-article .sources-list { margin: 1rem 0 0 1.25rem; }
+.prose-article .sources-list li { margin-bottom: .5rem; }
+.prose-article .sources-list a[target="_blank"]::after {
+  content: " ↗";
+  font-size: .85em;
+  color: var(--color-muted-foreground);
+}
+
+/* Heading anchor offset (account for sticky header) */
+.prose-article h2[id], .prose-article h3[id] { scroll-margin-top: 5rem; }
+
