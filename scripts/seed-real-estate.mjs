@@ -398,7 +398,7 @@ function preCleanSource(md) {
   // file:/// references in markdown link targets → strip protocol + host
   out = out.replace(/\(file:\/\/+(\/[^)\s]*)\)/g, "($1)");
   // Escaped punctuation introduced by docx → unescape
-  out = out.replace(/\\([@#"$])/g, "$1");
+  out = out.replace(/\\([@#"$'])/g, "$1");
   return out;
 }
 
