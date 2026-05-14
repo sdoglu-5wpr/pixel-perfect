@@ -19,7 +19,7 @@ import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 
 const ROOT = process.cwd();
-const SOURCE = path.join(ROOT, "data/public-affairs-source.md");
+const SOURCE = path.join(ROOT, "data/verticals/public-affairs-source.md");
 const PILLAR_SLUG = "public-affairs";
 const DRY = process.argv.includes("--dry");
 const NO_PURGE = process.argv.includes("--no-purge");
@@ -53,17 +53,28 @@ function paragraphsToHtml(paras) {
     .map((p) => {
       const t = p.trim();
       if (!t) return "";
-      // simple bullet list detection
-      if (/^[-•]\s+/m.test(t) && t.split("\n").every((l) => /^[-•]\s+/.test(l.trim()) || !l.trim())) {
-        const items = t
-          .split("\n")
-          .map((l) => l.replace(/^[-•]\s+/, "").trim())
-          .filter(Boolean)
-          .map((l) => `<li>${escapeHtml(l)}</li>`)
+      const lines = t.split("\n").map((l) => l.trim()).filter(Boolean);
+
+      // Pattern A: explicit bullets — every line starts with - or •
+      if (lines.length > 1 && lines.every((l) => /^[-•]\s+/.test(l))) {
+        const items = lines
+          .map((l) => `<li>${escapeHtml(l.replace(/^[-•]\s+/, ""))}</li>`)
           .join("");
         return `<ul>${items}</ul>`;
       }
-      return `<p>${escapeHtml(t).replace(/\n/g, "<br>")}</p>`;
+
+      // Pattern B: colon-led inline list — first line ends with `:` and there
+      // are 2+ following lines. Ronn's convention: "Five operational principles:"
+      // followed by line-broken items.
+      if (lines.length >= 3 && /:\s*$/.test(lines[0])) {
+        const intro = lines[0];
+        const items = lines.slice(1)
+          .map((l) => `<li>${escapeHtml(l)}</li>`)
+          .join("");
+        return `<p>${escapeHtml(intro)}</p>\n<ul>${items}</ul>`;
+      }
+
+      return `<p>${escapeHtml(t).replace(/\n/g, " ")}</p>`;
     })
     .filter(Boolean)
     .join("\n");
@@ -210,6 +221,18 @@ async function main() {
   let inserted = 0;
   let updated = 0;
 
+  // posts.id has no default — compute next id from current max.
+  let nextId = null;
+  if (!DRY) {
+    const { data: maxRow } = await sb
+      .from("posts")
+      .select("id")
+      .order("id", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    nextId = (maxRow?.id ?? 0) + 1;
+  }
+
   for (const a of articles) {
     if (!a.slug) {
       console.warn(`[skip] PILLAR ${a.index} ${a.title} missing slug`);
@@ -251,7 +274,8 @@ async function main() {
       if (error) { console.error(`[update ${a.slug}]`, error); continue; }
       updated++;
     } else {
-      const { error } = await sb.from("posts").insert(row);
+      const insertRow = { ...row, id: nextId++ };
+      const { error } = await sb.from("posts").insert(insertRow);
       if (error) { console.error(`[insert ${a.slug}]`, error); continue; }
       inserted++;
     }
