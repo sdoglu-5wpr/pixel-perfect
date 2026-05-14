@@ -135,8 +135,9 @@ function replaceAiEngines(html) {
     const before = html.slice(Math.max(0, start - 3), start);
     const sentStart = /(^|[.!?>])\s*$/.test(before);
     const word = (cap === "E" || sentStart) ? "Answer" : "answer";
+    const engineWord = (cap === "E") ? "Engine" : "engine";
     const plural = m[3].endsWith("s") ? "s" : "";
-    out += html.slice(last, start) + `${word} engine${plural}`;
+    out += html.slice(last, start) + `${word} ${engineWord}${plural}`;
     last = end;
     count++;
   }
@@ -205,16 +206,29 @@ async function processPillars() {
 
 async function processPosts() {
   // Pull posts that contain any candidate string
-  const { data, error } = await supa.from("posts")
-    .select("id, slug, content_html, excerpt")
-    .eq("status","publish");
-  if (error) throw error;
+  // Paginate (Supabase default cap is 1000 rows)
+  const PAGE = 1000;
+  let from = 0;
+  let data = [];
+  while (true) {
+    const { data: chunk, error } = await supa.from("posts")
+      .select("id, slug, title, content_html, excerpt")
+      .eq("status","publish")
+      .order("id", { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    if (!chunk || chunk.length === 0) break;
+    data = data.concat(chunk);
+    if (chunk.length < PAGE) break;
+    from += PAGE;
+  }
   for (const p of data) {
     const html = p.content_html || "";
     const ex = p.excerpt || "";
+    const title = p.title || "";
     // quick skip if nothing relevant
-    if (!/AI engine|A\.I\. engine/.test(html + " " + ex) &&
-        !REPORT_NAMES.some(n => (html + " " + ex).includes(n))) continue;
+    if (!/A\.?I\.?\s+engine/i.test(html + " " + ex + " " + title) &&
+        !REPORT_NAMES.some(n => (html + " " + ex + " " + title).includes(n))) continue;
 
     const patch = {};
     let tm = [], ai = 0;
@@ -224,6 +238,13 @@ async function processPosts() {
     const ex2 = applyAll(ex);
     if (ex2.out !== ex && ex) patch.excerpt = ex2.out;
     tm.push(...ex2.tmAdded); ai += ex2.aiCount; allPreserved.push(...ex2.preserved.map(s => ({slug:p.slug, field:"excerpt", s})));
+    const tt = applyAll(title);
+    if (tt.out !== title && title) {
+      patch.title = tt.out;
+      report.titles ||= [];
+      report.titles.push({ id: p.id, slug: p.slug, before: title, after: tt.out });
+    }
+    tm.push(...tt.tmAdded); ai += tt.aiCount; allPreserved.push(...tt.preserved.map(s => ({slug:p.slug, field:"title", s})));
 
     if (Object.keys(patch).length === 0) continue;
     report.posts.push({ id: p.id, slug: p.slug, tm_added: tm, ai_replaced: ai, fields: Object.keys(patch) });
@@ -247,5 +268,7 @@ console.log(JSON.stringify({
   preserved_count: allPreserved.length,
   pillars_sample: report.pillars.slice(0, 30),
   posts_sample: report.posts.slice(0, 20),
+  titles_changed: (report.titles || []).length,
+  titles_sample: (report.titles || []).slice(0, 20),
   preserved_samples: allPreserved.slice(0, 10),
 }, null, 2));

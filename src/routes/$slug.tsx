@@ -73,24 +73,24 @@ export const Route = createFileRoute("/$slug")({
   loader: async ({ params, deps }) => {
     if (!params.slug || params.slug.includes(".")) throw notFound();
 
-    // 1. Try article (only on page 1 — articles aren't paginated)
-    if (deps.page === 1) {
-      const data = await loadArticle(params.slug);
-      if (data) return { kind: "article" as const, data };
-    }
-
-    // 2. Try pillar (industry landing page)
+    // 1. Pillar (industry hub) — wins over collisions with legacy posts/categories
     const pillar = typeof window !== "undefined"
       ? await fetchPillarViaRpc(supabase, params.slug, deps.page)
       : await getPillar({ data: { slug: params.slug, page: deps.page } });
     if (pillar) return { kind: "pillar" as const, data: pillar };
 
-    // 3. Fall back to category archive
+    // 2. Category archive (only if it has items)
     const archive = typeof window !== "undefined"
       ? await fetchArchiveViaRpc(supabase, { kind: "category", slug: params.slug, page: deps.page })
       : await getArchive({ data: { kind: "category", slug: params.slug, page: deps.page } });
     if (archive && archive.items.length > 0) {
       return { kind: "archive" as const, data: archive, slug: params.slug };
+    }
+
+    // 3. Article (only on page 1 — articles aren't paginated)
+    if (deps.page === 1) {
+      const data = await loadArticle(params.slug);
+      if (data) return { kind: "article" as const, data };
     }
 
     const r = typeof window !== "undefined"
