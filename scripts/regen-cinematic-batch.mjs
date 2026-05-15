@@ -136,20 +136,25 @@ async function processPillar(p) {
 }
 
 async function runPosts() {
-  // Today's batch: posts whose featured_media is in auto-featured/* and uploaded today.
-  const { data, error } = await supabase
+  // Pull today's batch via media table first (server-side filter), then hydrate posts.
+  const { data: mediaRows, error: mErr } = await supabase
+    .from("media")
+    .select("id, storage_path")
+    .like("storage_path", "auto-featured/%")
+    .gte("uploaded_at", `${SINCE}T00:00:00Z`)
+    .lt("uploaded_at", `${SINCE}T23:59:59Z`)
+    .limit(2000);
+  if (mErr) { console.error(mErr); process.exit(1); }
+  const mediaIds = (mediaRows || []).map(r => r.id);
+  const { data: posts, error } = await supabase
     .from("posts")
-    .select("id, slug, title, content_html, featured_media_id, media:featured_media_id(storage_path, uploaded_at)")
-    .not("featured_media_id", "is", null)
+    .select("id, slug, title, content_html, featured_media_id, media:featured_media_id(storage_path)")
+    .in("featured_media_id", mediaIds)
     .order("id", { ascending: true });
   if (error) { console.error(error); process.exit(1); }
+  const targets = (posts || []).slice(OFFSET, OFFSET + LIMIT);
 
-  const targets = (data || [])
-    .filter(p => p.media?.storage_path?.startsWith("auto-featured/")
-              && p.media.uploaded_at?.startsWith(SINCE))
-    .slice(OFFSET, OFFSET + LIMIT);
-
-  console.log(`POSTS batch since=${SINCE} total-window=${data?.length ?? 0} processing=${targets.length} (offset=${OFFSET} limit=${LIMIT})${DRY?" [DRY]":""}`);
+  console.log(`POSTS since=${SINCE} window=${posts?.length ?? 0} processing=${targets.length} (offset=${OFFSET} limit=${LIMIT})${DRY?" [DRY]":""}`);
 
   let ok = 0, fail = 0;
   for (const post of targets) {
