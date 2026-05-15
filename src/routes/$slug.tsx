@@ -17,7 +17,7 @@ import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
 import { PillarView } from "@/components/site/PillarView";
 import { htmlToPlainText } from "@/lib/text";
 import { rewriteLegacyHtml } from "@/lib/legacy-urls";
-import { buildArticleHead } from "@/serverFns/seo.article";
+import { buildArticleHead, buildArticleSchemaGraph } from "@/serverFns/seo.article";
 import { buildArchiveHead, buildPillarHead } from "@/serverFns/seo.head";
 import { extractFaqPairs, stripFaqFromHtml, stripAbout5WFromHtml } from "@/lib/faq";
 import { FaqSection } from "@/components/site/FaqSection";
