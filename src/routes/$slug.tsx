@@ -19,7 +19,7 @@ import { PillarPlaceholderView } from "@/components/site/PillarPlaceholderView";
 import { htmlToPlainText } from "@/lib/text";
 import { rewriteLegacyHtml } from "@/lib/legacy-urls";
 import { buildArticleHead, buildArticleSchemaGraph } from "@/serverFns/seo.article";
-import { buildArchiveHead, buildPillarHead } from "@/serverFns/seo.head";
+import { buildArchiveHead, buildPillarHead, buildPillarPlaceholderHead } from "@/serverFns/seo.head";
 import { extractFaqPairs, stripFaqFromHtml, stripAbout5WFromHtml } from "@/lib/faq";
 import { FaqSection } from "@/components/site/FaqSection";
 import { Disclosure5W, shouldShow5WDisclosure } from "@/components/site/Disclosure5W";
