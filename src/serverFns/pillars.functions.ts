@@ -2,10 +2,15 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeader, getRequestHost } from "@tanstack/react-start/server";
 import { supabaseAnon } from "@/integrations/supabase/client.anon.server";
 import { cached } from "@/serverFns/loader-cache.server";
-import { fetchPillarViaRpc, type PillarPayload } from "@/lib/pillars.shared";
+import {
+  fetchPillarViaRpc,
+  fetchPillarPlaceholderViaRpc,
+  type PillarPayload,
+  type PillarPlaceholderPayload,
+} from "@/lib/pillars.shared";
 import { isPreviewHost } from "@/serverFns/seo.head";
 
-export type { PillarPayload, PillarRecord, PillarArticleItem, PillarFAQ } from "@/lib/pillars.shared";
+export type { PillarPayload, PillarRecord, PillarArticleItem, PillarFAQ, PillarPlaceholderPayload } from "@/lib/pillars.shared";
 
 export const getPillar = createServerFn({ method: "GET" })
   .inputValidator((input: { slug: string; page?: number }) => {
@@ -60,4 +65,26 @@ export const getPillar = createServerFn({ method: "GET" })
     }));
 
     return { ...payload, host, longForm: longFormItems };
+  });
+
+export const getPillarPlaceholder = createServerFn({ method: "GET" })
+  .inputValidator((input: { slug: string }) => {
+    if (!input?.slug) throw new Error("slug required");
+    return { slug: input.slug };
+  })
+  .handler(async ({ data }): Promise<PillarPlaceholderPayload | null> => {
+    let host: string | null = null;
+    try { host = getRequestHost({ xForwardedHost: true }) ?? null; } catch {}
+    void host;
+    try {
+      // Always noindex placeholders — thin coverage, not yet ready for search.
+      setResponseHeader("X-Robots-Tag", "noindex, follow, max-image-preview:large");
+      setResponseHeader(
+        "Cache-Control",
+        "public, max-age=60, s-maxage=300, stale-while-revalidate=600",
+      );
+    } catch {}
+    return cached(`pillar-placeholder:${data.slug}`, 60_000, () =>
+      fetchPillarPlaceholderViaRpc(supabaseAnon, data.slug),
+    );
   });

@@ -3,11 +3,11 @@ import { createFileRoute, Link, notFound, redirect, stripSearchParams, useRouter
 import { ChevronRight, ArrowRight, Clock, Share2, Twitter, Linkedin, Facebook, Link as LinkIcon } from "lucide-react";
 import { getArticleBySlug, type RelatedPost, type ArticlePayload, type ArticleAuthor } from "@/serverFns/articles.functions";
 import { getArchive, type ArchivePayload } from "@/serverFns/archives.functions";
-import { getPillar, type PillarPayload } from "@/serverFns/pillars.functions";
+import { getPillar, getPillarPlaceholder, type PillarPayload, type PillarPlaceholderPayload } from "@/serverFns/pillars.functions";
 import { lookupRedirect } from "@/serverFns/redirects.functions";
 import { fetchArticleViaRpc } from "@/lib/articles.shared";
 import { fetchArchiveViaRpc } from "@/lib/archives.shared";
-import { fetchPillarViaRpc } from "@/lib/pillars.shared";
+import { fetchPillarViaRpc, fetchPillarPlaceholderViaRpc } from "@/lib/pillars.shared";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { NewsletterBanner } from "@/components/site/NewsletterBanner";
@@ -15,10 +15,11 @@ import { PostImage } from "@/components/site/PostImage";
 import { ContactPage } from "@/components/site/ContactPage";
 import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
 import { PillarView } from "@/components/site/PillarView";
+import { PillarPlaceholderView } from "@/components/site/PillarPlaceholderView";
 import { htmlToPlainText } from "@/lib/text";
 import { rewriteLegacyHtml } from "@/lib/legacy-urls";
 import { buildArticleHead, buildArticleSchemaGraph } from "@/serverFns/seo.article";
-import { buildArchiveHead, buildPillarHead } from "@/serverFns/seo.head";
+import { buildArchiveHead, buildPillarHead, buildPillarPlaceholderHead } from "@/serverFns/seo.head";
 import { extractFaqPairs, stripFaqFromHtml, stripAbout5WFromHtml } from "@/lib/faq";
 import { FaqSection } from "@/components/site/FaqSection";
 import { Disclosure5W, shouldShow5WDisclosure } from "@/components/site/Disclosure5W";
@@ -94,6 +95,15 @@ export const Route = createFileRoute("/$slug")({
       if (data) return { kind: "article" as const, data };
     }
 
+    // 4. Pillar placeholder — draft pillar exists. Render a 200 with
+    //    noindex,follow plus any related articles (by pillar_slug).
+    if (deps.page === 1) {
+      const placeholder = typeof window !== "undefined"
+        ? await fetchPillarPlaceholderViaRpc(supabase, params.slug)
+        : await getPillarPlaceholder({ data: { slug: params.slug } });
+      if (placeholder) return { kind: "pillar-placeholder" as const, data: placeholder };
+    }
+
     const r = typeof window !== "undefined"
       ? await lookupRedirectInBrowser(`/${params.slug}`)
       : await lookupRedirect({ data: { path: `/${params.slug}` } });
@@ -136,6 +146,10 @@ export const Route = createFileRoute("/$slug")({
         pathPrefix: `/${slug}/`,
         seoOverrides: data.header.seo,
       });
+    }
+    if (loaderData.kind === "pillar-placeholder") {
+      const p = loaderData.data.pillar;
+      return buildPillarPlaceholderHead({ slug: p.slug, title: p.title, subtitle: p.subtitle });
     }
     if (loaderData.kind !== "article") return { meta: [{ title: "Everything-PR" }] };
     const { article } = loaderData.data;
@@ -186,6 +200,7 @@ function readingTime(html: string | null | undefined): number {
 type LoaderData =
   | { kind: "article"; data: ArticlePayload }
   | { kind: "pillar"; data: PillarPayload }
+  | { kind: "pillar-placeholder"; data: PillarPlaceholderPayload }
   | { kind: "archive"; data: ArchivePayload; slug: string };
 
 function ArticlePage() {
@@ -194,6 +209,10 @@ function ArticlePage() {
 
   if (loaderData.kind === "pillar") {
     return <PillarView data={loaderData.data} />;
+  }
+
+  if (loaderData.kind === "pillar-placeholder") {
+    return <PillarPlaceholderView data={loaderData.data} />;
   }
 
   if (loaderData.kind === "archive") {

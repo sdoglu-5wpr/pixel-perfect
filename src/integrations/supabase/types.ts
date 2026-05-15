@@ -1104,6 +1104,7 @@ export type Database = {
         Args: { p_page?: number; p_page_size?: number; p_slug: string }
         Returns: Json
       }
+      get_pillar_placeholder: { Args: { p_slug: string }; Returns: Json }
       get_research_list: {
         Args: { p_page?: number; p_page_size?: number }
         Returns: Json
