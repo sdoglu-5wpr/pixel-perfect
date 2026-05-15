@@ -127,7 +127,7 @@ export function SiteHeader() {
                 </button>
                 {isOpen && (
                   item.groups && item.groups.length > 0 ? (
-                    <div className="absolute right-0 top-full z-50 w-[760px] max-w-[95vw] bg-white border border-black/10 shadow-xl border-t-4 border-t-[color:var(--brand-blue)] p-5 grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-2 max-h-[75vh] overflow-y-auto">
+                    <div className="absolute left-0 top-full z-50 w-[760px] max-w-[95vw] bg-white border border-black/10 shadow-xl border-t-4 border-t-[color:var(--brand-blue)] p-5 grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-2 max-h-[75vh] overflow-y-auto">
                       {item.groups.map((group) => (
                         <div key={group.label} className="min-w-0">
                           <div className="px-1 pb-2 mb-1 text-[11px] font-bold uppercase tracking-wider text-[color:var(--brand-blue)] border-b border-black/10">
