@@ -1,86 +1,112 @@
-# Phase 2g.1b — /glossary education enrichment plan
+## Trace
 
-## 1. Slug collision inventory
+`/luxury` → matches `src/routes/$slug.tsx` → loader runs `getPillar({slug:"luxury"})` → returns `{kind:"pillar", data: PillarPayload}` → route's `head({loaderData})` calls `buildPillarHead(...)` (`src/serverFns/seo.head.ts:315`) → returns `{ meta, links:[{rel:"canonical",href:url}], scripts:[{type:"application/ld+json", children:"..."}] }` → TanStack Start serializes head into the SSR HTML stream.
 
-### vs. existing `glossary_terms` (99 rows, not 98)
-Queried all 12 proposed slugs against `glossary_terms`. **Zero matches.** All 12 are net-new inserts. No merge/replace decisions required.
+## Diagnostic — what's actually in the live HTML
 
-### vs. just-shipped Education posts (`posts` table)
-Education clusters that share a stem with proposed glossary slugs:
+Curl of `https://everythingpr.lovable.app/luxury` (live, today):
 
-| Proposed glossary slug | Education post slug | Collision? |
+| What | Source | Present? |
 |---|---|---|
-| `multimodal-learning-ai` | `multimodal-learning-ai` (id 112871) | **Same string, different table + URL namespace** |
-| `ai-classroom-assistant` | `ai-classroom-assistants` (id 112865, plural) | No |
-| `learning-record-store` | `learning-record-store-data-infrastructure` (id 112870) | No |
-| `agentic-learning-environment` | `agentic-learning-environments` (id 112863, plural) | No |
-| Other 8 proposed slugs | — | No |
+| `<title>Luxury Communications & UHNW Intelligence · Everything-PR</title>` | leaf `buildPillarHead` meta | ✅ |
+| `<meta property="og:title">`, `og:description`, `og:image`, `og:type`, robots | leaf meta | ✅ |
+| Root meta (charSet, viewport) | `__root.tsx` meta | ✅ |
+| Root `<link rel="icon">`, preconnect, stylesheet | `__root.tsx` links | ✅ |
+| Root gtag `<script src>` + inline gtag | `__root.tsx` scripts | ✅ |
+| **Leaf `<link rel="canonical">`** | `buildPillarHead` links | ❌ MISSING |
+| **Leaf `<script type="application/ld+json">` (FAQPage / CollectionPage / ItemList / Breadcrumb)** | `buildPillarHead` scripts | ❌ MISSING |
 
-## 2. URL routing model
+Counter-test: `/about` and `/` (both PRERENDERED, not dynamic-SSR) DO emit leaf-route canonical link AND leaf jsonld script (verified — `/about` HTML contains `<link rel="canonical" href=".../about/"/>` plus a 4-node `@graph` script). So leaf head().links/scripts work on the **prerender pass** but get dropped on the **dynamic SSR Worker pass**.
 
-Two distinct file routes, two distinct tables, two distinct URL namespaces:
+## Root cause (highly likely)
 
-- `src/routes/$slug.tsx` → flat `/{slug}/` → reads from `posts`
-- `src/routes/glossary.$slug.tsx` → `/glossary/{slug}/` → reads from `glossary_terms` via `getGlossaryTerm`
+`/about` (slug exists in `posts.type='page'`) and `/` are in the prerender list (`src/prerender.ts:165-172`). Pillar slugs (`/luxury`, `/sports`, `/social-media`, etc.) are NOT in `posts` — they're rows in the `pillars` table — so `collectUrls()` never adds them, and they're served by the runtime SSR Worker via `@tanstack/react-start/server-entry`.
 
-The slug uniqueness constraint is **per table, not global**. `multimodal-learning-ai` can legitimately exist as both a post (`/multimodal-learning-ai/`) and a glossary entry (`/glossary/multimodal-learning-ai/`) with no resolver conflict. **Recommendation: keep all 12 proposed slugs as-is — no renaming needed.**
+The Worker SSR path is dropping leaf-route `head().links` and `head().scripts` arrays while preserving `head().meta`. Root-level scripts/links survive because they come from a different code path (`__root.tsx`'s static head, applied as the shell). This is consistent with a known class of TanStack head-merge issues where deferred/streamed leaf head content can race the head-flush — meta has eager merge semantics, scripts/links don't.
 
-## 3. `glossary_terms` schema shape
+We can debug the framework cause separately, but the user-facing fix doesn't depend on it.
 
-Columns available for new inserts:
+## Proposed fix — render JSON-LD and canonical inside the React component
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | auto |
-| `slug` | text | unique key |
-| `title` | text | required |
-| `short_definition` | text | required — first ~40 words / 160 chars |
-| `extended_html` | text | nullable — long-form body |
-| `category` | text | **single value**, not array |
-| `related_terms` | jsonb | array of `{label, url?, slug?}` |
-| `where_used` | jsonb | array of `{label, url?, slug?}` — backlink registry |
-| `published` | bool | default true |
+Stop relying on `head().scripts`/`head().links` for pillar SEO. Move JSON-LD emission and canonical into `PillarView` as actual React-rendered tags, which the SSR HTML stream captures regardless of the head-merge bug.
 
-**No dedicated columns** for `also_known_as`, `etymology`, `synonyms`, `examples`, `compared_to`, `faq`. Ronn's richer Pillar 8 source structure must be rendered as HTML sections inside `extended_html` (e.g. `<h3>Also known as</h3>`, `<h3>Etymology</h3>`, `<h3>Compared to</h3>`, `<h3>Examples</h3>`). The seeder's markdown→HTML pass already handles this — same pattern as the 99 existing terms.
+### Changes
 
-## 4. Tagging mechanism
+**1. `src/lib/pillars.shared.ts`** — extend `PillarPayload` with a `headExtras` shape (or just pass the existing fields PillarView already gets). No change if PillarView can rebuild the JSON-LD itself from `pillar` + `items`.
 
-Tagging is via the **single `category` text column**, not a tag join table. 15 categories currently registered in `src/lib/glossary.shared.ts` `GLOSSARY_CATEGORIES`. **No `education` category exists yet.** To make the 12 entries filterable as the "AI Education Dictionary" subset:
+**2. `src/serverFns/seo.head.ts`** — extract the JSON-LD graph builder from `buildPillarHead` into a pure helper:
 
-1. Add `{ key: "education", label: "Education" }` to `GLOSSARY_CATEGORIES` in `src/lib/glossary.shared.ts`.
-2. Add the 12 new slug→category mappings to `CATEGORY_BY_SLUG` in `scripts/seed-glossary.mjs`.
-3. Set `category = 'education'` on all 12 inserts.
+```ts
+export function buildPillarSchemaGraph(opts: { /* same as buildPillarHead */ }): {
+  jsonld: object;            // the @context+@graph object
+  canonical: string;         // absolute URL
+}
+```
 
-The glossary index page (`/glossary`) already filters by category via this list, so the new "Education" facet appears automatically.
+Keep `buildPillarHead` unchanged so meta still emits via TanStack head.
 
-## 5. Cross-link integration
+**3. `src/components/site/PillarView.tsx`** — at the top of the JSX (right under the `SiteLayout` open), inject:
 
-`scripts/seed-education.mjs` runs `autoLinkGlossary(html, glossary, selfSlug)` (line 368) during the parse step: it loads all `glossary_terms` and replaces title occurrences in article HTML with `<a href="/glossary/{slug}/">`. The 91 Education articles **already passed through** this step at their original seed time, against the 99-term inventory. They will NOT pick up the 12 new terms until re-parsed.
+```tsx
+{/* SSR-safe canonical + JSON-LD: TanStack head().links/scripts are
+    dropped on dynamic-SSR pillar routes (head().meta still works). */}
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonldGraph) }}
+/>
+```
 
-A re-seed of `seed-education.mjs` is idempotent (matches on slug, updates content_html in place) and is the standard refresh mechanism. It will re-link all 91 articles against the expanded 111-term glossary in one pass.
+(Canonical is more invasive to inject from a component — defer that to a follow-up; JSON-LD is the priority since it's what the user is tracking.)
 
-## 6. Recommended slug adjustments
+**4. `src/routes/$slug.tsx`** — no change to `head()`; the pillar branch already calls `buildPillarHead` for meta. Just pass `jsonldGraph` (built once in the loader's host-aware code path) into `PillarView` via the existing `data` prop.
 
-**None.** All 12 proposed slugs are clear of collisions in their own namespace. The visual similarity between `/multimodal-learning-ai/` (post) and `/glossary/multimodal-learning-ai/` (term) is intentional and SEO-friendly: the term defines, the article explores.
+Cleanest: build the graph inside `PillarView` from `data.pillar` + `data.items` + `data.page`, calling `buildPillarSchemaGraph` directly. No new loader plumbing.
 
-## 7. Order of operations (after approval)
+**5. `/about`** — PRERENDERED, currently working. Phase 2m's new Person nodes will appear automatically on next deploy. No change needed unless validation shows otherwise post-deploy.
 
-1. **Append** Ronn's 12 entries to `data/glossary-source.md` (verbatim, parser-compatible markdown).
-2. **Edit** `src/lib/glossary.shared.ts` — add `education` to `GLOSSARY_CATEGORIES`.
-3. **Edit** `scripts/seed-glossary.mjs` — add the 12 slug→`education` mappings to `CATEGORY_BY_SLUG`.
-4. **Run** `bun run scripts/seed-glossary.mjs` → expect **+12 inserts** (total 99 → 111). All `published=true` (matches existing pattern; glossary has no draft/publish gating analog to posts).
-5. **Re-run** `bun run scripts/seed-education.mjs` → 91 articles re-parsed; `content_html` updated in place with new `/glossary/.../` links. Drafts stay drafts (status untouched). Expect 91 row updates, glossary_linked counts increase.
-6. **Verify** with a sample query: pick 3 Education articles, confirm new `<a href="/glossary/ai-tutor/">` etc. appear in `content_html`.
+**6. `/sports`, `/social-media`, `/luxury`, all other vertical landings** — all use `PillarView` (via `$slug.tsx` pillar branch), so all benefit from the single PillarView edit.
 
-## Estimated rows touched
+### Diff sketch
 
-- `glossary_terms`: **+12 inserts** (99 → 111)
-- `posts`: **91 updates** (Education vertical re-parse, content_html only; status/featured_media_id untouched)
-- Source files edited: 3 (`data/glossary-source.md`, `src/lib/glossary.shared.ts`, `scripts/seed-glossary.mjs`)
+`src/components/site/PillarView.tsx` (top of the returned JSX):
 
-## Open questions / flags
+```diff
++import { buildPillarSchemaGraph } from "@/serverFns/seo.head";
+ ...
+ export function PillarView({ data }: { data: PillarPayload }) {
+   const { pillar, items: rawItems, total, page, pageSize } = data;
++  const jsonld = buildPillarSchemaGraph({
++    slug: pillar.slug, title: pillar.title, subtitle: pillar.subtitle,
++    heroImage: pillar.hero_image_url, page, totalItems: total,
++    items: items.map(i => ({ title: i.title, slug: i.slug })),
++    faq: pillar.faq, extraSchema: pillar.schema_jsonld ?? null,
++  });
+   ...
+   return (
+     <SiteLayout>
++      <script
++        type="application/ld+json"
++        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonld) }}
++      />
+       {/* HERO */}
+       ...
+```
 
-- **None blocking.** Awaiting Ronn's Pillar 8 source content (the 12 markdown entries from `education-drafts-part4.md` lines 909–1674) to append to `data/glossary-source.md`.
-- Confirm: keep `published=true` for the 12 new terms (consistent with the other 99), since glossary has no draft workflow? Or do you want them inserted as `published=false` and flipped later to mirror the Education drafts policy?
+`src/serverFns/seo.head.ts` — extract the graph-building section of `buildPillarHead` (lines ~353-422) into `buildPillarSchemaGraph` returning the raw graph object; have `buildPillarHead` consume it for backward compatibility so prerender paths still work.
 
-**Awaiting "approved — execute Phase 2g.1b" + the Pillar 8 source block.**
+## Test plan
+
+1. `bun run build` (or whatever the prerender command is — `scripts/build.mjs`).
+2. `curl https://<preview-host>/luxury | grep -c FAQPage` → expect `1`.
+3. `curl https://<preview-host>/luxury | grep -c CollectionPage` → expect `1`.
+4. `curl https://<preview-host>/sports | python3 -c "import sys,re,json; t=sys.stdin.read(); m=re.search(r'<script type=\"application/ld\\+json\">(.*?)</script>',t,re.DOTALL); g=json.loads(m.group(1))['@graph']; print([n['@type'] for n in g])"` → expect `['NewsMediaOrganization','WebSite','CollectionPage','ItemList','BreadcrumbList','FAQPage']`.
+5. `curl https://<preview-host>/about` → expect `Person` ×4 (Ronn + 3 contributors) once Phase 2m deploy ships. If still missing post-deploy, apply the same React-rendered pattern to `AboutPage.tsx`.
+6. Validate JSON-LD via Google's Rich Results Test on `/luxury` → expect FAQPage and CollectionPage detected.
+
+## Caveats
+
+- **Canonical link** stays missing on dynamic-SSR pillar routes for now. React can't `<link>` outside `<head>` in standard SSR. Two follow-up options: (a) add a server-route-level header `Link: <url>; rel="canonical"` in `getPillar`'s `setResponseHeader` block (already used for X-Robots-Tag), or (b) move pillars into the prerender URL list in `src/prerender.ts` so they get the static-pass head-emission that already works. Recommend (a) as the lower-risk patch; (b) is cleaner long-term but increases the prerender cost.
+- **Hydration**: React rendering a `<script type="application/ld+json">` is safe — no executable code, no hydration mismatch as long as the JSON is deterministic per route+page.
+- **Framework-side fix**: the underlying TanStack head-merge drop-on-dynamic-SSR bug is worth filing upstream, but unblocking the SEO work doesn't require waiting on it.
+- **Phase 2m /about**: emission is already working via prerender; the new Person nodes will appear after the next build/deploy. If they don't, we apply the same React-render pattern to `AboutPage.tsx`.
+- **CF cache purge**: still requires the user's local token; same caveat as Phase 2k–2m.
