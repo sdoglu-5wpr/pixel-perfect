@@ -107,22 +107,52 @@ function slugify(s: string): string {
     .slice(0, 80) || "featured-image";
 }
 
-function buildAltText(title: string): string {
-  const clean = title.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
-  return `Editorial illustration for article: ${clean}`.slice(0, 240);
+const SYSTEM_PROMPT = `You are an award-winning photo editor designing featured images for editorial PR/marketing articles. Your visuals are CINEMATIC and REALISTIC — like photography from The New York Times, WIRED, or The Atlantic. Read the article carefully and choose the SUBJECT that best fits its actual content — strongly prefer objects, products, places, environments, still life, architecture, textures, or documents over humans. Only include people when the article is genuinely about people or human activity. When people ARE appropriate: cast for diversity — vary gender, ethnicity, age, body type. NEVER default to a young white woman in an office. Vary the setting too — streets, homes, studios, factories, labs, outdoors, cafes, warehouses. Rotate color palettes (warm earth tones, cool blues, monochrome, high-contrast, pastel, jewel tones, muted neutrals). Use creative framing: macro detail, overhead flat lay, low angle, reflections, environmental shots, still-life arrangements, architectural geometry. Reject clichés: glowing brains, neural networks, blue circuit boards, generic robots, hands touching holograms, floating data orbs, businesspeople pointing at charts, the same stock 'woman smiling at laptop' shot.`;
+
+async function planVisual(aiKey: string, title: string, excerpt: string | null, body: string | null): Promise<{ visual_prompt: string; alt_text: string }> {
+  const ctx = (body || excerpt || "").replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ").replace(/\s+/g, " ").trim().slice(0, 2400);
+  const userPrompt = `Article title: ${title}\n\nArticle body (truncated):\n${ctx}\n\nPlan the featured image. Pick a SPECIFIC scene and moment grounded in the article. Specify camera/lens vibe, lighting, color palette, materials. No text, words, logos, watermarks, or UI in the image.`;
+  const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${aiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-3-flash-preview",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userPrompt },
+      ],
+      tools: [{
+        type: "function",
+        function: {
+          name: "plan_featured_image",
+          description: "Plan the featured image for the article.",
+          parameters: {
+            type: "object",
+            properties: {
+              visual_prompt: { type: "string", description: "Specific visual scene with camera/lens, lighting, palette, materials." },
+              alt_text: { type: "string", description: "Sentence-case alt text describing what's in the image, ~100-160 chars." },
+            },
+            required: ["visual_prompt", "alt_text"],
+            additionalProperties: false,
+          },
+        },
+      }],
+      tool_choice: { type: "function", function: { name: "plan_featured_image" } },
+    }),
+  });
+  if (!r.ok) throw new Error(`planner_${r.status}: ${(await r.text()).slice(0, 200)}`);
+  const j: any = await r.json();
+  const call = j?.choices?.[0]?.message?.tool_calls?.[0];
+  if (!call) throw new Error("planner_no_tool_call");
+  const args = JSON.parse(call.function.arguments);
+  if (!args.visual_prompt || !args.alt_text) throw new Error("planner_missing_fields");
+  return args;
 }
 
-function buildPrompt(title: string, excerpt: string | null): string {
-  const ex = (excerpt || "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&[a-z]+;/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 400);
-  return `Editorial cover image for a public-relations industry news article.
-Title: "${title}".
-${ex ? `Context: ${ex}` : ""}
-Style: modern editorial illustration, clean composition, professional, magazine-quality, subtle gradient background, no text, no logos, no watermarks, 16:9 framing. Photographic or illustrative as appropriate to the topic.`;
+function wrapRenderer(visualPrompt: string): string {
+  return `Cinematic editorial photograph for a PR/marketing news article. ${visualPrompt}. Photorealistic, shot on 35mm or 50mm full-frame, natural directional lighting, true-to-life color, shallow depth of field where appropriate, magazine-quality finish (NYT / WIRED / National Geographic / Vogue). 16:9 widescreen, rule-of-thirds composition, balanced exposure, sharp focus, subtle film grain. Prefer non-human subjects when the article allows.
+
+Negative prompt — do NOT include: any text, letters, words, captions, typography, watermarks, logos, signatures, UI elements, screenshots, charts; bad quality, blurry, oversaturated, plastic skin, deformed faces, malformed hands, extra limbs, extra fingers, generic stock-photo look, AI-art artifacts, cartoon, CGI, anime, glowing brains, neural networks, blue circuit boards, generic robots.`;
 }
 
 async function generateForPost(
