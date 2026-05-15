@@ -81,12 +81,5 @@ export const SITE_PRIMARY_NAV: NavItem[] = [
   { label: "AI & GEO", kind: "path", to: "/geo" },
   { label: "PR Firms", kind: "category", slug: "pr-firms" },
   { label: "RFPs", kind: "category", slug: "rfp" },
-  {
-    label: "About",
-    kind: "menu",
-    children: [
-      { label: "About Everything-PR", kind: "path", to: "/about" },
-      { label: "Team", kind: "path", to: "/about/team" },
-    ],
-  },
+  { label: "About", kind: "path", to: "/about" },
 ];
