@@ -51,7 +51,7 @@ export type ArchiveHeader = {
     tags?: string[] | null;
     job_title?: string | null;
     knows_about?: string[] | null;
-    works_for?: unknown;
+    works_for?: { [key: string]: string } | null;
   };
 };
 
@@ -124,7 +124,7 @@ function buildHeader(input: ArchiveInput, term: any, total: number): ArchiveHead
         tags: Array.isArray(term?.tags) ? term.tags : null,
         job_title: term?.job_title ?? null,
         knows_about: Array.isArray(term?.knows_about) ? term.knows_about : null,
-        works_for: term?.works_for ?? null,
+        works_for: (term?.works_for as { [key: string]: string } | null | undefined) ?? null,
       },
     };
   }
