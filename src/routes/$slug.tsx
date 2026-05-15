@@ -3,11 +3,11 @@ import { createFileRoute, Link, notFound, redirect, stripSearchParams, useRouter
 import { ChevronRight, ArrowRight, Clock, Share2, Twitter, Linkedin, Facebook, Link as LinkIcon } from "lucide-react";
 import { getArticleBySlug, type RelatedPost, type ArticlePayload, type ArticleAuthor } from "@/serverFns/articles.functions";
 import { getArchive, type ArchivePayload } from "@/serverFns/archives.functions";
-import { getPillar, type PillarPayload } from "@/serverFns/pillars.functions";
+import { getPillar, getPillarPlaceholder, type PillarPayload, type PillarPlaceholderPayload } from "@/serverFns/pillars.functions";
 import { lookupRedirect } from "@/serverFns/redirects.functions";
 import { fetchArticleViaRpc } from "@/lib/articles.shared";
 import { fetchArchiveViaRpc } from "@/lib/archives.shared";
-import { fetchPillarViaRpc } from "@/lib/pillars.shared";
+import { fetchPillarViaRpc, fetchPillarPlaceholderViaRpc } from "@/lib/pillars.shared";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { NewsletterBanner } from "@/components/site/NewsletterBanner";
