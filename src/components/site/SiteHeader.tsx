@@ -241,14 +241,32 @@ export function SiteHeader() {
                   </button>
                   {open ? (
                     <div className="pl-4 border-l-2 border-[color:var(--brand-blue)]/30 ml-2 my-1">
-                      {item.children.map((child) => (
-                        <LeafLinkEl
-                          key={child.label}
-                          leaf={child}
-                          onClick={closeMobile}
-                          className="block px-2 py-2 text-[13px] font-normal normal-case text-foreground hover:bg-black/5 hover:text-[color:var(--brand-blue)] rounded"
-                        />
-                      ))}
+                      {item.groups && item.groups.length > 0 ? (
+                        item.groups.map((group) => (
+                          <div key={group.label} className="mb-2">
+                            <div className="px-2 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-[color:var(--brand-blue)]">
+                              {group.label}
+                            </div>
+                            {group.children.map((child) => (
+                              <LeafLinkEl
+                                key={child.label}
+                                leaf={child}
+                                onClick={closeMobile}
+                                className="block px-2 py-2 text-[13px] font-normal normal-case text-foreground hover:bg-black/5 hover:text-[color:var(--brand-blue)] rounded"
+                              />
+                            ))}
+                          </div>
+                        ))
+                      ) : (
+                        item.children.map((child) => (
+                          <LeafLinkEl
+                            key={child.label}
+                            leaf={child}
+                            onClick={closeMobile}
+                            className="block px-2 py-2 text-[13px] font-normal normal-case text-foreground hover:bg-black/5 hover:text-[color:var(--brand-blue)] rounded"
+                          />
+                        ))
+                      )}
                     </div>
                   ) : null}
                 </div>
