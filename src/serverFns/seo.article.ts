@@ -291,4 +291,4 @@ export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput
   return { meta, links, scripts: [] };
 }
 
-void jsonLd; // retained helper for any future internal use
+
