@@ -17,7 +17,7 @@ import { ArchiveView, type PageHref } from "@/components/site/ArchiveView";
 import { PillarView } from "@/components/site/PillarView";
 import { htmlToPlainText } from "@/lib/text";
 import { rewriteLegacyHtml } from "@/lib/legacy-urls";
-import { buildArticleHead } from "@/serverFns/seo.article";
+import { buildArticleHead, buildArticleSchemaGraph } from "@/serverFns/seo.article";
 import { buildArchiveHead, buildPillarHead } from "@/serverFns/seo.head";
 import { extractFaqPairs, stripFaqFromHtml, stripAbout5WFromHtml } from "@/lib/faq";
 import { FaqSection } from "@/components/site/FaqSection";
@@ -240,8 +240,15 @@ function ArticlePage() {
     );
   }
 
+  const articleSchema = buildArticleSchemaGraph(article);
   return (
     <SiteLayout>
+      {/* SSR-safe JSON-LD: TanStack head().scripts is dropped on dynamic-SSR
+          routes. Render inline so the SSR HTML stream captures the schema. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="bg-surface-soft border-b">
         <div className="mx-auto max-w-7xl px-6 py-3 flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap overflow-hidden">

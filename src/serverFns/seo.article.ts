@@ -47,19 +47,21 @@ function truncate(s: string, n = 160): string {
   return clean.slice(0, n - 1).replace(/\s+\S*$/, "") + "…";
 }
 
-function jsonLd(graph: unknown[]): ScriptTag {
-  return {
-    type: "application/ld+json",
-    children: JSON.stringify({ "@context": "https://schema.org", "@graph": graph }),
-  };
-}
 
 function readingTime(text: string): number {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 220));
 }
 
-export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput {
+type ArticleSchemaGraph = { "@context": string; "@graph": unknown[] };
+
+/**
+ * Build the JSON-LD schema graph for an article. Exported so the article view
+ * component can render it inline via dangerouslySetInnerHTML — TanStack Start
+ * drops head().scripts on dynamic-SSR routes; rendering inside the component
+ * tree guarantees the SSR HTML stream captures the schema.
+ */
+export function buildArticleSchemaGraph(article: ArticlePayload["article"]): ArticleSchemaGraph {
   const a = article as any;
   const slug = article.slug;
   const isResearch = RESEARCH_SLUGS.has(slug);
@@ -73,18 +75,10 @@ export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput
   };
   const seoTitle = resolvePlaceholders(article.seo?.title, placeholderCtx);
   const seoDesc = resolvePlaceholders(article.seo?.description, placeholderCtx);
-  const seoOgTitle = resolvePlaceholders(article.seo?.og_title, placeholderCtx);
-  const seoOgDesc = resolvePlaceholders(article.seo?.og_description, placeholderCtx);
-  const seoTwTitle = resolvePlaceholders(a.seo?.twitter_title, placeholderCtx);
-  const seoTwDesc = resolvePlaceholders(a.seo?.twitter_description, placeholderCtx);
-
   const title = seoTitle || `${article.title} - PR News`;
   const plain = htmlToPlainText(article.content_html || "");
   const description = truncate(
-    seoDesc ||
-      plainExcerpt ||
-      plain ||
-      `${article.title} — read the full story on ${SITE_NAME}.`,
+    seoDesc || plainExcerpt || plain || `${article.title} — read the full story on ${SITE_NAME}.`,
   );
   const image = article.seo?.og_image || article.featured_image?.url || DEFAULT_OG_IMAGE;
   const canonical = article.seo?.canonical_url || url;
@@ -94,42 +88,6 @@ export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput
   const published = article.published_at ?? undefined;
   const modified = article.modified_at ?? published;
   const wordCount = plain.split(/\s+/).filter(Boolean).length;
-  const minutes = readingTime(plain);
-
-  const meta: Meta = [
-    { title },
-    { name: "description", content: description },
-    { name: "author", content: author?.display_name || `${SITE_NAME} Editorial Team` },
-    { property: "og:locale", content: "en_US" },
-    { property: "og:type", content: "article" },
-    { property: "og:title", content: seoOgTitle || article.title },
-    { property: "og:description", content: seoOgDesc || description },
-    { property: "og:url", content: canonical },
-    { property: "og:site_name", content: `${SITE_NAME} News` },
-    { property: "og:image", content: image },
-    { property: "og:image:width", content: "1200" },
-    { property: "og:image:height", content: "630" },
-    { property: "og:image:alt", content: article.featured_image?.alt || article.title },
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:site", content: TWITTER_HANDLE },
-    { name: "twitter:creator", content: TWITTER_HANDLE },
-    { name: "twitter:url", content: canonical },
-    { name: "twitter:title", content: seoTwTitle || article.title },
-    { name: "twitter:description", content: seoTwDesc || description },
-    { name: "twitter:image", content: a.seo?.twitter_image || image },
-    { name: "twitter:label1", content: "Written by" },
-    { name: "twitter:data1", content: author?.display_name || `${SITE_NAME} Editorial Team` },
-    { name: "twitter:label2", content: "Reading time" },
-    { name: "twitter:data2", content: `${minutes} min read` },
-  ];
-  if (published) meta.push({ property: "article:published_time", content: new Date(published).toISOString() });
-  if (modified) meta.push({ property: "article:modified_time", content: new Date(modified).toISOString() });
-  if (author?.slug) meta.push({ property: "article:author", content: `${SITE_URL}/author/${author.slug}` });
-  if (primaryCategory?.name) meta.push({ property: "article:section", content: primaryCategory.name });
-  for (const t of tags) meta.push({ property: "article:tag", content: t.name });
-  if (article.seo?.robots) meta.push({ name: "robots", content: article.seo.robots });
-
-  const links: Link = [{ rel: "canonical", href: canonical }];
 
   const articleId = `${url}#article`;
   const webPageId = url;
@@ -234,7 +192,6 @@ export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput
     worksFor: { "@id": `${SITE_URL}/#organization` },
   };
 
-  // FAQPage detection: post body contains <h2> ending in "?"
   const faqPairs = extractFaqPairs(article.content_html || "");
   const faqNode =
     faqPairs.length >= 2
@@ -259,5 +216,79 @@ export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput
   ];
   if (faqNode) graph.push(faqNode);
 
-  return { meta, links, scripts: [jsonLd(graph)] };
+  return { "@context": "https://schema.org", "@graph": graph };
 }
+
+export function buildArticleHead(article: ArticlePayload["article"]): HeadOutput {
+  const a = article as any;
+  const slug = article.slug;
+  const url = `${SITE_URL}/${slug}`;
+  const plainExcerpt = htmlToPlainText(article.excerpt) || "";
+  const placeholderCtx = {
+    title: article.title,
+    sitename: SITE_NAME,
+    excerpt: plainExcerpt,
+    category: article.categories?.[0]?.name || "",
+  };
+  const seoTitle = resolvePlaceholders(article.seo?.title, placeholderCtx);
+  const seoDesc = resolvePlaceholders(article.seo?.description, placeholderCtx);
+  const seoOgTitle = resolvePlaceholders(article.seo?.og_title, placeholderCtx);
+  const seoOgDesc = resolvePlaceholders(article.seo?.og_description, placeholderCtx);
+  const seoTwTitle = resolvePlaceholders(a.seo?.twitter_title, placeholderCtx);
+  const seoTwDesc = resolvePlaceholders(a.seo?.twitter_description, placeholderCtx);
+
+  const title = seoTitle || `${article.title} - PR News`;
+  const plain = htmlToPlainText(article.content_html || "");
+  const description = truncate(
+    seoDesc || plainExcerpt || plain || `${article.title} — read the full story on ${SITE_NAME}.`,
+  );
+  const image = article.seo?.og_image || article.featured_image?.url || DEFAULT_OG_IMAGE;
+  const canonical = article.seo?.canonical_url || url;
+  const primaryCategory = article.categories?.[0] ?? null;
+  const tags: { name: string; slug: string }[] = a.tags ?? [];
+  const author = article.author;
+  const published = article.published_at ?? undefined;
+  const modified = article.modified_at ?? published;
+  const minutes = readingTime(plain);
+
+  const meta: Meta = [
+    { title },
+    { name: "description", content: description },
+    { name: "author", content: author?.display_name || `${SITE_NAME} Editorial Team` },
+    { property: "og:locale", content: "en_US" },
+    { property: "og:type", content: "article" },
+    { property: "og:title", content: seoOgTitle || article.title },
+    { property: "og:description", content: seoOgDesc || description },
+    { property: "og:url", content: canonical },
+    { property: "og:site_name", content: `${SITE_NAME} News` },
+    { property: "og:image", content: image },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { property: "og:image:alt", content: article.featured_image?.alt || article.title },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:site", content: TWITTER_HANDLE },
+    { name: "twitter:creator", content: TWITTER_HANDLE },
+    { name: "twitter:url", content: canonical },
+    { name: "twitter:title", content: seoTwTitle || article.title },
+    { name: "twitter:description", content: seoTwDesc || description },
+    { name: "twitter:image", content: a.seo?.twitter_image || image },
+    { name: "twitter:label1", content: "Written by" },
+    { name: "twitter:data1", content: author?.display_name || `${SITE_NAME} Editorial Team` },
+    { name: "twitter:label2", content: "Reading time" },
+    { name: "twitter:data2", content: `${minutes} min read` },
+  ];
+  if (published) meta.push({ property: "article:published_time", content: new Date(published).toISOString() });
+  if (modified) meta.push({ property: "article:modified_time", content: new Date(modified).toISOString() });
+  if (author?.slug) meta.push({ property: "article:author", content: `${SITE_URL}/author/${author.slug}` });
+  if (primaryCategory?.name) meta.push({ property: "article:section", content: primaryCategory.name });
+  for (const t of tags) meta.push({ property: "article:tag", content: t.name });
+  if (article.seo?.robots) meta.push({ name: "robots", content: article.seo.robots });
+
+  const links: Link = [{ rel: "canonical", href: canonical }];
+
+  // JSON-LD is rendered inline by ArticlePage via buildArticleSchemaGraph()
+  // because TanStack Start drops head().scripts on dynamic-SSR routes.
+  return { meta, links, scripts: [] };
+}
+
+

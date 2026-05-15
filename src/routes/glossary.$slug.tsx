@@ -10,6 +10,35 @@ function truncate(s: string, n = 160) {
   return c.length <= n ? c : c.slice(0, n - 1).replace(/\s+\S*$/, "") + "…";
 }
 
+function buildGlossarySchemaGraph(params: { slug: string }, term: { title: string; short_definition: string } | null | undefined) {
+  const url = `${SITE_URL}/glossary/${params.slug}`;
+  const definedTerm = term
+    ? {
+        "@type": "DefinedTerm",
+        "@id": `${url}#term`,
+        name: term.title,
+        description: term.short_definition,
+        url,
+        inDefinedTermSet: {
+          "@type": "DefinedTermSet",
+          name: "Everything-PR Glossary",
+          url: `${SITE_URL}/glossary`,
+        },
+      }
+    : null;
+  const breadcrumb = {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
+      { "@type": "ListItem", position: 2, name: "Glossary", item: `${SITE_URL}/glossary` },
+      { "@type": "ListItem", position: 3, name: term?.title ?? params.slug },
+    ],
+  };
+  const graph: unknown[] = [ORG_JSONLD, breadcrumb];
+  if (definedTerm) graph.unshift(definedTerm);
+  return { "@context": "https://schema.org", "@graph": graph };
+}
+
 export const Route = createFileRoute("/glossary/$slug")({
   loader: async ({ params }) => {
     const data = await getGlossaryTerm({ data: { slug: params.slug } });
@@ -25,31 +54,6 @@ export const Route = createFileRoute("/glossary/$slug")({
     const robots = preview
       ? "noindex, follow, max-image-preview:large"
       : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
-
-    const definedTerm = term
-      ? {
-          "@type": "DefinedTerm",
-          "@id": `${url}#term`,
-          name: term.title,
-          description: term.short_definition,
-          url,
-          inDefinedTermSet: {
-            "@type": "DefinedTermSet",
-            name: "Everything-PR Glossary",
-            url: `${SITE_URL}/glossary`,
-          },
-        }
-      : null;
-    const breadcrumb = {
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
-        { "@type": "ListItem", position: 2, name: "Glossary", item: `${SITE_URL}/glossary` },
-        { "@type": "ListItem", position: 3, name: term?.title ?? params.slug },
-      ],
-    };
-    const graph: unknown[] = [ORG_JSONLD, breadcrumb];
-    if (definedTerm) graph.unshift(definedTerm);
 
     return {
       meta: [
@@ -69,12 +73,8 @@ export const Route = createFileRoute("/glossary/$slug")({
         { name: "twitter:description", content: description },
       ],
       links: [{ rel: "canonical", href: url }],
-      scripts: [
-        {
-          type: "application/ld+json",
-          children: JSON.stringify({ "@context": "https://schema.org", "@graph": graph }),
-        },
-      ],
+      // JSON-LD rendered inline below (TanStack head().scripts dropped on dynamic SSR).
+      scripts: [],
     };
   },
   notFoundComponent: () => (
@@ -95,10 +95,16 @@ export const Route = createFileRoute("/glossary/$slug")({
     </SiteLayout>
   ),
   component: function GlossaryTermRoute() {
+    const params = Route.useParams();
     const { term } = Route.useLoaderData();
     if (!term) return null;
+    const schema = buildGlossarySchemaGraph(params, term);
     return (
       <SiteLayout>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
         <GlossaryTermPage term={term} />
       </SiteLayout>
     );
