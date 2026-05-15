@@ -104,7 +104,6 @@ export async function buildPostSitemap(page: number): Promise<string | null> {
 
 const STATIC_PAGES: Array<{ path: string; priority?: string; changefreq?: string }> = [
   { path: "/about", priority: "0.7", changefreq: "monthly" },
-  { path: "/about/team", priority: "0.7", changefreq: "monthly" },
   { path: "/glossary", priority: "0.7", changefreq: "monthly" },
 ];
 
