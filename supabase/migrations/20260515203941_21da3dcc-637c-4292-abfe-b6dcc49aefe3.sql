@@ -1,0 +1,1 @@
+UPDATE public.posts SET published_at = COALESCE(created_at, now()), modified_at = COALESCE(modified_at, now()), updated_at = now() WHERE article_type = 'pillar' AND status = 'publish' AND published_at IS NULL;
