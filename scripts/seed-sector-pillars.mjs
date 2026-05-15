@@ -38,6 +38,7 @@ function renderBlocks(lines) {
   while (i < lines.length) {
     const ln = lines[i];
     if (!ln.trim()) { i++; continue; }
+    if (ln.startsWith("### ")) { out.push(`<h3>${renderInline(ln.slice(4).trim())}</h3>`); i++; continue; }
     if (ln.startsWith("## ")) { out.push(`<h2>${renderInline(ln.slice(3).trim())}</h2>`); i++; continue; }
     if (ln.startsWith("- ")) {
       const items = [];
@@ -45,7 +46,7 @@ function renderBlocks(lines) {
       out.push(`<ul>${items.join("")}</ul>`); continue;
     }
     const buf = [ln]; i++;
-    while (i < lines.length && lines[i].trim() && !lines[i].startsWith("## ") && !lines[i].startsWith("- ")) { buf.push(lines[i]); i++; }
+    while (i < lines.length && lines[i].trim() && !lines[i].startsWith("#") && !lines[i].startsWith("- ")) { buf.push(lines[i]); i++; }
     out.push(`<p>${renderInline(buf.join(" "))}</p>`);
   }
   return out.join("\n");
