@@ -8,6 +8,7 @@ import type { PillarPayload } from "@/lib/pillars.shared";
 import { formatDate } from "@/lib/date";
 import { stripAbout5WFromHtml, stripFaqFromHtml } from "@/lib/faq";
 import { withHero } from "@/lib/has-hero";
+import { buildPillarSchemaGraph } from "@/serverFns/seo.head";
 
 
 
@@ -17,8 +18,30 @@ export function PillarView({ data }: { data: PillarPayload }) {
   const longForm = withHero(data.longForm);
   const totalPages = Math.max(1, Math.ceil(total / (pageSize || 12)));
   const bodyHtml = stripFaqFromHtml(stripAbout5WFromHtml(pillar.body_html));
+  // SSR-safe JSON-LD: TanStack head().scripts is dropped on dynamic-SSR
+  // pillar routes (head().meta still works). Render inline so the SSR HTML
+  // stream captures the schema graph.
+  const schema = buildPillarSchemaGraph({
+    slug: pillar.slug,
+    title: pillar.title,
+    subtitle: pillar.subtitle,
+    page,
+    items: items.map((i) => ({ title: i.title, slug: i.slug })),
+    faq: pillar.faq,
+    extraSchema: pillar.schema_jsonld ?? null,
+  });
   return (
     <SiteLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema.primary) }}
+      />
+      {schema.extra ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema.extra) }}
+        />
+      ) : null}
       {/* HERO */}
       <section className="relative overflow-hidden bg-[#0A1628] text-white">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0A1628] via-[#101F36] to-[#1A2940]" aria-hidden />
