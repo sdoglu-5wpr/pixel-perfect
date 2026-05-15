@@ -139,7 +139,7 @@ async function runPosts() {
   // Today's batch: posts whose featured_media is in auto-featured/* and uploaded today.
   const { data, error } = await supabase
     .from("posts")
-    .select("id, slug, title, focus_keyword, content_html, featured_media_id, media:featured_media_id(storage_path, uploaded_at)")
+    .select("id, slug, title, content_html, featured_media_id, media:featured_media_id(storage_path, uploaded_at)")
     .not("featured_media_id", "is", null)
     .order("id", { ascending: true });
   if (error) { console.error(error); process.exit(1); }
