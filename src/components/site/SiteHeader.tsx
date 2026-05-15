@@ -126,15 +126,36 @@ export function SiteHeader() {
                   <ChevronDown className="h-3.5 w-3.5" />
                 </button>
                 {isOpen && (
-                  <div className="absolute left-0 top-full z-50 min-w-[260px] bg-white border border-black/10 shadow-lg border-l-4 border-l-[color:var(--brand-blue)] py-2">
-                    {item.children.map((child) => (
-                      <LeafLinkEl
-                        key={child.label}
-                        leaf={child}
-                        className="block px-5 py-2.5 text-[13px] font-normal normal-case text-foreground hover:bg-black/5 hover:text-[color:var(--brand-blue)] transition-colors"
-                      />
-                    ))}
-                  </div>
+                  item.groups && item.groups.length > 0 ? (
+                    <div className="absolute right-0 top-full z-50 w-[760px] max-w-[95vw] bg-white border border-black/10 shadow-xl border-t-4 border-t-[color:var(--brand-blue)] p-5 grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-2 max-h-[75vh] overflow-y-auto">
+                      {item.groups.map((group) => (
+                        <div key={group.label} className="min-w-0">
+                          <div className="px-1 pb-2 mb-1 text-[11px] font-bold uppercase tracking-wider text-[color:var(--brand-blue)] border-b border-black/10">
+                            {group.label}
+                          </div>
+                          <div className="flex flex-col">
+                            {group.children.map((child) => (
+                              <LeafLinkEl
+                                key={child.label}
+                                leaf={child}
+                                className="block px-1 py-1.5 text-[13px] font-normal normal-case text-foreground hover:text-[color:var(--brand-blue)] transition-colors"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="absolute left-0 top-full z-50 min-w-[260px] bg-white border border-black/10 shadow-lg border-l-4 border-l-[color:var(--brand-blue)] py-2">
+                      {item.children.map((child) => (
+                        <LeafLinkEl
+                          key={child.label}
+                          leaf={child}
+                          className="block px-5 py-2.5 text-[13px] font-normal normal-case text-foreground hover:bg-black/5 hover:text-[color:var(--brand-blue)] transition-colors"
+                        />
+                      ))}
+                    </div>
+                  )
                 )}
               </div>
             );
@@ -220,14 +241,32 @@ export function SiteHeader() {
                   </button>
                   {open ? (
                     <div className="pl-4 border-l-2 border-[color:var(--brand-blue)]/30 ml-2 my-1">
-                      {item.children.map((child) => (
-                        <LeafLinkEl
-                          key={child.label}
-                          leaf={child}
-                          onClick={closeMobile}
-                          className="block px-2 py-2 text-[13px] font-normal normal-case text-foreground hover:bg-black/5 hover:text-[color:var(--brand-blue)] rounded"
-                        />
-                      ))}
+                      {item.groups && item.groups.length > 0 ? (
+                        item.groups.map((group) => (
+                          <div key={group.label} className="mb-2">
+                            <div className="px-2 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-[color:var(--brand-blue)]">
+                              {group.label}
+                            </div>
+                            {group.children.map((child) => (
+                              <LeafLinkEl
+                                key={child.label}
+                                leaf={child}
+                                onClick={closeMobile}
+                                className="block px-2 py-2 text-[13px] font-normal normal-case text-foreground hover:bg-black/5 hover:text-[color:var(--brand-blue)] rounded"
+                              />
+                            ))}
+                          </div>
+                        ))
+                      ) : (
+                        item.children.map((child) => (
+                          <LeafLinkEl
+                            key={child.label}
+                            leaf={child}
+                            onClick={closeMobile}
+                            className="block px-2 py-2 text-[13px] font-normal normal-case text-foreground hover:bg-black/5 hover:text-[color:var(--brand-blue)] rounded"
+                          />
+                        ))
+                      )}
                     </div>
                   ) : null}
                 </div>
