@@ -1,0 +1,1 @@
+UPDATE public.pillars SET hero_image_url = '/pillars/crypto-web3.svg', updated_at = now() WHERE slug = 'crypto-web3';
