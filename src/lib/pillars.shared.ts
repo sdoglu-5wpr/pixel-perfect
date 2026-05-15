@@ -57,6 +57,42 @@ function rowToItem(r: any): PillarArticleItem {
   };
 }
 
+export type PillarPlaceholderPayload = {
+  pillar: {
+    id: number;
+    slug: string;
+    title: string;
+    subtitle: string | null;
+    body_html: string;
+    hero_image_url: string | null;
+  };
+  items: PillarArticleItem[];
+};
+
+export async function fetchPillarPlaceholderViaRpc(
+  client: any,
+  slug: string,
+): Promise<PillarPlaceholderPayload | null> {
+  const { data, error } = await client.rpc("get_pillar_placeholder", { p_slug: slug });
+  if (error) {
+    console.error("get_pillar_placeholder failed:", error);
+    return null;
+  }
+  if (!data || !data.pillar) return null;
+  const p = data.pillar;
+  return {
+    pillar: {
+      id: p.id,
+      slug: p.slug,
+      title: p.title,
+      subtitle: p.subtitle ?? null,
+      body_html: p.body_html ?? "",
+      hero_image_url: rewriteLegacyUrl(p.hero_image_url ?? "") || null,
+    },
+    items: ((data.items ?? []) as any[]).map(rowToItem),
+  };
+}
+
 export async function fetchPillarViaRpc(
   client: any,
   slug: string,
