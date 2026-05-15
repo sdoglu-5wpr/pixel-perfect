@@ -51,7 +51,7 @@ export type ArchiveHeader = {
     tags?: string[] | null;
     job_title?: string | null;
     knows_about?: string[] | null;
-    works_for?: unknown;
+    works_for?: { [key: string]: string } | null;
   };
 };
 
