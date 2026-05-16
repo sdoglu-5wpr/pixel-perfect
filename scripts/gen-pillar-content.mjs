@@ -86,7 +86,12 @@ async function callGemini(userPrompt) {
   if (!content) throw new Error("empty AI response");
   // strip code fences if any slipped through
   const cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
-  return JSON.parse(cleaned);
+  try { return JSON.parse(cleaned); }
+  catch (e) {
+    console.error(`  raw response tail: ...${cleaned.slice(-300)}`);
+    console.error(`  finish_reason: ${j.choices?.[0]?.finish_reason}`);
+    throw e;
+  }
 }
 
 let ok = 0, fail = 0;
