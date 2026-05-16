@@ -97,8 +97,11 @@ export const Route = createFileRoute("/research")({
       slug: loaderData.pillar.slug,
       title: loaderData.pillar.title,
       subtitle: loaderData.pillar.subtitle,
-      heroImageUrl: loaderData.pillar.hero_image_url,
+      heroImage: loaderData.pillar.hero_image_url,
       page: loaderData.page,
+      totalItems: loaderData.total,
+      items: loaderData.items.map((i) => ({ title: i.title, slug: i.slug })),
+      faq: loaderData.pillar.faq,
       robots: loaderData.pillar.robots,
       host: loaderData.host ?? null,
     });
