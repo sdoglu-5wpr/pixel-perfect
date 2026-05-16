@@ -15,7 +15,7 @@ import { buildPillarSchemaGraph } from "@/serverFns/seo.head";
 export function PillarView({ data }: { data: PillarPayload }) {
   const { pillar, items: rawItems, total, page, pageSize } = data;
   const items = withHero(rawItems);
-  const longForm = withHero(data.longForm);
+  const longForm = withHero(data.longForm ?? []);
   const totalPages = Math.max(1, Math.ceil(total / (pageSize || 12)));
   const bodyHtml = stripFaqFromHtml(stripAbout5WFromHtml(pillar.body_html));
   // SSR-safe JSON-LD: TanStack head().scripts is dropped on dynamic-SSR
