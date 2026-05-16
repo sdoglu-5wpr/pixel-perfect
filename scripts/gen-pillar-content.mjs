@@ -86,9 +86,13 @@ async function callGemini(userPrompt) {
   if (!content) throw new Error("empty AI response");
   // strip code fences if any slipped through
   const cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
-  try { return JSON.parse(cleaned); }
+  const tryParse = (s) => JSON.parse(s);
+  try { return tryParse(cleaned); } catch {}
+  // sanitize: remove raw control chars (unescaped \n/\t inside strings is common)
+  const sanitized = cleaned.replace(/[\u0000-\u001F]+/g, " ");
+  try { return tryParse(sanitized); }
   catch (e) {
-    console.error(`  raw response tail: ...${cleaned.slice(-300)}`);
+    console.error(`  raw tail: ...${cleaned.slice(-200)}`);
     console.error(`  finish_reason: ${j.choices?.[0]?.finish_reason}`);
     throw e;
   }
