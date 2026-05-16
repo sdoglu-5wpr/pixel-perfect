@@ -120,7 +120,7 @@ export const SITE_PRIMARY_NAV: NavItem[] = [
   { label: "Sectors", kind: "menu", groups: SECTOR_GROUPS, children: flatten(SECTOR_GROUPS) },
   { label: "Disciplines", kind: "menu", groups: DISCIPLINE_GROUPS, children: flatten(DISCIPLINE_GROUPS) },
   { label: "Research", kind: "path", to: "/research" },
-  { label: "AI & GEO", kind: "path", to: "/geo" },
+  { label: "AI & GEO", kind: "path", to: "/generative-engine-optimization" },
   { label: "PR Firms", kind: "category", slug: "pr-firms" },
   { label: "RFPs", kind: "category", slug: "rfp" },
   { label: "About", kind: "path", to: "/about" },
