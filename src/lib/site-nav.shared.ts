@@ -75,7 +75,7 @@ const DISCIPLINE_GROUPS: NavGroup[] = [
     label: "AI & Search",
     children: [
       cat("AI Communications", "ai-communications"),
-      path("GEO", "/geo"),
+      path("GEO", "/generative-engine-optimization"),
       path("SEO", "/seo"),
     ],
   },
