@@ -139,6 +139,13 @@ export function AuthorPage({ data }: { data: ArchivePayload }) {
   if (social.facebook) profiles.push({ icon: Facebook, label: "Facebook", sub: handleFromUrl(social.facebook, "/"), href: social.facebook });
   if (social.instagram) profiles.push({ icon: Instagram, label: "Instagram", sub: handleFromUrl(social.instagram, "@"), href: social.instagram });
   if (website) profiles.push({ icon: Globe, label: "Website", sub: hostname(website) || website, href: website });
+  const extraSites = Array.isArray((social as Record<string, unknown>).websites)
+    ? ((social as Record<string, unknown>).websites as { label: string; url: string }[])
+    : [];
+  for (const s of extraSites) {
+    if (s?.url) profiles.push({ icon: Globe, label: s.label || hostname(s.url) || s.url, sub: hostname(s.url) || s.url, href: s.url });
+  }
+  if (social.email) profiles.push({ icon: Mail, label: "Email", sub: social.email, href: `mailto:${social.email}` });
 
   const hasSidebar = profiles.length > 0;
 
