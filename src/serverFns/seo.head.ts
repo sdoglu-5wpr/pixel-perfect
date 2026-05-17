@@ -471,7 +471,40 @@ function buildPillarSchemaGraphInternal(opts: {
     inLanguage: "en-US",
   };
 
-  const graph = [ORG_JSONLD, websiteNode, collectionPage, itemList, breadcrumbNode, ...extras];
+  const articleNodes: unknown[] = [];
+  if (bodyHtml && bodyHtml.replace(/<[^>]+>/g, "").trim().length > 200) {
+    const plain = bodyHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const wordCount = plain.split(/\s+/).filter(Boolean).length;
+    const articleId = `${url}#article`;
+    const authorName = (byline && byline.trim()) || `${SITE_NAME} Editorial Team`;
+    const articleNode: Record<string, unknown> = {
+      "@type": "Article",
+      "@id": articleId,
+      headline: pillarTitle,
+      description,
+      mainEntityOfPage: { "@id": `${url}#webpage` },
+      isPartOf: { "@id": `${url}#webpage` },
+      author: [{ "@type": "Person", name: authorName }],
+      publisher: { "@id": `${SITE_URL}/#organization` },
+      inLanguage: "en-US",
+      wordCount,
+      articleBody: plain.slice(0, 5000),
+    };
+    if (datePublished) articleNode.datePublished = datePublished;
+    if (dateModified || datePublished) articleNode.dateModified = dateModified || datePublished;
+    if (heroImage) {
+      articleNode.image = {
+        "@type": "ImageObject",
+        url: heroImage,
+        contentUrl: heroImage,
+        caption: pillarTitle,
+      };
+    }
+    articleNodes.push(articleNode);
+    mainEntityRefs.push({ "@id": articleId });
+  }
+
+  const graph = [ORG_JSONLD, websiteNode, collectionPage, ...articleNodes, itemList, breadcrumbNode, ...extras];
   return { graph, extraGraph: extraSchema ?? null };
 }
 
