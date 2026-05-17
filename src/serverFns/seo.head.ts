@@ -395,8 +395,13 @@ function buildPillarSchemaGraphInternal(opts: {
   faq?: Array<{ q: string; a: string }>;
   definedTerm?: { name: string; description: string } | null;
   extraSchema?: unknown;
+  bodyHtml?: string | null;
+  heroImage?: string | null;
+  byline?: string | null;
+  datePublished?: string | null;
+  dateModified?: string | null;
 }): { graph: unknown[]; extraGraph: unknown } {
-  const { url, pillarTitle, title, description, page, items, faq, definedTerm, extraSchema } = opts;
+  const { url, pillarTitle, title, description, page, items, faq, definedTerm, extraSchema, bodyHtml, heroImage, byline, datePublished, dateModified } = opts;
   const itemListId = `${url}#itemlist`;
   const itemListElements = items.map((it, i) => ({
     "@type": "ListItem",
