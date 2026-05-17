@@ -139,6 +139,14 @@ export function AuthorPage({ data }: { data: ArchivePayload }) {
   if (social.facebook) profiles.push({ icon: Facebook, label: "Facebook", sub: handleFromUrl(social.facebook, "/"), href: social.facebook });
   if (social.instagram) profiles.push({ icon: Instagram, label: "Instagram", sub: handleFromUrl(social.instagram, "@"), href: social.instagram });
   if (website) profiles.push({ icon: Globe, label: "Website", sub: hostname(website) || website, href: website });
+  const extraSites = Array.isArray((social as Record<string, unknown>).websites)
+    ? ((social as Record<string, unknown>).websites as { label: string; url: string }[])
+    : [];
+  for (const s of extraSites) {
+    if (s?.url) profiles.push({ icon: Globe, label: s.label || hostname(s.url) || s.url, sub: hostname(s.url) || s.url, href: s.url });
+  }
+  const email = (social as Record<string, unknown>).email as string | undefined;
+  if (email) profiles.push({ icon: Mail, label: "Email", sub: email, href: `mailto:${email}` });
 
   const hasSidebar = profiles.length > 0;
 
@@ -203,12 +211,13 @@ export function AuthorPage({ data }: { data: ArchivePayload }) {
             </div>
 
             <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">
-                {author.tags?.[0] || "Contributor"} · <span className="text-[color:var(--brand-blue)] font-semibold">Everything-PR</span>
-              </p>
               {author.job_title ? (
-                <p className="mt-1 text-base font-semibold text-foreground">{author.job_title}</p>
-              ) : null}
+                <p className="text-base font-semibold text-foreground">{author.job_title}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {author.tags?.[0] || "Contributor"} · <span className="text-[color:var(--brand-blue)] font-semibold">Everything-PR</span>
+                </p>
+              )}
               <div className="flex flex-wrap gap-2 mt-3">
                 {(author.tags && author.tags.length > 0
                   ? author.tags
