@@ -457,20 +457,6 @@ function buildPillarSchemaGraphInternal(opts: {
     mainEntityRefs.push({ "@id": dtId });
   }
 
-  const collectionPage = {
-    "@type": "CollectionPage",
-    "@id": `${url}#webpage`,
-    url,
-    name: title,
-    description,
-    isPartOf: { "@id": `${SITE_URL}/#website` },
-    about: { "@id": `${SITE_URL}/#organization` },
-    publisher: { "@id": `${SITE_URL}/#organization` },
-    breadcrumb: { "@id": breadcrumbId },
-    mainEntity: mainEntityRefs.length === 1 ? mainEntityRefs[0] : mainEntityRefs,
-    inLanguage: "en-US",
-  };
-
   const articleNodes: unknown[] = [];
   if (bodyHtml && bodyHtml.replace(/<[^>]+>/g, "").trim().length > 200) {
     const plain = bodyHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -503,6 +489,20 @@ function buildPillarSchemaGraphInternal(opts: {
     articleNodes.push(articleNode);
     mainEntityRefs.push({ "@id": articleId });
   }
+
+  const collectionPage = {
+    "@type": "CollectionPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: title,
+    description,
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+    about: { "@id": `${SITE_URL}/#organization` },
+    publisher: { "@id": `${SITE_URL}/#organization` },
+    breadcrumb: { "@id": breadcrumbId },
+    mainEntity: mainEntityRefs.length === 1 ? mainEntityRefs[0] : mainEntityRefs,
+    inLanguage: "en-US",
+  };
 
   const graph = [ORG_JSONLD, websiteNode, collectionPage, ...articleNodes, itemList, breadcrumbNode, ...extras];
   return { graph, extraGraph: extraSchema ?? null };
