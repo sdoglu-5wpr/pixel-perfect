@@ -47,7 +47,7 @@ function SocialIcons({ author }: { author: AuthorListItem }) {
 }
 
 function AuthorCard({ author, featured }: { author: AuthorListItem; featured?: boolean }) {
-  const role = author.tags?.[0] || "Publisher";
+  const role = author.tags?.[0] || "Contributor";
   return (
     <Link
       to="/author/$slug"
