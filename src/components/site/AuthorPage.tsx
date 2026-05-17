@@ -211,12 +211,13 @@ export function AuthorPage({ data }: { data: ArchivePayload }) {
             </div>
 
             <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">
-                {author.tags?.[0] || "Contributor"} · <span className="text-[color:var(--brand-blue)] font-semibold">Everything-PR</span>
-              </p>
               {author.job_title ? (
-                <p className="mt-1 text-base font-semibold text-foreground">{author.job_title}</p>
-              ) : null}
+                <p className="text-base font-semibold text-foreground">{author.job_title}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {author.tags?.[0] || "Contributor"} · <span className="text-[color:var(--brand-blue)] font-semibold">Everything-PR</span>
+                </p>
+              )}
               <div className="flex flex-wrap gap-2 mt-3">
                 {(author.tags && author.tags.length > 0
                   ? author.tags
