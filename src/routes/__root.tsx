@@ -58,6 +58,52 @@ export const Route = createRootRoute({
           children:
             "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-J4JVYHGJXG');",
         },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "NewsMediaOrganization",
+                "@id": "https://everything-pr.com/#organization",
+                name: "Everything-PR",
+                legalName: "Everything-PR News LLC",
+                url: "https://everything-pr.com",
+                logo: {
+                  "@type": "ImageObject",
+                  url: "https://everything-pr.com/everything-pr-logo.png",
+                },
+                foundingDate: "2009-01",
+                description:
+                  "Everything-PR covers communications, reputation, AI visibility, public affairs, media systems, and digital discovery in the answer-engine era. Publishing since 2009. Thirty verticals. Original reporting, research, and analysis. Every page reported, sourced, and built to be cited.",
+                publishingPrinciples: "https://everything-pr.com/editorial-policy",
+                ethicsPolicy: "https://everything-pr.com/ethics-policy",
+                correctionsPolicy: "https://everything-pr.com/corrections-policy",
+                verificationFactCheckingPolicy: "https://everything-pr.com/editorial-policy",
+                actionableFeedbackPolicy: "https://everything-pr.com/contact",
+                ownershipFundingInfo: "https://everything-pr.com/about",
+                founder: { "@id": "https://everything-pr.com/#ronn-torossian" },
+                sameAs: ["https://x.com/everythingpr"],
+              },
+              {
+                "@type": "Person",
+                "@id": "https://everything-pr.com/#ronn-torossian",
+                name: "Ronn Torossian",
+                url: "https://everything-pr.com/author/ronn-torossian",
+                jobTitle: "Publisher, Everything-PR",
+                sameAs: ["https://www.linkedin.com/in/ronntorossian"],
+              },
+              {
+                "@type": "Organization",
+                "@id": "https://5wpr.com/#organization",
+                name: "5W AI Communications",
+                url: "https://5wpr.com",
+                foundingDate: "2003",
+                founder: { "@id": "https://everything-pr.com/#ronn-torossian" },
+              },
+            ],
+          }),
+        },
       ],
       links: [
         { rel: "icon", type: "image/png", href: "/favicon.png" },

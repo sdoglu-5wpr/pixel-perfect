@@ -9,18 +9,25 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsOfUseRouteImport } from './routes/terms-of-use'
 import { Route as Sitemap_newsDotxmlRouteImport } from './routes/sitemap_news[.xml]'
 import { Route as Sitemap_indexDotxmlRouteImport } from './routes/sitemap_index[.xml]'
 import { Route as SetupCoworkRouteImport } from './routes/setup-cowork'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResearchRouteImport } from './routes/research'
+import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as Post_tagSitemapDotxmlRouteImport } from './routes/post_tag-sitemap[.xml]'
 import { Route as PostSitemapDotxmlRouteImport } from './routes/post-sitemap[.xml]'
 import { Route as PostSitemappageDotxmlRouteImport } from './routes/post-sitemap$page[.]xml'
 import { Route as PageSitemapDotxmlRouteImport } from './routes/page-sitemap[.xml]'
 import { Route as GlossaryRouteImport } from './routes/glossary'
 import { Route as FeedRouteImport } from './routes/feed'
+import { Route as EthicsPolicyRouteImport } from './routes/ethics-policy'
 import { Route as EditorialPolicyRouteImport } from './routes/editorial-policy'
+import { Route as CorrectionsPolicyRouteImport } from './routes/corrections-policy'
+import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CommentsPolicyRouteImport } from './routes/comments-policy'
 import { Route as CategorySitemapDotxmlRouteImport } from './routes/category-sitemap[.xml]'
 import { Route as AuthorsRouteImport } from './routes/authors'
 import { Route as AuthorSitemapDotxmlRouteImport } from './routes/author-sitemap[.xml]'
@@ -63,6 +70,11 @@ import { Route as ApiPublicHooksGenerateMissingFeaturedImagesRouteImport } from 
 import { Route as AdminEverythingProtectedPostsIdRouteImport } from './routes/admin-everything/_protected.posts.$id'
 import { Route as AdminEverythingProtectedCategoriesDuplicatesRouteImport } from './routes/admin-everything/_protected.categories.duplicates'
 
+const TermsOfUseRoute = TermsOfUseRouteImport.update({
+  id: '/terms-of-use',
+  path: '/terms-of-use',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Sitemap_newsDotxmlRoute = Sitemap_newsDotxmlRouteImport.update({
   id: '/sitemap_news.xml',
   path: '/sitemap_news.xml',
@@ -86,6 +98,11 @@ const SearchRoute = SearchRouteImport.update({
 const ResearchRoute = ResearchRouteImport.update({
   id: '/research',
   path: '/research',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Post_tagSitemapDotxmlRoute = Post_tagSitemapDotxmlRouteImport.update({
@@ -118,9 +135,34 @@ const FeedRoute = FeedRouteImport.update({
   path: '/feed',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EthicsPolicyRoute = EthicsPolicyRouteImport.update({
+  id: '/ethics-policy',
+  path: '/ethics-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EditorialPolicyRoute = EditorialPolicyRouteImport.update({
   id: '/editorial-policy',
   path: '/editorial-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CorrectionsPolicyRoute = CorrectionsPolicyRouteImport.update({
+  id: '/corrections-policy',
+  path: '/corrections-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CookiePolicyRoute = CookiePolicyRouteImport.update({
+  id: '/cookie-policy',
+  path: '/cookie-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommentsPolicyRoute = CommentsPolicyRouteImport.update({
+  id: '/comments-policy',
+  path: '/comments-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CategorySitemapDotxmlRoute = CategorySitemapDotxmlRouteImport.update({
@@ -357,18 +399,25 @@ export interface FileRoutesByFullPath {
   '/author-sitemap.xml': typeof AuthorSitemapDotxmlRoute
   '/authors': typeof AuthorsRoute
   '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
+  '/comments-policy': typeof CommentsPolicyRoute
+  '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
+  '/corrections-policy': typeof CorrectionsPolicyRoute
   '/editorial-policy': typeof EditorialPolicyRoute
+  '/ethics-policy': typeof EthicsPolicyRoute
   '/feed': typeof FeedRoute
   '/glossary': typeof GlossaryRouteWithChildren
   '/page-sitemap.xml': typeof PageSitemapDotxmlRoute
   '/post-sitemap$page.xml': typeof PostSitemappageDotxmlRoute
   '/post-sitemap.xml': typeof PostSitemapDotxmlRoute
   '/post_tag-sitemap.xml': typeof Post_tagSitemapDotxmlRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/research': typeof ResearchRoute
   '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/sitemap_news.xml': typeof Sitemap_newsDotxmlRoute
+  '/terms-of-use': typeof TermsOfUseRoute
   '/admin-everything': typeof AdminEverythingProtectedRouteWithChildren
   '/admin-everything/login': typeof AdminEverythingLoginRoute
   '/api/contact': typeof ApiContactRoute
@@ -412,18 +461,25 @@ export interface FileRoutesByTo {
   '/author-sitemap.xml': typeof AuthorSitemapDotxmlRoute
   '/authors': typeof AuthorsRoute
   '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
+  '/comments-policy': typeof CommentsPolicyRoute
+  '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
+  '/corrections-policy': typeof CorrectionsPolicyRoute
   '/editorial-policy': typeof EditorialPolicyRoute
+  '/ethics-policy': typeof EthicsPolicyRoute
   '/feed': typeof FeedRoute
   '/glossary': typeof GlossaryRouteWithChildren
   '/page-sitemap.xml': typeof PageSitemapDotxmlRoute
   '/post-sitemap$page.xml': typeof PostSitemappageDotxmlRoute
   '/post-sitemap.xml': typeof PostSitemapDotxmlRoute
   '/post_tag-sitemap.xml': typeof Post_tagSitemapDotxmlRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/research': typeof ResearchRoute
   '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/sitemap_news.xml': typeof Sitemap_newsDotxmlRoute
+  '/terms-of-use': typeof TermsOfUseRoute
   '/admin-everything/login': typeof AdminEverythingLoginRoute
   '/api/contact': typeof ApiContactRoute
   '/api/newsletter': typeof ApiNewsletterRoute
@@ -467,18 +523,25 @@ export interface FileRoutesById {
   '/author-sitemap.xml': typeof AuthorSitemapDotxmlRoute
   '/authors': typeof AuthorsRoute
   '/category-sitemap.xml': typeof CategorySitemapDotxmlRoute
+  '/comments-policy': typeof CommentsPolicyRoute
+  '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
+  '/corrections-policy': typeof CorrectionsPolicyRoute
   '/editorial-policy': typeof EditorialPolicyRoute
+  '/ethics-policy': typeof EthicsPolicyRoute
   '/feed': typeof FeedRoute
   '/glossary': typeof GlossaryRouteWithChildren
   '/page-sitemap.xml': typeof PageSitemapDotxmlRoute
   '/post-sitemap$page.xml': typeof PostSitemappageDotxmlRoute
   '/post-sitemap.xml': typeof PostSitemapDotxmlRoute
   '/post_tag-sitemap.xml': typeof Post_tagSitemapDotxmlRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/research': typeof ResearchRoute
   '/search': typeof SearchRoute
   '/setup-cowork': typeof SetupCoworkRoute
   '/sitemap_index.xml': typeof Sitemap_indexDotxmlRoute
   '/sitemap_news.xml': typeof Sitemap_newsDotxmlRoute
+  '/terms-of-use': typeof TermsOfUseRoute
   '/admin-everything/_protected': typeof AdminEverythingProtectedRouteWithChildren
   '/admin-everything/login': typeof AdminEverythingLoginRoute
   '/api/contact': typeof ApiContactRoute
@@ -524,18 +587,25 @@ export interface FileRouteTypes {
     | '/author-sitemap.xml'
     | '/authors'
     | '/category-sitemap.xml'
+    | '/comments-policy'
+    | '/contact'
+    | '/cookie-policy'
+    | '/corrections-policy'
     | '/editorial-policy'
+    | '/ethics-policy'
     | '/feed'
     | '/glossary'
     | '/page-sitemap.xml'
     | '/post-sitemap$page.xml'
     | '/post-sitemap.xml'
     | '/post_tag-sitemap.xml'
+    | '/privacy-policy'
     | '/research'
     | '/search'
     | '/setup-cowork'
     | '/sitemap_index.xml'
     | '/sitemap_news.xml'
+    | '/terms-of-use'
     | '/admin-everything'
     | '/admin-everything/login'
     | '/api/contact'
@@ -579,18 +649,25 @@ export interface FileRouteTypes {
     | '/author-sitemap.xml'
     | '/authors'
     | '/category-sitemap.xml'
+    | '/comments-policy'
+    | '/contact'
+    | '/cookie-policy'
+    | '/corrections-policy'
     | '/editorial-policy'
+    | '/ethics-policy'
     | '/feed'
     | '/glossary'
     | '/page-sitemap.xml'
     | '/post-sitemap$page.xml'
     | '/post-sitemap.xml'
     | '/post_tag-sitemap.xml'
+    | '/privacy-policy'
     | '/research'
     | '/search'
     | '/setup-cowork'
     | '/sitemap_index.xml'
     | '/sitemap_news.xml'
+    | '/terms-of-use'
     | '/admin-everything/login'
     | '/api/contact'
     | '/api/newsletter'
@@ -633,18 +710,25 @@ export interface FileRouteTypes {
     | '/author-sitemap.xml'
     | '/authors'
     | '/category-sitemap.xml'
+    | '/comments-policy'
+    | '/contact'
+    | '/cookie-policy'
+    | '/corrections-policy'
     | '/editorial-policy'
+    | '/ethics-policy'
     | '/feed'
     | '/glossary'
     | '/page-sitemap.xml'
     | '/post-sitemap$page.xml'
     | '/post-sitemap.xml'
     | '/post_tag-sitemap.xml'
+    | '/privacy-policy'
     | '/research'
     | '/search'
     | '/setup-cowork'
     | '/sitemap_index.xml'
     | '/sitemap_news.xml'
+    | '/terms-of-use'
     | '/admin-everything/_protected'
     | '/admin-everything/login'
     | '/api/contact'
@@ -689,18 +773,25 @@ export interface RootRouteChildren {
   AuthorSitemapDotxmlRoute: typeof AuthorSitemapDotxmlRoute
   AuthorsRoute: typeof AuthorsRoute
   CategorySitemapDotxmlRoute: typeof CategorySitemapDotxmlRoute
+  CommentsPolicyRoute: typeof CommentsPolicyRoute
+  ContactRoute: typeof ContactRoute
+  CookiePolicyRoute: typeof CookiePolicyRoute
+  CorrectionsPolicyRoute: typeof CorrectionsPolicyRoute
   EditorialPolicyRoute: typeof EditorialPolicyRoute
+  EthicsPolicyRoute: typeof EthicsPolicyRoute
   FeedRoute: typeof FeedRoute
   GlossaryRoute: typeof GlossaryRouteWithChildren
   PageSitemapDotxmlRoute: typeof PageSitemapDotxmlRoute
   PostSitemappageDotxmlRoute: typeof PostSitemappageDotxmlRoute
   PostSitemapDotxmlRoute: typeof PostSitemapDotxmlRoute
   Post_tagSitemapDotxmlRoute: typeof Post_tagSitemapDotxmlRoute
+  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ResearchRoute: typeof ResearchRoute
   SearchRoute: typeof SearchRoute
   SetupCoworkRoute: typeof SetupCoworkRoute
   Sitemap_indexDotxmlRoute: typeof Sitemap_indexDotxmlRoute
   Sitemap_newsDotxmlRoute: typeof Sitemap_newsDotxmlRoute
+  TermsOfUseRoute: typeof TermsOfUseRoute
   AdminEverythingProtectedRoute: typeof AdminEverythingProtectedRouteWithChildren
   AdminEverythingLoginRoute: typeof AdminEverythingLoginRoute
   ApiContactRoute: typeof ApiContactRoute
@@ -719,6 +810,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms-of-use': {
+      id: '/terms-of-use'
+      path: '/terms-of-use'
+      fullPath: '/terms-of-use'
+      preLoaderRoute: typeof TermsOfUseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap_news.xml': {
       id: '/sitemap_news.xml'
       path: '/sitemap_news.xml'
@@ -752,6 +850,13 @@ declare module '@tanstack/react-router' {
       path: '/research'
       fullPath: '/research'
       preLoaderRoute: typeof ResearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy-policy': {
+      id: '/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PrivacyPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/post_tag-sitemap.xml': {
@@ -796,11 +901,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ethics-policy': {
+      id: '/ethics-policy'
+      path: '/ethics-policy'
+      fullPath: '/ethics-policy'
+      preLoaderRoute: typeof EthicsPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/editorial-policy': {
       id: '/editorial-policy'
       path: '/editorial-policy'
       fullPath: '/editorial-policy'
       preLoaderRoute: typeof EditorialPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/corrections-policy': {
+      id: '/corrections-policy'
+      path: '/corrections-policy'
+      fullPath: '/corrections-policy'
+      preLoaderRoute: typeof CorrectionsPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookie-policy': {
+      id: '/cookie-policy'
+      path: '/cookie-policy'
+      fullPath: '/cookie-policy'
+      preLoaderRoute: typeof CookiePolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comments-policy': {
+      id: '/comments-policy'
+      path: '/comments-policy'
+      fullPath: '/comments-policy'
+      preLoaderRoute: typeof CommentsPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/category-sitemap.xml': {
@@ -1213,18 +1353,25 @@ const rootRouteChildren: RootRouteChildren = {
   AuthorSitemapDotxmlRoute: AuthorSitemapDotxmlRoute,
   AuthorsRoute: AuthorsRoute,
   CategorySitemapDotxmlRoute: CategorySitemapDotxmlRoute,
+  CommentsPolicyRoute: CommentsPolicyRoute,
+  ContactRoute: ContactRoute,
+  CookiePolicyRoute: CookiePolicyRoute,
+  CorrectionsPolicyRoute: CorrectionsPolicyRoute,
   EditorialPolicyRoute: EditorialPolicyRoute,
+  EthicsPolicyRoute: EthicsPolicyRoute,
   FeedRoute: FeedRoute,
   GlossaryRoute: GlossaryRouteWithChildren,
   PageSitemapDotxmlRoute: PageSitemapDotxmlRoute,
   PostSitemappageDotxmlRoute: PostSitemappageDotxmlRoute,
   PostSitemapDotxmlRoute: PostSitemapDotxmlRoute,
   Post_tagSitemapDotxmlRoute: Post_tagSitemapDotxmlRoute,
+  PrivacyPolicyRoute: PrivacyPolicyRoute,
   ResearchRoute: ResearchRoute,
   SearchRoute: SearchRoute,
   SetupCoworkRoute: SetupCoworkRoute,
   Sitemap_indexDotxmlRoute: Sitemap_indexDotxmlRoute,
   Sitemap_newsDotxmlRoute: Sitemap_newsDotxmlRoute,
+  TermsOfUseRoute: TermsOfUseRoute,
   AdminEverythingProtectedRoute: AdminEverythingProtectedRouteWithChildren,
   AdminEverythingLoginRoute: AdminEverythingLoginRoute,
   ApiContactRoute: ApiContactRoute,
