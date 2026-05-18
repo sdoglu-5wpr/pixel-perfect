@@ -487,6 +487,10 @@ function ShareBar({ title, slug }: { title: string; slug: string }) {
 }
 
 function AuthorCard({ author }: { author: ArticleAuthor }) {
+  const [expanded, setExpanded] = useState(false);
+  const fullBio = author.bio ? rewriteLegacyHtml(author.bio) : "";
+  const { preview, hasMore } = splitBioAtParagraph(fullBio, 400);
+
   return (
     <div className="mt-12 rounded-xl border bg-surface-soft p-6 flex gap-5">
       {author.avatar_url ? (
@@ -499,16 +503,58 @@ function AuthorCard({ author }: { author: ArticleAuthor }) {
       <div className="min-w-0">
         <div className="text-xs uppercase tracking-wider text-muted-foreground">Written by</div>
         <div className="font-serif text-xl font-bold mt-0.5">{author.display_name}</div>
-        {author.bio ? (
-          <div
-            className="mt-2 text-sm text-muted-foreground leading-relaxed [&_a]:underline [&_a]:text-foreground"
-            dangerouslySetInnerHTML={{ __html: rewriteLegacyHtml(author.bio) }}
-          />
+        {fullBio ? (
+          <>
+            <div
+              className="mt-2 text-sm text-muted-foreground leading-relaxed [&_a]:underline [&_a]:text-foreground"
+              dangerouslySetInnerHTML={{ __html: expanded || !hasMore ? fullBio : preview }}
+            />
+            {hasMore ? (
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                className="mt-3 text-sm font-semibold text-brand-blue hover:underline"
+              >
+                {expanded ? "See less" : "See more"}
+              </button>
+            ) : null}
+          </>
         ) : null}
       </div>
     </div>
   );
 }
+
+/**
+ * Returns the first N+ characters of an HTML bio, but only cuts at the end of
+ * a paragraph (so no mid-sentence truncation). If the bio is already short,
+ * hasMore is false and the full bio is returned as the preview.
+ */
+function splitBioAtParagraph(html: string, minChars: number): { preview: string; hasMore: boolean } {
+  if (!html) return { preview: "", hasMore: false };
+  // Split on paragraph-level block boundaries while preserving order.
+  const parts = html.split(/(<\/p>|<\/h[1-6]>|<\/li>|<\/blockquote>|<br\s*\/?>\s*<br\s*\/?>)/i);
+  let acc = "";
+  let textLen = 0;
+  for (let i = 0; i < parts.length; i += 2) {
+    const chunk = (parts[i] ?? "") + (parts[i + 1] ?? "");
+    acc += chunk;
+    textLen += (parts[i] ?? "").replace(/<[^>]+>/g, "").length;
+    if (textLen >= minChars && i + 2 < parts.length) {
+      // There is more content after this paragraph boundary.
+      const remainingText = parts
+        .slice(i + 2)
+        .join("")
+        .replace(/<[^>]+>/g, "")
+        .trim();
+      if (remainingText.length > 0) {
+        return { preview: acc, hasMore: true };
+      }
+    }
+  }
+  return { preview: acc, hasMore: false };
+}
+
 
 function SidebarHeader({ title }: { title: string }) {
   return (
