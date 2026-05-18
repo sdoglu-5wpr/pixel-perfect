@@ -120,7 +120,7 @@ const PRIORITY_IDS: number[] = [
   20561, // Curium
   20562, // Eduard Moraru
 ];
-const FEATURED_IDS: number[] = [6, 20548, 20560]; // Ronn, Seth, Kevin
+const FEATURED_IDS: number[] = [6, 20548, 20560, 20558]; // Ronn, Seth, Kevin, Michael Heller
 const PRIORITY_SET = new Set(PRIORITY_IDS);
 const FEATURED_SET = new Set(FEATURED_IDS);
 
