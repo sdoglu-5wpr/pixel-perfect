@@ -403,6 +403,9 @@ function ArticleBody({ data }: { data: ArticlePayload }) {
                 ))}
               </ul>
             </div>
+            {(extras?.sidebarSections ?? []).map((s) => (
+              <SidebarCategorySection key={s.categorySlug} section={s} />
+            ))}
             <TrendingSidebar posts={extras?.trending ?? []} />
           </div>
         </aside>
