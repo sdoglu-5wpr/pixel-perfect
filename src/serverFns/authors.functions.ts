@@ -30,7 +30,7 @@ export const listAuthors = createServerFn({ method: "GET" }).handler(
         "public, max-age=300, s-maxage=900, stale-while-revalidate=3600",
       );
     } catch {}
-    return cached("authors:list:v1", 300_000, async () => {
+    return cached("authors:list:v2-cleanup", 300_000, async () => {
       const { data, error } = await supabaseAnon
         .from("authors")
         .select("id, slug, display_name, job_title, avatar_url, bio, post_count, tags, social, website")
