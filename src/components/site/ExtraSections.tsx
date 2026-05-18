@@ -3,7 +3,49 @@ import { ArrowRight, Flame } from "lucide-react";
 import { PostImage } from "./PostImage";
 import { decodeHtmlEntities } from "@/lib/text";
 import { formatDate } from "@/lib/date";
-import type { ExtraPost } from "@/lib/extra-sections";
+import type { ExtraPost, ExtraSection } from "@/lib/extra-sections";
+
+export function SidebarCategorySection({ section }: { section: ExtraSection }) {
+  const posts = section.posts.slice(0, 5);
+  if (!posts.length) return null;
+  return (
+    <div>
+      <h2 className="font-serif text-xl font-bold flex items-center gap-2 border-b pb-3">
+        <span className="inline-block w-3 h-3 bg-brand-red" aria-hidden />
+        {section.categoryName}
+      </h2>
+      <ul className="mt-4 space-y-4">
+        {posts.map((p) => (
+          <li key={p.id}>
+            <Link to="/$slug" params={{ slug: p.slug }} className="group flex gap-3">
+              <PostImage
+                src={p.featured_image_url}
+                alt={decodeHtmlEntities(p.title)}
+                className="w-24 h-20 shrink-0 overflow-hidden rounded-md bg-muted"
+                imgClassName="w-full h-full object-cover group-hover:scale-105 transition-transform"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                  {section.categoryName} · {formatDate(p.published_at, { month: "short", day: "numeric", year: "numeric" })}
+                </div>
+                <div className="text-sm font-semibold leading-snug text-foreground group-hover:text-brand-red line-clamp-3">
+                  {decodeHtmlEntities(p.title)}
+                </div>
+              </div>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <Link
+        to="/$slug"
+        params={{ slug: section.categorySlug }}
+        className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-brand-red hover:underline"
+      >
+        View all {section.categoryName} <ArrowRight className="w-3 h-3" />
+      </Link>
+    </div>
+  );
+}
 
 export function TrendingSidebar({
   posts,
