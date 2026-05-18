@@ -25,6 +25,7 @@ export type ExtraSection = {
 export type ExtraSectionsPayload = {
   trending: ExtraPost[];
   sections: ExtraSection[];
+  sidebarSections: ExtraSection[];
 };
 
 // Curated rotation pool — categories with healthy article counts and
