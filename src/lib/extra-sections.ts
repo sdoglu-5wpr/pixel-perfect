@@ -100,28 +100,42 @@ export async function fetchExtraSections(opts?: {
   excludeSlugs?: string[];
   trendingLimit?: number;
   sectionLimit?: number;
+  sidebarSectionCount?: number;
+  sidebarSectionLimit?: number;
 }): Promise<ExtraSectionsPayload> {
   const exclude = new Set((opts?.excludeSlugs ?? []).filter(Boolean));
   const trendingLimit = opts?.trendingLimit ?? 5;
   const sectionLimit = opts?.sectionLimit ?? 3;
+  const sidebarSectionCount = opts?.sidebarSectionCount ?? 3;
+  const sidebarSectionLimit = opts?.sidebarSectionLimit ?? 5;
 
-  // Pick 2 rotating categories from the pool, excluding any to avoid.
+  // Pick categories from the pool, excluding any to avoid.
   const pool = ROTATION_POOL.filter((c) => !exclude.has(c.slug));
   const rotated = rotate(pool, dayOfYearSeed());
-  const picks = rotated.slice(0, 2);
+  const inContentPicks = rotated.slice(0, 2);
+  // Sidebar picks come from a different slice so they don't repeat in-content sections.
+  const sidebarPicks = rotated.slice(2, 2 + sidebarSectionCount);
 
-  const [trending, ...sectionResults] = await Promise.all([
+  const [trending, inContentResults, sidebarResults] = await Promise.all([
     fetchCategoryPosts("trending", "Trending", trendingLimit),
-    ...picks.map((p) => fetchCategoryPosts(p.slug, p.name, sectionLimit)),
+    Promise.all(inContentPicks.map((p) => fetchCategoryPosts(p.slug, p.name, sectionLimit))),
+    Promise.all(sidebarPicks.map((p) => fetchCategoryPosts(p.slug, p.name, sidebarSectionLimit))),
   ]);
 
   const sectionTitles = ["Other News", "Hot Topic"];
-  const sections: ExtraSection[] = picks.map((p, i) => ({
+  const sections: ExtraSection[] = inContentPicks.map((p, i) => ({
     title: sectionTitles[i] ?? p.name,
     categorySlug: p.slug,
     categoryName: p.name,
-    posts: sectionResults[i] ?? [],
+    posts: inContentResults[i] ?? [],
   }));
 
-  return { trending, sections };
+  const sidebarSections: ExtraSection[] = sidebarPicks.map((p, i) => ({
+    title: p.name,
+    categorySlug: p.slug,
+    categoryName: p.name,
+    posts: sidebarResults[i] ?? [],
+  }));
+
+  return { trending, sections, sidebarSections };
 }
