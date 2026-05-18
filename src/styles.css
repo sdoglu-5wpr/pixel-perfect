@@ -313,3 +313,65 @@
 /* Heading anchor offset (account for sticky header) */
 .prose-article h2[id], .prose-article h3[id] { scroll-margin-top: 5rem; }
 
+/* =========================================================
+ * Mobile overrides for in-content `.epr-article` (custom HTML
+ * shipped inside specific articles, e.g. the Israeli/Jewish
+ * media AI Visibility study). The article ships its own
+ * <style> block whose @media query selectors aren't scoped to
+ * `.epr-article`, so they lose to the scoped desktop rules.
+ * These rules fix the layout on phones: collapse fixed-width
+ * flex columns, reduce padding, and stop horizontal overflow.
+ * ========================================================= */
+@media (max-width: 680px) {
+  .prose-article .epr-article .wrap { padding: 0 16px; }
+  .prose-article .epr-article section { padding: 32px 0; }
+  .prose-article .epr-article h2 { font-size: 24px; }
+  .prose-article .epr-article p,
+  .prose-article .epr-article p.lead { font-size: 16.5px; }
+  .prose-article .epr-article .pull p { font-size: 20px; }
+
+  /* "Twelve outlets that never surfaced" — segment + list rows */
+  .prose-article .epr-article .dead-row { flex-direction: column; }
+  .prose-article .epr-article .dead-seg {
+    flex: none;
+    border-right: none;
+    border-bottom: 1px solid var(--line, #dcd9d0);
+    padding: 10px 14px;
+  }
+  .prose-article .epr-article .dead-list { padding: 12px 14px; }
+
+  /* Seven findings — numbered items */
+  .prose-article .epr-article .item { gap: 12px; padding: 16px 0; }
+  .prose-article .epr-article .item .num {
+    flex: 0 0 auto;
+    width: 32px;
+    min-width: 32px;
+    font-size: 22px;
+  }
+  .prose-article .epr-article .item .body { min-width: 0; }
+  .prose-article .epr-article .item h3 { font-size: 18px; }
+
+  /* Appendix rows (basket / queries) — key + value side by side */
+  .prose-article .epr-article .ap-row { flex-direction: column; gap: 4px; }
+  .prose-article .epr-article .ap-key {
+    flex: none;
+    padding-bottom: 2px;
+    border-right: none;
+  }
+  .prose-article .epr-article .ap-val { padding: 0; }
+
+  /* Bar chart — keep label + value on one line, prevent overflow */
+  .prose-article .epr-article .bar-top { flex-wrap: wrap; gap: 4px 8px; }
+  .prose-article .epr-article .bar-name { font-size: 14.5px; }
+  .prose-article .epr-article .bar-seg { margin-left: 6px; }
+  .prose-article .epr-article .bar-val { font-size: 13.5px; }
+
+  /* Publisher's note / callout — reduce inner padding */
+  .prose-article .epr-article .pubnote { padding: 20px 18px; }
+  .prose-article .epr-article .pubnote p { font-size: 16.5px; }
+  .prose-article .epr-article .callout { padding: 22px 20px; }
+  .prose-article .epr-article .callout p,
+  .prose-article .epr-article .callout .big { font-size: 16.5px; }
+}
+
+
