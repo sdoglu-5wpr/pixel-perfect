@@ -1,0 +1,1 @@
+DELETE FROM redirects WHERE source_path IN ('/israeli-jewish-media-the-ai-visibility-study', '/israeli-jewish-media-the-ai-visibility-study-everything-pr');
