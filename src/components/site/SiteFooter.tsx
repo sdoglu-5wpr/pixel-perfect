@@ -1,51 +1,63 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
 
 export type FooterMenuItem = { label: string; href: string };
 
-const DEFAULT_MENU: FooterMenuItem[] = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
+const EXPLORE: FooterMenuItem[] = [
+  { label: "News", href: "/pr-news" },
+  { label: "Research", href: "/research" },
+  { label: "AI & GEO", href: "/generative-engine-optimization" },
+  { label: "PR Firms", href: "/pr-firms" },
+  { label: "RFPs", href: "/rfp" },
   { label: "Glossary", href: "/glossary" },
-  { label: "Comments Policy", href: "/comments-policy" },
-  { label: "Contact", href: "/contact" },
 ];
 
-const POLICY_LINKS: FooterMenuItem[] = [
+const PUBLICATION: FooterMenuItem[] = [
+  { label: "About", href: "/about" },
+  { label: "Contributors", href: "/authors" },
+  { label: "Contact", href: "/contact" },
+  { label: "Newsletter", href: "/#newsletter" },
+];
+
+const STANDARDS: FooterMenuItem[] = [
   { label: "Editorial Policy", href: "/editorial-policy" },
   { label: "Ethics Policy", href: "/ethics-policy" },
   { label: "Corrections Policy", href: "/corrections-policy" },
 ];
 
-const QUICK_LINKS: FooterMenuItem[] = [
-  { label: "Research", href: "/research" },
-  { label: "Newsletter", href: "/#newsletter" },
-];
+const EPR_BOILERPLATE =
+  "Everything-PR covers communications, reputation, AI visibility, public affairs, media systems, and digital discovery in the answer-engine era. Publishing since 2009. Thirty verticals. Original reporting, research, and analysis. Every page reported, sourced, and built to be cited.";
 
-export function SiteFooter({ menu }: { menu?: FooterMenuItem[] }) {
-  const navLinks = menu && menu.length ? menu : DEFAULT_MENU;
+export function SiteFooter(_props?: { menu?: FooterMenuItem[] }) {
   return (
     <footer className="bg-ink text-ink-foreground">
       <div className="h-1 bg-ticker" />
 
-      <div className="mx-auto max-w-7xl px-6 py-14 grid grid-cols-1 md:grid-cols-4 gap-10">
-        <div className="md:col-span-1">
-          <img src="/everything-pr-logo.png" alt="Everything PR News" className="h-12 w-auto bg-white rounded-md px-3 py-2 mb-3" />
+      <div className="mx-auto max-w-7xl px-6 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div>
+          <Link to="/" aria-label="Everything-PR home">
+            <img
+              src="/everything-pr-logo.png"
+              alt="Everything-PR"
+              className="h-12 w-auto bg-white rounded-md px-3 py-2 mb-4"
+            />
+          </Link>
           <p className="text-sm text-ink-foreground/70 leading-relaxed">
-            Daily reporting on AI communications and the public relations industry — agencies, campaigns, crisis, brands, and the people behind the work.
+            {EPR_BOILERPLATE}
           </p>
         </div>
-        <FooterCol title="Site" links={navLinks} />
-        <FooterCol title="Quick Links" links={QUICK_LINKS} external />
-        <FooterCol title="Policies" links={POLICY_LINKS} />
+
+        <FooterCol title="Explore" links={EXPLORE} />
+        <FooterCol title="Publication" links={PUBLICATION} />
+        <FooterCol title="Standards" links={STANDARDS} />
       </div>
+
       <div className="border-t border-white/10">
-        <div className="mx-auto max-w-7xl px-6 py-5 flex flex-col md:flex-row items-center justify-between text-xs text-ink-foreground/60">
-          <span>© {new Date().getFullYear()} Everything-PR. All Rights Reserved.</span>
-          <div className="flex flex-wrap gap-x-5 gap-y-2 mt-2 md:mt-0 justify-center md:justify-end">
-            <Link to="/terms-of-use" className="hover:text-ink-foreground">Terms of Use</Link>
-            <Link to="/privacy-policy" className="hover:text-ink-foreground">Privacy Policy</Link>
-            <Link to="/cookie-policy" className="hover:text-ink-foreground">Cookie Policy</Link>
+        <div className="mx-auto max-w-7xl px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-ink-foreground/60">
+          <span>© {new Date().getFullYear()} Everything-PR News LLC. All rights reserved.</span>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 justify-center md:justify-end">
+            <a href="/terms-of-use" className="hover:text-ink-foreground">Terms of Use</a>
+            <a href="/privacy-policy" className="hover:text-ink-foreground">Privacy Policy</a>
+            <a href="/cookie-policy" className="hover:text-ink-foreground">Cookie Policy</a>
           </div>
         </div>
       </div>
@@ -53,18 +65,16 @@ export function SiteFooter({ menu }: { menu?: FooterMenuItem[] }) {
   );
 }
 
-function FooterCol({ title, links, external = false }: { title: string; links: FooterMenuItem[]; external?: boolean }) {
+function FooterCol({ title, links }: { title: string; links: FooterMenuItem[] }) {
   return (
     <div>
-      <h4 className="text-sm font-semibold mb-3 uppercase tracking-wider text-ink-foreground/60">{title}</h4>
+      <h4 className="text-sm font-semibold mb-3 uppercase tracking-wider text-ink-foreground/60">
+        {title}
+      </h4>
       <ul className="text-sm space-y-2">
-        {links.map((l, i) => (
-          <li key={`${l.href}-${i}`}>
-            <a
-              href={l.href}
-              {...(external || /^https?:/i.test(l.href) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-              className="text-ink-foreground/80 hover:text-ink-foreground"
-            >
+        {links.map((l) => (
+          <li key={l.href}>
+            <a href={l.href} className="text-ink-foreground/80 hover:text-ink-foreground">
               {l.label}
             </a>
           </li>
