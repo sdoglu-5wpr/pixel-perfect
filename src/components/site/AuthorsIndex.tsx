@@ -108,12 +108,13 @@ function AuthorCard({ author, featured }: { author: AuthorListItem; featured?: b
 
 // Curated display order — by author id
 const PRIORITY_IDS: number[] = [
-  1052,  // EPR Editorial Team
-  6,     // Ronn Torossian
-  4750,  // EPR Staff
+  1052,  // EPR Editorial Team (consolidated staff byline)
+  6,     // Ronn Torossian — Publisher
   20548, // Seth Semilof
-  20559, // Kyle Porter
   20560, // Kevin Mercuri
+  20559, // Kyle Porter
+  20558, // Michael Heller
+  20563, // Patrick Cullinane
   20564, // Alex Shvarts
   5,     // David A. Steinberg
 ];
