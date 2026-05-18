@@ -67,6 +67,7 @@ import { Route as ApiPublicIngestMediaRouteImport } from './routes/api/public/in
 import { Route as ApiPublicIngestCategoriesRouteImport } from './routes/api/public/ingest/categories'
 import { Route as ApiPublicHooksPublishScheduledRouteImport } from './routes/api/public/hooks/publish-scheduled'
 import { Route as ApiPublicHooksGenerateMissingFeaturedImagesRouteImport } from './routes/api/public/hooks/generate-missing-featured-images'
+import { Route as ApiPublicAdminBulkCleanup202605RouteImport } from './routes/api/public/admin/bulk-cleanup-2026-05'
 import { Route as AdminEverythingProtectedPostsIdRouteImport } from './routes/admin-everything/_protected.posts.$id'
 import { Route as AdminEverythingProtectedCategoriesDuplicatesRouteImport } from './routes/admin-everything/_protected.categories.duplicates'
 
@@ -379,6 +380,12 @@ const ApiPublicHooksGenerateMissingFeaturedImagesRoute =
     path: '/api/public/hooks/generate-missing-featured-images',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAdminBulkCleanup202605Route =
+  ApiPublicAdminBulkCleanup202605RouteImport.update({
+    id: '/api/public/admin/bulk-cleanup-2026-05',
+    path: '/api/public/admin/bulk-cleanup-2026-05',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminEverythingProtectedPostsIdRoute =
   AdminEverythingProtectedPostsIdRouteImport.update({
     id: '/posts/$id',
@@ -442,6 +449,7 @@ export interface FileRoutesByFullPath {
   '/admin-everything/': typeof AdminEverythingProtectedIndexRoute
   '/admin-everything/categories/duplicates': typeof AdminEverythingProtectedCategoriesDuplicatesRoute
   '/admin-everything/posts/$id': typeof AdminEverythingProtectedPostsIdRoute
+  '/api/public/admin/bulk-cleanup-2026-05': typeof ApiPublicAdminBulkCleanup202605Route
   '/api/public/hooks/generate-missing-featured-images': typeof ApiPublicHooksGenerateMissingFeaturedImagesRoute
   '/api/public/hooks/publish-scheduled': typeof ApiPublicHooksPublishScheduledRoute
   '/api/public/ingest/categories': typeof ApiPublicIngestCategoriesRoute
@@ -503,6 +511,7 @@ export interface FileRoutesByTo {
   '/admin-everything': typeof AdminEverythingProtectedIndexRoute
   '/admin-everything/categories/duplicates': typeof AdminEverythingProtectedCategoriesDuplicatesRoute
   '/admin-everything/posts/$id': typeof AdminEverythingProtectedPostsIdRoute
+  '/api/public/admin/bulk-cleanup-2026-05': typeof ApiPublicAdminBulkCleanup202605Route
   '/api/public/hooks/generate-missing-featured-images': typeof ApiPublicHooksGenerateMissingFeaturedImagesRoute
   '/api/public/hooks/publish-scheduled': typeof ApiPublicHooksPublishScheduledRoute
   '/api/public/ingest/categories': typeof ApiPublicIngestCategoriesRoute
@@ -566,6 +575,7 @@ export interface FileRoutesById {
   '/admin-everything/_protected/': typeof AdminEverythingProtectedIndexRoute
   '/admin-everything/_protected/categories/duplicates': typeof AdminEverythingProtectedCategoriesDuplicatesRoute
   '/admin-everything/_protected/posts/$id': typeof AdminEverythingProtectedPostsIdRoute
+  '/api/public/admin/bulk-cleanup-2026-05': typeof ApiPublicAdminBulkCleanup202605Route
   '/api/public/hooks/generate-missing-featured-images': typeof ApiPublicHooksGenerateMissingFeaturedImagesRoute
   '/api/public/hooks/publish-scheduled': typeof ApiPublicHooksPublishScheduledRoute
   '/api/public/ingest/categories': typeof ApiPublicIngestCategoriesRoute
@@ -630,6 +640,7 @@ export interface FileRouteTypes {
     | '/admin-everything/'
     | '/admin-everything/categories/duplicates'
     | '/admin-everything/posts/$id'
+    | '/api/public/admin/bulk-cleanup-2026-05'
     | '/api/public/hooks/generate-missing-featured-images'
     | '/api/public/hooks/publish-scheduled'
     | '/api/public/ingest/categories'
@@ -691,6 +702,7 @@ export interface FileRouteTypes {
     | '/admin-everything'
     | '/admin-everything/categories/duplicates'
     | '/admin-everything/posts/$id'
+    | '/api/public/admin/bulk-cleanup-2026-05'
     | '/api/public/hooks/generate-missing-featured-images'
     | '/api/public/hooks/publish-scheduled'
     | '/api/public/ingest/categories'
@@ -753,6 +765,7 @@ export interface FileRouteTypes {
     | '/admin-everything/_protected/'
     | '/admin-everything/_protected/categories/duplicates'
     | '/admin-everything/_protected/posts/$id'
+    | '/api/public/admin/bulk-cleanup-2026-05'
     | '/api/public/hooks/generate-missing-featured-images'
     | '/api/public/hooks/publish-scheduled'
     | '/api/public/ingest/categories'
@@ -799,6 +812,7 @@ export interface RootRouteChildren {
   AuthorSlugRoute: typeof AuthorSlugRouteWithChildren
   CategorySlugRoute: typeof CategorySlugRouteWithChildren
   TagSlugRoute: typeof TagSlugRouteWithChildren
+  ApiPublicAdminBulkCleanup202605Route: typeof ApiPublicAdminBulkCleanup202605Route
   ApiPublicHooksGenerateMissingFeaturedImagesRoute: typeof ApiPublicHooksGenerateMissingFeaturedImagesRoute
   ApiPublicHooksPublishScheduledRoute: typeof ApiPublicHooksPublishScheduledRoute
   ApiPublicIngestCategoriesRoute: typeof ApiPublicIngestCategoriesRoute
@@ -1216,6 +1230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksGenerateMissingFeaturedImagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/admin/bulk-cleanup-2026-05': {
+      id: '/api/public/admin/bulk-cleanup-2026-05'
+      path: '/api/public/admin/bulk-cleanup-2026-05'
+      fullPath: '/api/public/admin/bulk-cleanup-2026-05'
+      preLoaderRoute: typeof ApiPublicAdminBulkCleanup202605RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin-everything/_protected/posts/$id': {
       id: '/admin-everything/_protected/posts/$id'
       path: '/posts/$id'
@@ -1379,6 +1400,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthorSlugRoute: AuthorSlugRouteWithChildren,
   CategorySlugRoute: CategorySlugRouteWithChildren,
   TagSlugRoute: TagSlugRouteWithChildren,
+  ApiPublicAdminBulkCleanup202605Route: ApiPublicAdminBulkCleanup202605Route,
   ApiPublicHooksGenerateMissingFeaturedImagesRoute:
     ApiPublicHooksGenerateMissingFeaturedImagesRoute,
   ApiPublicHooksPublishScheduledRoute: ApiPublicHooksPublishScheduledRoute,

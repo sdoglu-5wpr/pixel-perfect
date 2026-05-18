@@ -39,6 +39,15 @@ const redirectMiddleware = createMiddleware({ type: "request" }).server(
     const key = url.pathname.replace(/\/$/, "") || "/";
     const r = REDIRECT_MAP.get(key);
     if (r) {
+      if (r.status === 410) {
+        return new Response("Gone", {
+          status: 410,
+          headers: {
+            "Cache-Control": "public, max-age=3600, s-maxage=86400",
+            "X-Robots-Tag": "noindex",
+          },
+        });
+      }
       return new Response(null, {
         status: (r.status === 302 ? 302 : 301) as 301 | 302,
         headers: {
