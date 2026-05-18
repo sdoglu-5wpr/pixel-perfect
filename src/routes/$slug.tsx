@@ -501,7 +501,7 @@ function AuthorCard({ author }: { author: ArticleAuthor }) {
         <div className="font-serif text-xl font-bold mt-0.5">{author.display_name}</div>
         {author.bio ? (
           <div
-            className="mt-2 text-sm text-muted-foreground leading-relaxed line-clamp-4 [&_a]:underline [&_a]:text-foreground"
+            className="mt-2 text-sm text-muted-foreground leading-relaxed [&_a]:underline [&_a]:text-foreground"
             dangerouslySetInnerHTML={{ __html: rewriteLegacyHtml(author.bio) }}
           />
         ) : null}
