@@ -25,7 +25,7 @@ import { FaqSection } from "@/components/site/FaqSection";
 import { Disclosure5W, shouldShow5WDisclosure } from "@/components/site/Disclosure5W";
 import { formatDate } from "@/lib/date";
 import { fetchExtraSections, type ExtraSectionsPayload } from "@/lib/extra-sections";
-import { TrendingSidebar, CategorySectionRow } from "@/components/site/ExtraSections";
+import { TrendingSidebar, CategorySectionRow, SidebarCategorySection } from "@/components/site/ExtraSections";
 import { withHero } from "@/lib/has-hero";
 import { useEffect, useState } from "react";
 
@@ -403,6 +403,9 @@ function ArticleBody({ data }: { data: ArticlePayload }) {
                 ))}
               </ul>
             </div>
+            {(extras?.sidebarSections ?? []).map((s) => (
+              <SidebarCategorySection key={s.categorySlug} section={s} />
+            ))}
             <TrendingSidebar posts={extras?.trending ?? []} />
           </div>
         </aside>
