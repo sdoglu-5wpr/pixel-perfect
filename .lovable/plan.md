@@ -1,45 +1,54 @@
-## Problem
+# Mass delete + redirect plan (3,005 URLs)
 
-On `/premium-cabin-first-class-storytelling` (and 21 sibling Travel pillar articles), two things look broken:
+## CSV breakdown
+- **RFP** — 2,756
+- **Seeking-agency** — 233
+- **Thin-content** — 11 (incl. 6 `/draft-*`)
+- **Hiring** — 5
 
-1. **FAQ shows twice** — once inside the article body (`<h2>FAQ</h2>` + Q/A `<h3>`s), then again in the dedicated "Frequently Asked Questions" accordion below.
-2. **"Related Playbooks" list is raw markdown** — items render as `[Loyalty Program PR & the Miles Economy](/loyalty-program-pr-miles-economy/)` instead of clickable links.
+## Redirect targets (existing categories confirmed)
+| Reason | Target | Status |
+|---|---|---|
+| RFP | `/category/rfp` (existing, 3,630 posts, name "PR RFPs & Marketing RFPs") | 301 |
+| Seeking-agency | `/category/pr-firms` (existing, 379 posts) | 301 |
+| Thin-content | `/` (homepage) | 301 |
+| Hiring | — (no redirect) | **410 Gone** |
 
-## Root cause
+If you'd prefer Seeking-agency → `/category/agency-of-record` (83 posts) instead of `/category/pr-firms`, say so. I'll default to `pr-firms` since it's the larger, more general hub.
 
-- The article view already calls `stripFaqFromHtml`, but that helper only matches an `<h2>` whose text is **"Frequently Asked Questions"**. Ronn's Travel batch uses **`<h2>FAQ</h2>`**, so nothing gets stripped and the body FAQ stays.
-- The seeder converted the markdown-link list into `<ul><li>` tags but did not convert the `[text](url)` syntax inside each `<li>` into `<a href>` tags.
+## Execution steps
 
-Scope (queried just now): only the **22 articles with `pillar_slug='travel'`** are affected. All other Ronn batches are clean.
+### 1. Stage the CSV
+Copy `noindex-candidates.csv` into a temp table so we can join on it cleanly.
 
-## Fix
+### 2. Insert redirects (migration #1)
+For each row, insert into `public.redirects` (source_path, target_path, status_code, enabled=true, notes='bulk cleanup 2026-05'):
+- RFP rows → `/category/rfp`, 301
+- Seeking-agency rows → `/category/pr-firms`, 301
+- Thin-content rows → `/`, 301
+- Hiring rows → still inserted but with **status_code = 410** and target `/` (the edge/redirect handler returns 410 for that code; if it doesn't yet, I'll add that branch in code)
 
-### 1. Make the FAQ stripper recognize "FAQ" / "FAQs"
+Skip rows where a redirect for that `source_path` already exists.
 
-`src/lib/faq.ts` — extend the regex in `stripFaqFromHtml` so it also matches headings whose text is `FAQ` or `FAQs` (case-insensitive), in addition to "Frequently Asked Questions". One-line change.
+### 3. Delete posts + media (migration #2)
+For every slug in the CSV that exists in `posts`:
+1. Collect `featured_media_id` values.
+2. Delete child rows: `post_categories`, `post_tags`, `post_revisions`, `internal_links` (source or target), `seo_meta` where `object_type='post'` and `object_id=post.id`.
+3. Delete the posts.
+4. Delete orphaned `media` rows (and `media_variants`) whose ids were collected AND are no longer referenced by any remaining post's `featured_media_id` or `first_inline_image`. Storage objects in the `media` bucket are NOT auto-deleted by row delete — I'll list the storage_paths in the migration output so you can bulk-delete them from the Supabase Storage dashboard (or I can add a follow-up server function to purge them).
 
-This is the safety net so the body FAQ is hidden even if some article slips through with the short heading in the future.
+### 4. Verify 410 handling
+Check the edge redirect handler (`netlify/edge-functions/canonicalize.ts` and the worker redirect logic that reads `src/generated/redirects.json`) actually emits a 410 when `status_code = 410`. If it only handles 301/302/307/308, add a 410 branch (no `Location` header, body "Gone").
 
-### 2. One-time DB backfill on the 22 Travel articles
+### 5. Rebuild prerender
+`src/prerender.ts` reads published posts to build the URL list — once posts are deleted, those URLs drop out of the sitemap and prerender automatically on the next build. No code change needed there.
 
-Run a Supabase migration that, for `article_type='pillar' AND pillar_slug='travel'`:
+## Technical notes
+- All DB work goes through `supabase--migration` (schema-safe single transaction per phase). I'll show you both SQL migrations before they run.
+- `redirects` table already has `source_path` unique-ish usage in the admin UI; I'll use `ON CONFLICT (source_path) DO NOTHING` to be safe (will add the unique index if missing).
+- Storage objects: row delete in `media` does NOT remove the file in the bucket. I'll output the list of storage_paths so they can be purged separately — confirm if you want me to also wire a cleanup server function.
 
-- **Convert markdown links inside `<li>`**: replace `<li>[label](/path/)</li>` with `<li><a href="/path/">label</a></li>` using a `regexp_replace` with the `g` flag. Decode `&amp;` back to `&` inside the label so titles like "Loyalty Program PR & the Miles Economy" render correctly.
-- **Strip the stray `<p>---</p>` horizontal-rule paragraphs** that appear between the body, FAQ, Related Playbooks, and About 5W blocks (cosmetic).
-- Touch `updated_at` so cache busts.
-
-The dedicated "Frequently Asked Questions" accordion below the article is already populated from `extractFaqPairs(content_html)` and will keep working — once `stripFaqFromHtml` removes the body copy, the page shows the FAQ exactly once.
-
-### 3. Verify
-
-Reload `/premium-cabin-first-class-storytelling` and one or two siblings (e.g. `/loyalty-program-pr-miles-economy`, `/route-launch-pr-playbook`) and confirm:
-- Only one FAQ section (the styled accordion).
-- "Related Playbooks" items are clickable `<a>` links pointing at `/[slug]/`.
-- No leftover `---` separators.
-
-## Files touched
-
-- `src/lib/faq.ts` — extend `stripFaqFromHtml` regex.
-- One Supabase migration that updates `posts.content_html` for the 22 Travel rows.
-
-No changes to `PillarView`, the article route, or any other vertical.
+## Open questions (answer to refine, or I'll use defaults)
+1. Seeking-agency target: `/category/pr-firms` (default) or `/category/agency-of-record`?
+2. Hiring: **410 Gone** (default, per your message) or 301 → `/`?
+3. Storage bucket cleanup: list-only (default) or also auto-purge via a script?
