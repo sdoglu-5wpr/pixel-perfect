@@ -374,4 +374,17 @@
   .prose-article .epr-article .callout .big { font-size: 16.5px; }
 }
 
+/* "About Everything-PR" card inside in-content articles — match page bg,
+ * black text instead of navy + white. */
+.prose-article .epr-article .about {
+  background: transparent !important;
+  color: var(--color-foreground) !important;
+}
+.prose-article .epr-article .about-card h4 {
+  color: var(--color-foreground) !important;
+}
+.prose-article .epr-article .about-card p {
+  color: var(--color-foreground) !important;
+}
+
 
